@@ -11,8 +11,13 @@ config_version=5
 [application]
 
 config/name="NEVERWORLD_V2"
-config/features=PackedStringArray("4.6", "Forward Plus")
+run/main_scene="uid://c630i4ag3u530"
+config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Globals="*uid://b60si5gy25qa0"
 
 [dotnet]
 
