@@ -1,0 +1,31 @@
+# Godot project cache/import metadata
+.godot/
+.import/
+
+# Godot export/build output (adjust to your project)
+/android/
+/build/
+/exports/
+/export_presets.cfg
+
+# C#/.NET build artifacts
+bin/
+obj/
+.mono/
+.nuget/
+*.user
+*.rsuser
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor metadata
+.idea/
+.vscode/
