@@ -1,15 +1,36 @@
 using Godot;
 using System;
 
-public partial class Logger : Node
+namespace Game.Core
 {
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
+	public static class Logger
 	{
-	}
+		public static void Log(string level, params object[] message)
+		{
+			var dateTime = DateTime.Now;
+			string timeStamp = $"[{dateTime:yyyy-MM-dd HH:mm:ss}]";
+			var callingMethod = new System.Diagnostics.StackTrace().GetFrame(2).GetMethod();
+			string logMessage = $"{timeStamp} [{level}] [{callingMethod.DeclaringType.Name}] [{callingMethod.Name}]";
+			GD.Print([logMessage, ..message]);
+		}
+		public static void Debug(params object[] message)
+		{
+			Log("DEBUG", message);
+		}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
+		public static void Info(params object[] message)
+		{
+			Log("INFO", message);
+		}
+
+		public static void Warn(params object[] message)
+		{
+			Log("WARNING", message);
+		}
+		public static void Error(params object[] message)
+		{
+			Log("ERROR", message);
+		}
 	}
 }
+
