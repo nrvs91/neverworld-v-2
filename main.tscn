@@ -1,0 +1,82 @@
+[gd_scene format=3 uid="uid://cljr3sxyildr7"]
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7dm0k"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0xm2m"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7dm0k"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ig7tw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7dm0k"]
+albedo_color = Color(0.56078434, 0.6901961, 0.42745098, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_7dm0k"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ig7tw"]
+albedo_color = Color(1, 0.3019608, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ig7tw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
+albedo_color = Color(0.25490198, 1, 1, 1)
+
+[node name="Main" type="Node" unique_id=1572606780]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1857181738]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+stretch_shrink = 4
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=1206371154]
+handle_input_locally = false
+anisotropic_filtering_level = 0
+canvas_item_default_texture_filter = 0
+size = Vector2i(288, 162)
+render_target_update_mode = 4
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="SubViewportContainer/SubViewport" unique_id=1816998461]
+camera_attributes = SubResource("CameraAttributesPractical_7dm0k")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport" unique_id=1563099732]
+transform = Transform3D(1, 0, 0, 0, 0.258819, 0.9659259, 0, -0.9659259, 0.258819, 0, 2.6, 5)
+
+[node name="CameraRig" type="Node3D" parent="SubViewportContainer/SubViewport" unique_id=172732077]
+transform = Transform3D(0.70710677, 0.35355338, -0.6123724, 0, 0.8660254, 0.5, 0.70710677, -0.35355338, 0.6123724, -2.3, 1.5, 2.1000001)
+
+[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport/CameraRig" unique_id=1455042192]
+projection = 1
+current = true
+size = 3.0
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="SubViewportContainer/SubViewport" unique_id=270506455]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewportContainer/SubViewport/CharacterBody3D" unique_id=918113825]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0.2, 0)
+shape = SubResource("CapsuleShape3D_0xm2m")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CharacterBody3D" unique_id=1595042035]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0.24000004, 0)
+mesh = SubResource("CapsuleMesh_7dm0k")
+
+[node name="Floor" type="MeshInstance3D" parent="SubViewportContainer/SubViewport" unique_id=146827580]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+mesh = SubResource("PlaneMesh_ig7tw")
+surface_material_override/0 = SubResource("StandardMaterial3D_7dm0k")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewportContainer/SubViewport" unique_id=1834734754]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 0.1, -2.1000001)
+mesh = SubResource("SphereMesh_7dm0k")
+surface_material_override/0 = SubResource("StandardMaterial3D_ig7tw")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="SubViewportContainer/SubViewport" unique_id=1948869735]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20000005, 0.1, -3.5000002)
+mesh = SubResource("BoxMesh_ig7tw")
+surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")

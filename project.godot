@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Globals="*uid://b60si5gy25qa0"
+Globals="*uid://daeb0hc18td04"
 
 [dotnet]
 
