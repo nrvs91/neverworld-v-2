@@ -6,6 +6,7 @@ extends Node3D
 var _direction := Vector2.ZERO
 
 func _ready() -> void:
+	Log.info("Initializing...")
 	controller.direction_changed.connect(_on_direction_changed)
 
 func _on_direction_changed(dir: Vector2) -> void:

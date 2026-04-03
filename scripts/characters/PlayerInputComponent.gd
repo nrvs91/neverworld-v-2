@@ -5,7 +5,10 @@ signal direction_changed(direction: Vector2)
 signal run_toggled(running: bool)
 signal interact_pressed
 
-func _physics_process(delta: float) -> void:
+func _ready() -> void:
+	Log.info("Initializing...")
+
+func _physics_process(_delta: float) -> void:
 	var direction := Vector2.ZERO
 	direction.x = Input.get_axis("ui_left", "ui_right")
 	direction.y = Input.get_axis("ui_up", "ui_down")

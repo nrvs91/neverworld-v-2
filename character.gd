@@ -6,6 +6,7 @@ extends Node3D
 @export var is_player := true
 
 func _ready() -> void:
+	Log.info("Initializing...")
 	if is_player:
 		movement.controller = player_input
 		#npc_behaviour.queue_free()
