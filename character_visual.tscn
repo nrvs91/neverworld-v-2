@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://by04gowfupy6q"]
+
+[ext_resource type="Script" uid="uid://dgqwqiuku7381" path="res://character_visual.gd" id="1_bbvle"]
+[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://SkuggeAnimations.tres" id="1_s6v0j"]
+
+[node name="CharacterVisualComponent" type="Node3D" unique_id=736639217 node_paths=PackedStringArray("sprite")]
+script = ExtResource("1_bbvle")
+sprite = NodePath("AnimatedSprite3D")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="." unique_id=994641630]
+billboard = 1
+texture_filter = 0
+sprite_frames = ExtResource("1_s6v0j")
+animation = &"Idle_DownLeft"
