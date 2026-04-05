@@ -6,6 +6,7 @@ signal run_toggled(running: bool)
 signal interact_pressed
 
 var _last_direction := Vector2.ZERO
+var _last_running := false
 
 func _ready() -> void:
 	Log.info("Initializing...")
@@ -18,10 +19,12 @@ func _physics_process(_delta: float) -> void:
 	if direction != _last_direction:
 		Log.debug("Input direction: ", direction)
 		_last_direction = direction
-	direction_changed.emit(direction)
+		direction_changed.emit(direction)
 	
 	var running := Input.is_action_pressed("movement_run")
-	run_toggled.emit(running)
+	if running != _last_running:
+		_last_running = running
+		run_toggled.emit(running)
 	
 	if Input.is_action_just_pressed("interact"):
 		interact_pressed.emit()
