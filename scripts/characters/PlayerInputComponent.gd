@@ -5,16 +5,22 @@ signal direction_changed(direction: Vector2)
 signal run_toggled(running: bool)
 signal interact_pressed
 
+var _last_direction := Vector2.ZERO
+
 func _ready() -> void:
 	Log.info("Initializing...")
 
 func _physics_process(_delta: float) -> void:
 	var direction := Vector2.ZERO
-	direction.x = Input.get_axis("ui_left", "ui_right")
-	direction.y = Input.get_axis("ui_up", "ui_down")
+	direction.x = Input.get_axis("movement_left", "movement_right")
+	direction.y = Input.get_axis("movement_up", "movement_down")
+
+	if direction != _last_direction:
+		Log.debug("Input direction: ", direction)
+		_last_direction = direction
 	direction_changed.emit(direction)
 	
-	var running := Input.is_action_pressed("ui_accept")
+	var running := Input.is_action_pressed("movement_run")
 	run_toggled.emit(running)
 	
 	if Input.is_action_just_pressed("interact"):

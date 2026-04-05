@@ -84,5 +84,6 @@ player_input = NodePath("PlayerInputComponent")
 
 [node name="MovementComponent" parent="SubViewportContainer/SubViewport/Character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_7mycd")]
 controller = NodePath("../PlayerInputComponent")
+movement_speed = 2.0
 
 [node name="CharacterVisual" parent="SubViewportContainer/SubViewport/Character" unique_id=736639217 instance=ExtResource("4_272bh")]
