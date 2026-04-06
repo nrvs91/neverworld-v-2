@@ -1,3 +1,13 @@
+# PlayerInputComponent - Input Processing for Player Characters
+#
+# Reads input actions and emits signals for movement and interaction.
+# Implements input buffering - only emits when state changes.
+#
+# LOGGING NOTES:
+#   - Log.info in _ready (component lifecycle)
+#   - Log.debug on direction changes (input state)
+#   - Avoid logging every frame - use change detection
+
 class_name PlayerInputComponent
 extends Node
 

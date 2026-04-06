@@ -1,3 +1,12 @@
+# Character - Main Character Scene Controller
+#
+# Composition root for player/NPC characters.
+# Wires together: MovementComponent, VisualComponent, and Input components.
+#
+# LOGGING NOTES:
+#   - Log.info in _ready (entity lifecycle)
+#   - Component wiring logged by components themselves
+
 extends Node3D
 
 @export var movement: MovementComponent

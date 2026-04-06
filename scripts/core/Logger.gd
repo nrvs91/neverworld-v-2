@@ -1,3 +1,24 @@
+# Log - NEVERWORLD Logging Utility
+#
+# A centralized logging system with four severity levels.
+# Replaces bare print() with structured, colored output that includes
+# timestamps, caller information, and automatic routing to Godot's error panel.
+#
+# USAGE:
+#   Log.info("Combat started")                    # Lifecycle events
+#   Log.debug("tick", actor.name, current_hp)     # High-frequency dev noise
+#   Log.warn("target was null, skipping")         # Unexpected but recoverable
+#   Log.error("invalid state reached")            # Something is broken
+#
+# Pass up to 3 arguments directly - no string concatenation needed.
+#
+# GUIDELINES (from CLAUDE.md):
+#   - Log at state transitions (FSM enters/exits)
+#   - Log at signal emissions carrying game state
+#   - Log null checks that prevent crashes
+#   - Log non-obvious calculation results
+#   - Never use bare print() - always use Log.*
+
 class_name Log
 
 enum LogLevel { DEBUG, INFO, WARNING, ERROR }
@@ -9,10 +30,27 @@ const COLOR_MAP = {
 	LogLevel.ERROR: "orange",
 }
 
+
+## Development noise: high frequency, filtered out in production builds.
+## Use for: per-frame updates, input polling, animation ticks.
 static func debug(msg: Variant, a2: Variant = "", a3: Variant = ""): _print_log(LogLevel.DEBUG, msg, a2, a3)
+
+
+## Meaningful lifecycle events: initialization, state changes, completions.
+## Use for: component ready, scene loaded, combat started, level up.
 static func info(msg: Variant, a2: Variant = "", a3: Variant = ""): _print_log(LogLevel.INFO, msg, a2, a3)
+
+
+## Unexpected but recoverable situations.
+## Use for: missing optional data, fallback values, deprecated API usage.
 static func warn(msg: Variant, a2: Variant = "", a3: Variant = ""): _print_log(LogLevel.WARNING, msg, a2, a3)
+
+
+## Critical failures that break functionality.
+## Use for: null references, invalid states, contract violations.
+## Also appears in Godot's Errors panel.
 static func error(msg: Variant, a2: Variant = "", a3: Variant = ""): _print_log(LogLevel.ERROR, msg, a2, a3)
+
 
 static func _print_log(level: LogLevel, msg: Variant, a2: Variant, a3: Variant):
 	var time = Time.get_datetime_string_from_system(false, true)

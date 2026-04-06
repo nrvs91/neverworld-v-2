@@ -1,3 +1,15 @@
+# VisualComponent - Character Visual State Management
+#
+# Handles all visual presentation for a character:
+#   - Animation state machine (Idle/Walk/Run)
+#   - Directional facing (4-way + diagonals)
+#   - Sprite flipping for left-facing
+#
+# LOGGING NOTES:
+#   - Log.info on animation changes (state transitions)
+#   - Log.debug on direction changes (high-frequency input)
+#   - Log.info in _ready (component lifecycle)
+
 extends Node3D
 class_name VisualComponent
 
@@ -48,6 +60,9 @@ func _play_animation():
 	var prefix = _get_animation_prefix()
 	var direction = _get_animation_direction(_last_direction)
 	sprite.flip_h = sign(_last_direction.x) == 1
-	sprite.play(prefix + "_" + direction)
+	var anim = prefix + "_" + direction
+	if sprite.animation == anim: 
+		return
+	sprite.play(anim)
 	Log.info("Last direction:", _last_direction)
 	Log.debug("Animation playing:", prefix, direction)

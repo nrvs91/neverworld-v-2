@@ -1,3 +1,13 @@
+# MovementComponent - Character Movement Physics
+#
+# Applies movement to the parent node based on input signals.
+# Isometric projection handled via 45-degree rotation of input.
+#
+# LOGGING NOTES:
+#   - Log.info in _ready (component lifecycle)
+#   - Avoid logging in _physics_process (called every frame)
+#   - Log direction changes at the signal handler level instead
+
 class_name MovementComponent
 extends Node3D
 
