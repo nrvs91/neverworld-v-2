@@ -367,19 +367,22 @@ Encounters are **random** — triggered stochastically as the player moves throu
 | PULSE | CT accumulation rate — governs turn frequency |
 | HIT | Physical accuracy |
 | DODGE | Physical evasion |
-| WARD | Magical evasion |
 
 ### Hit / Miss Formula
 
+Physical skills only:
 ```
 hitChance = clamp( (attacker.HIT × ChanceTier%) / defender.DODGE, 5%, 95% )
 ```
 
-For magical skills, WARD replaces DODGE. 5% floor means nothing is impossible; 95% ceiling means nothing is guaranteed.
+5% floor means nothing is impossible; 95% ceiling means nothing is guaranteed.
+
+**Magical skills always hit.** No accuracy check. The trade-off: magic is reliable but cannot crit (see Crit System below).
 
 ### Crit System
 
-- Baseline 5% crit chance on all offensive skills (authored per skill, not global).
+- Crits are **physical only.** Magical skills auto-hit but can never crit.
+- Baseline 5% crit chance on physical skills (authored per skill, not global).
 - Crit = 2× damage.
 - KEEN buff (stackable=false, persists until consumed) guarantees crit on the next physical hit.
 
