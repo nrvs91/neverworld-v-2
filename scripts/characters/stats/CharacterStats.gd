@@ -16,6 +16,4 @@ enum {
 	ResSlash, ResPierce, ResBlunt,
 	ResFire, ResWater, ResAir, ResNature, ResStone, ResFeral,
 
-	#Potential Ailment/CC resistance?
-	#ResBody, ResMind
 }
