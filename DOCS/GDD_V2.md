@@ -510,8 +510,8 @@ A token has five properties:
 | Ailment | Effect |
 |---------|--------|
 | FREEZE (Water) | Action loss / speed debuff |
-| WINDED (Air) | AP reduction |
-| PETRIFY (Stone) | Skip turn(s) |
+| PETRIFY (Stone) | pretty much the same as a KO status, indifinite stun, petrify = basically dead, just brought back online via different means |
+
 
 **Elemental DoTs** (always land if skill hits; resistance scales tick damage):
 

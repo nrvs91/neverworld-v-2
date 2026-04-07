@@ -14,7 +14,7 @@ enum {
 
 	#Damage Resistances
 	ResSlash, ResPierce, ResBlunt,
-	ResFire, ResWater, ResAir, ResNature, ResRock, ResFeral,
+	ResFire, ResWater, ResAir, ResNature, ResStone, ResFeral,
 
 	#Potential Ailment/CC resistance?
 	#ResBody, ResMind
