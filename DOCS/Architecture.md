@@ -84,15 +84,33 @@ PlayerData (template)     +     CharacterSaveData (save state)
 ## Overworld
 
 ```
-character.tscn
-  ├── PlayerInputComponent   ← reads input, emits direction_changed / run_toggled / interact_pressed
+overworld_character.tscn
+  ├── PlayerInputComponent / NPCBehaviorComponent   ← reads input or AI, emits direction_changed / run_toggled / interact_pressed
   ├── MovementComponent      ← listens to direction_changed, run_toggled — moves the character
   └── VisualComponent        ← listens to direction_changed, run_toggled — drives AnimatedSprite3D
 ```
 
-- `character.gd` wires `controller` on both `MovementComponent` and `VisualComponent` at `_ready()`
+- `overworld_character.gd` wires `controller` on both `MovementComponent` and `VisualComponent` at `_ready()`
+- Also passes `character_data` to `VisualComponent` so it can assign the correct `SpriteFrames` to `AnimatedSprite3D`
 - For NPCs, `PlayerInputComponent` is swapped for `NPCBehaviorComponent` — other components don't notice
 - Camera is fixed — input is rotated 45° in `MovementComponent` to match isometric orientation
+
+## Combat Characters
+
+Overworld and combat are separate representations of the same character data. They share components where it makes sense but are distinct scenes with distinct purposes.
+
+```
+combat_character.tscn
+  ├── VisualComponent        ← reused from overworld — same sprite, same animation logic
+  ├── CombatInputComponent   ← waits for player menu input (replaces movement input)
+  └── CombatComponent        ← owns runtime combat state: cur_hp, cur_mp, cur_ap, tokens, is_downed
+```
+
+- `VisualComponent` is the same component as overworld — reads `character_data.character_sprite`, drives `AnimatedSprite3D`
+- `CombatComponent` is combat-only — handles HP/MP/AP tracking, token list, downed state
+- All `combat_character` instances are identical in structure — what differs is the `CharacterData` resource attached
+- Player instances seed from `PlayerData` + `CharacterSaveData` via `StatCalculator`
+- Enemy instances seed from `EnemyData` directly — no save data involved
 
 ---
 
@@ -113,18 +131,7 @@ Logic FSM    ←→ (event bus) ←→    UI FSM
 
 ### Combat Actors
 
-```
-CombatActor.tscn        ← same scene for players and enemies
-  ├── data: CharacterData        ← who they are (the .tres template)
-  ├── cur_hp, cur_mp, cur_ap     ← runtime state
-  ├── tokens: Array[Token]       ← active buffs/debuffs/DoTs/etc.
-  └── is_downed: bool
-```
-
-- All `CombatActor` nodes are identical in structure
-- What differs is the `CharacterData` resource attached to each
-- Player actors seed from `PlayerData` + `CharacterSaveData` via `StatCalculator`
-- Enemy actors seed from `EnemyData` directly
+See **Combat Characters** section above. `combat_character.tscn` is the combat actor — same scene for players and enemies, different `CharacterData` resource attached to each.
 
 ### Combat Initialization Flow
 
