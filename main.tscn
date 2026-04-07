@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://cljr3sxyildr7"]
 
-[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://character.tscn" id="1_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://overworld_character.tscn" id="1_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://player_input_component.tscn" id="2_lquwl"]
 [ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://movement_component.tscn" id="3_7mycd"]
-[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://VisualComponen.tscn" id="4_272bh"]
+[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://VisualComponent.tscn" id="4_272bh"]
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7dm0k"]
 
@@ -75,17 +75,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20000005, 0.1, -3.5000002)
 mesh = SubResource("BoxMesh_ig7tw")
 surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")
 
-[node name="Character" parent="SubViewportContainer/SubViewport" unique_id=1453498207 node_paths=PackedStringArray("movement", "player_input", "visual") instance=ExtResource("1_1bvp3")]
+[node name="overworld_character" parent="SubViewportContainer/SubViewport" unique_id=1453498207 node_paths=PackedStringArray("movement", "player_input", "visual") instance=ExtResource("1_1bvp3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 movement = NodePath("MovementComponent")
 player_input = NodePath("PlayerInputComponent")
 visual = NodePath("CharacterVisualComponent")
 
-[node name="PlayerInputComponent" parent="SubViewportContainer/SubViewport/Character" unique_id=947896155 instance=ExtResource("2_lquwl")]
+[node name="PlayerInputComponent" parent="SubViewportContainer/SubViewport/overworld_character" unique_id=947896155 instance=ExtResource("2_lquwl")]
 
-[node name="MovementComponent" parent="SubViewportContainer/SubViewport/Character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_7mycd")]
+[node name="MovementComponent" parent="SubViewportContainer/SubViewport/overworld_character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_7mycd")]
 controller = NodePath("../PlayerInputComponent")
 movement_speed = 1.1
 
-[node name="CharacterVisualComponent" parent="SubViewportContainer/SubViewport/Character" unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_272bh")]
+[node name="CharacterVisualComponent" parent="SubViewportContainer/SubViewport/overworld_character" unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_272bh")]
 controller = NodePath("../PlayerInputComponent")

@@ -1,0 +1,88 @@
+[gd_resource type="Resource" script_class="PlayerData" format=3 uid="uid://bb6wg42xgytkn"]
+
+[ext_resource type="Script" uid="uid://bahmut0v80cl8" path="res://scripts/characters/stats/GrowthEntry.gd" id="1_2vacv"]
+[ext_resource type="Texture2D" uid="uid://cm7ipwxu5ifk8" path="res://assets/characters/portraits/Skugge.png" id="1_h48qx"]
+[ext_resource type="Script" uid="uid://32dk04tuy26a" path="res://scripts/characters/PlayerData.gd" id="1_n73al"]
+[ext_resource type="Script" uid="uid://ctf4nx0yni78o" path="res://scripts/characters/GrowthTable.gd" id="2_h48qx"]
+[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://SkuggeAnimations.tres" id="2_weqmv"]
+
+[sub_resource type="Resource" id="Resource_weqmv"]
+script = ExtResource("1_2vacv")
+MaxHP = 3
+AtkPhys = 2
+AtkMag = 2
+Hit = 1
+Pulse = 1
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_opvup"]
+script = ExtResource("1_2vacv")
+MaxHP = 3
+MaxMP = 3
+AtkPhys = 2
+AtkMag = 2
+Hit = 2
+DefPhys = 1
+Dodge = 2
+Pulse = 1
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_rex71"]
+script = ExtResource("1_2vacv")
+MaxHP = 2
+MaxMP = 2
+Hit = 2
+DefPhys = 2
+DefMag = 1
+Dodge = 2
+Pulse = 1
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_gyu77"]
+script = ExtResource("1_2vacv")
+AtkPhys = 2
+AtkMag = 2
+Hit = 1
+DefPhys = 2
+DefMag = 2
+Dodge = 3
+Pulse = 2
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_omsjp"]
+script = ExtResource("1_2vacv")
+MaxHP = 5
+MaxMP = 2
+AtkPhys = 4
+AtkMag = 3
+Hit = 3
+DefPhys = 2
+DefMag = 3
+Dodge = 5
+Pulse = 2
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_4ppee"]
+script = ExtResource("2_h48qx")
+levels = Array[ExtResource("1_2vacv")]([SubResource("Resource_weqmv"), SubResource("Resource_opvup"), SubResource("Resource_rex71"), SubResource("Resource_gyu77"), SubResource("Resource_omsjp")])
+metadata/_custom_type_script = "uid://ctf4nx0yni78o"
+
+[resource]
+script = ExtResource("1_n73al")
+character_portrait = ExtResource("1_h48qx")
+growth_table = SubResource("Resource_4ppee")
+allowed_gear = Array[int]([2, 8, 128, 4096, 8192, 16384, 32768, 65536, 131072])
+MaxHP = 26
+MaxMP = 12
+MaxAP = 10
+AtkPhys = 12
+AtkMag = 10
+Hit = 8
+DefPhys = 4
+DefMag = 2
+Dodge = 14
+Pulse = 14
+character_name = "Skugge"
+character_ID = "player_skugge"
+character_sprite = ExtResource("2_weqmv")
+metadata/_custom_type_script = "uid://32dk04tuy26a"

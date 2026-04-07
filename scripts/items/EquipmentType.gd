@@ -1,6 +1,6 @@
 class_name EquipmentType
 
-enum {
+enum Flags {
     None = 0,
 
     #WEAPONS

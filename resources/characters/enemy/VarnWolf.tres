@@ -1,0 +1,77 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://dbpt7xvhbhrpv"]
+
+[ext_resource type="Script" uid="uid://db0mir7kfmgdv" path="res://scripts/characters/EnemyData.gd" id="1_a075a"]
+[ext_resource type="Texture2D" uid="uid://mbeq4mtsdwrt" path="res://assets/characters/sprites/enemy/wolf.png" id="1_mngm6"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_anrad"]
+atlas = ExtResource("1_mngm6")
+region = Rect2(0, 0, 95, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a7hfd"]
+atlas = ExtResource("1_mngm6")
+region = Rect2(95, 0, 95, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gxhhk"]
+atlas = ExtResource("1_mngm6")
+region = Rect2(190, 0, 95, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3ydwg"]
+atlas = ExtResource("1_mngm6")
+region = Rect2(285, 0, 95, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eh51j"]
+atlas = ExtResource("1_mngm6")
+region = Rect2(380, 0, 95, 101)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qjb6p"]
+atlas = ExtResource("1_mngm6")
+region = Rect2(0, 0, 95, 101)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pyasp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a7hfd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gxhhk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3ydwg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eh51j")
+}],
+"loop": true,
+"name": &"Attack_Melee",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qjb6p")
+}],
+"loop": true,
+"name": &"Idle_LeftDown",
+"speed": 5.0
+}]
+
+[resource]
+script = ExtResource("1_a075a")
+xp_value = 45
+MaxHP = 90
+MaxMP = 0
+MaxAP = 8
+AtkPhys = 10
+AtkMag = 2
+Hit = 8
+DefPhys = 4
+DefMag = 8
+Dodge = 8
+Pulse = 8
+character_name = "VarnWolf"
+character_ID = "enemy_wolf"
+character_sprite = SubResource("SpriteFrames_pyasp")
+metadata/_custom_type_script = "uid://db0mir7kfmgdv"
