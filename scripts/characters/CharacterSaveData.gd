@@ -11,5 +11,5 @@ extends Resource
 @export var equipped_gear_ids: Array[String]
 @export var equipped_mnemonic_ids: Array[String]
 
-@export var choice_bonuses: Dictionary = {}
-@export var stat_last_chosen_level: Dictionary = {}
+@export var choice_bonuses: Dictionary[CharacterStats.Stat, int] = {}
+@export var stat_last_chosen_level: Dictionary[CharacterStats.Stat, int] = {}

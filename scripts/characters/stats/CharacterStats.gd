@@ -1,6 +1,6 @@
 class_name CharacterStats
 
-enum {
+enum Stat {
 
 	MaxHP, CurHP,
 	MaxMP, CurMP,
@@ -9,11 +9,6 @@ enum {
 	AtkPhys, AtkMag, Hit,
 	DefPhys, DefMag, Dodge,
 
-	#CT per turn basically
-	Pulse,
-
-	#Damage Resistances
-	ResSlash, ResPierce, ResBlunt,
-	ResFire, ResWater, ResAir, ResNature, ResStone, ResFeral,
+	Pulse
 
 }
