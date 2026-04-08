@@ -391,29 +391,24 @@ hitChance = clamp( (attacker.HIT × ChanceTier%) / defender.DODGE, 5%, 95% )
 **Physical damage types:** Slash, Pierce, Blunt.
 **Elemental damage types:** Fire, Water, Air, Nature, Stone, Feral.
 
-Resistance is a single axis per damage type, authored per enemy:
+Every damage type has a resistance state per actor. Three states:
 
-| Value | Meaning |
-|-------|---------|
-| −100 | Full weakness — 2× damage taken |
-| 0 | Neutral — 1× damage taken |
-| 100+ | Immune — 0 damage taken |
+| State | Damage | Ailment / DoT application |
+|-------|--------|--------------------------|
+| WEAK | 2× | 2× chance |
+| — (none) | 1× | 1× chance |
+| RESISTANT | 0.5× | 0.5× chance |
+| IMMUNE | 0× | 0% — cannot land |
 
-Damage, DoT tick damage, and ailment landing chances each interact with resistance differently:
+**IMMUNE** is a hard wall. Tokens and debuffs cannot overwrite it. Only skills with the BYPASS flag ignore it.
 
-**Damage** — multiplied by `clamp(1 − resistStat / 100, 0.0, 2.0)`. At 100+ the immune check fires first and returns 0 before the multiplier is applied. Negative resistance (weakness) pushes the multiplier above 1.0.
+Resistance states are **authored directly on enemies** via `ResistanceProfile`. For players, the profile is **compiled from equipped gear** at combat start and remains static for the duration of combat.
 
-**DoT tick damage** — same formula, applied per tick. A BURN on a fire-resistant enemy deals reduced damage each tick. Full fire immunity = 0 tick damage per tick. Resistance never stops a DoT from *landing* — only from *hurting*. The DoT token is still applied; the player sees it ticking for small or zero numbers.
+**Token interactions** — tokens can grant RESISTANT or WEAK to any non-IMMUNE type. Opposing states cancel to neutral (WEAK + RESISTANT token = none). IMMUNE cannot be touched by tokens.
 
-**Ailment landing chance** — different formula:
+**DoT behaviour** — DoTs (BURN, POISON, BLEED) always land if the skill hits, regardless of resistance state. The resistance multiplier applies to tick damage only. A BURN on a RESISTANT-to-Fire enemy ticks at 0.5×. A Fire-IMMUNE enemy takes 0× tick damage but the token is still applied — it ticks for zero.
 
-```
-landChance = clamp( ChanceTier% × (1 − resistStat / 100), 5%, 95% )
-```
-
-Resistance reduces the chance the ailment lands, not the effect itself. A 80% ChanceTier ailment against an enemy with 50 resistance: `80% × 0.5 = 40%`. Two hard limits apply: **5% floor** — nothing is ever fully immune to ailments, even capped resistance leaves a residual chance. **95% ceiling** — nothing is ever guaranteed to land.
-
-The distinction matters in play: a fire-immune enemy takes zero BURN tick damage, but can still be FROZEN. Resistances are personality, not a total shutout.
+The distinction matters: fire-IMMUNE means zero fire damage, but FREEZE (Stone-type) still lands and functions normally.
 
 ### AP Economy
 
@@ -505,6 +500,19 @@ A token has five properties:
 
 ### Status Effects Reference
 
+**Ailment HitChance** — authored per skill as a discrete tier. Applied after the skill lands, before resistance is checked.
+
+| Tier | Base Chance |
+|------|-------------|
+| CERTAIN | 100% |
+| HIGH | 75% |
+| MEDIUM | 50% |
+| LOW | 25% |
+
+`landChance = min(HitChance × resistMult, 100%)` — IMMUNE skips the formula entirely and returns 0%.
+
+This is separate from Hit/Dodge, which governs whether a physical skill connects at all.
+
 **Elemental CC Ailments** (apply-chance gated, resistance blocks landing):
 
 | Ailment | Effect |
@@ -513,7 +521,7 @@ A token has five properties:
 | PETRIFY (Stone) | pretty much the same as a KO status, indifinite stun, petrify = basically dead, just brought back online via different means |
 
 
-**Elemental DoTs** (always land if skill hits; resistance scales tick damage):
+**Elemental DoTs** (always land if skill hits; resistance state scales tick damage):
 
 | DoT | Tag | Tick Formula | Passive Effect |
 |-----|-----|-------------|----------------|
@@ -521,7 +529,7 @@ A token has five properties:
 | POISON | Nature | MaxHP × 10% + MaxMP × 10% × resistMult | — |
 | BLEED | Feral | MaxHP × 10% × resistMult | Healing reduction while active |
 
-`resistMult = clamp(1 − resistStat / 100, 0.0, 2.0)`
+`resistMult: WEAK = 2.0 / none = 1.0 / RESISTANT = 0.5 / IMMUNE = 0.0`
 
 **Special stackable buffs:**
 - **MOMENTUM** — +25% Phys.Atk per stack (physical only). Stacks consumed on next physical hit. Granted per enemy hit by CrimsonRhythm / BloodScent.

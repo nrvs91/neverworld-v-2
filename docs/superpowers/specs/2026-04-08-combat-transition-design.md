@@ -12,7 +12,8 @@
 - `CombatEvents` autoload — combat domain event bus (signals only)
 - `ExplorationEvents` autoload — exploration domain event bus (signals only, `step_taken` for now)
 - `EncounterManager` scene — lives on each map, composed of `StepCounter` + `EncounterPool`
-- `CombatConfig` resource — maps enemy slots to `EnemyData`, carries background + BGM
+- `CombatConfig` resource — weighted encounter definition: enemy slots, background, BGM
+- `EncounterPool` — per-area collection of `CombatConfig` entries, weighted random pick
 - `GlobalSaveData` resource — party slot assignments + per-character `CharacterSaveData`
 - Persistent `CombatScene` — always in tree, disabled when inactive, composed of `CombatBackground` + `PlayerSpawner` + `EnemySpawner`
 - `combat_character` — composed of `VisualComponent`, `VitalsComponent`, `CombatInputComponent`, `TokenContainer`
@@ -36,6 +37,7 @@ Four autoloads, all registered as `.tscn` files per project convention.
 
 ```
 GameManager       — thin FSM, transition orchestration, owns ScreenFader child
+                     holds current_overworld reference (set by map on enter_tree)
 PartyManager      — holds GlobalSaveData, exposes get_slot(index)
 CombatEvents      — combat domain signals only, no logic
 ExplorationEvents — exploration domain signals only, no logic
@@ -61,6 +63,17 @@ GameManager
   ├── ScreenFader       ← full-screen ColorRect + AnimationPlayer
   │                        exposes fade_out() / fade_in() as awaitable
   └── CombatScene.tscn  ← permanent child, process_mode toggled per state
+```
+
+`GameManager` holds `var current_overworld: Node = null`. Each map root node self-registers on `_enter_tree()` and clears on `_exit_tree()`. This frees GameManager from needing to know which map is loaded — the map tells it.
+
+```gdscript
+# On each map root node (e.g. Map_Forest)
+func _enter_tree() -> void:
+    GameManager.current_overworld = self
+
+func _exit_tree() -> void:
+    GameManager.current_overworld = null
 ```
 
 ### CombatScene.tscn
@@ -101,11 +114,28 @@ Map_Forest.tscn
         ├── StepCounter     ← connects to ExplorationEvents.step_taken,
         │                      decrements by randi_range(1,8) per step,
         │                      emits threshold_reached when counter hits 0
-        └── EncounterPool   ← holds Array[CombatConfig], picks one on
-                               threshold_reached, emits CombatEvents.encounter_triggered(config)
+        └── EncounterPool   ← holds Array[CombatConfig] with weights,
+                                weighted random pick on threshold_reached,
+                                emits CombatEvents.encounter_triggered(config)
 ```
 
 `EncounterManager.gd` is a thin connector: wires `StepCounter.threshold_reached` → `EncounterPool.pick()`.
+
+Each area has its own `EncounterPool` with encounters authored for that region. `EncounterPool.pick()` does a weighted random roll over the pool's `encounters` array, using each `CombatConfig.weight` value. This means each area can define its own roster and encounter frequency without any cross-area awareness.
+
+```gdscript
+# EncounterPool.gd
+func pick() -> CombatConfig:
+    var total_weight := 0
+    for c in encounters:
+        total_weight += c.weight
+    var roll := randi() % total_weight
+    for c in encounters:
+        roll -= c.weight
+        if roll < 0:
+            return c
+    return encounters[-1]
+```
 
 ---
 
@@ -116,10 +146,13 @@ Map_Forest.tscn
 class_name CombatConfig
 extends Resource
 
-@export var enemy_slots: Array  # Array[EnemyData], index 0–5 = EnemySlot1–6, null = empty slot
+@export var weight: int = 10              # higher = more common; pools auto-normalize
+@export var enemy_slots: Array[EnemyData] # index 0–5 = EnemySlot1–6, null = empty slot
 @export var background: Texture2D
 @export var bgm: AudioStream
 ```
+
+Each `.tres` file is one encounter composition — e.g. `encounter_forest_2wolf.tres` has `[Wolf, Wolf, null, null, null, null]` with `weight = 40`, while `encounter_forest_white_stag.tres` has `[WhiteStag, null, null, null, null, null]` with `weight = 5`. `weight` is relative within an `EncounterPool`, not a percentage — add a fourth encounter, give it a weight, done.
 
 ### GlobalSaveData (.tres / save file)
 ```gdscript
@@ -172,16 +205,19 @@ StepCounter._on_step_taken()
   → if counter <= 0: threshold_reached.emit()
 
 EncounterPool._on_threshold_reached()
-  → pick CombatConfig from encounters[]
+  → config = pick()  ← weighted random roll over encounters[]
   → CombatEvents.encounter_triggered.emit(config)
 
 GameManager._on_encounter_triggered(config)
+  → if state != OVERWORLD: return           ← guard: ignore if already transitioning/in combat
   → state = COMBAT
+  → current_overworld.process_mode = DISABLED ← before fade, prevents double-trigger
   → await ScreenFader.fade_out()
-  → overworld node process_mode = DISABLED
   → CombatScene.initialize(config)
   → await ScreenFader.fade_in()
 ```
+
+**Double-trigger guard:** Overworld is disabled *before* the fade begins. Without this, `MovementComponent` would keep ticking during the fade and a second `step_taken` could fire another encounter. The `state != OVERWORLD` guard on `GameManager` is a second safety net.
 
 **Debug hotkey** (in GameManager or a dev tool node):
 ```gdscript
@@ -190,6 +226,8 @@ CombatEvents.encounter_triggered.emit(debug_config)
 ```
 
 ### CombatScene.initialize(config)
+
+`initialize()` delegates to sub-spawners — no cross-dependencies between them. Each spawner owns its own init logic.
 
 ```
 CombatBackground.swap(config.background, config.bgm)
@@ -220,7 +258,7 @@ GameManager.end_combat()
   → await ScreenFader.fade_out()
   → CombatScene process_mode = DISABLED
   → EnemySpawner.clear()          ← frees all enemy combat_characters
-  → overworld process_mode = ENABLED
+  → current_overworld.process_mode = ENABLED
   → await ScreenFader.fade_in()
   → state = OVERWORLD
 ```
@@ -248,6 +286,6 @@ Being explicit here is the entire point. Nothing assumes it resets itself.
 
 - `TurnOrderManager` — exists in concept, not in scope for this slice
 - Post-combat XP / loot / `CharacterSaveData` writeback
-- Random encounter rate variation, weighted pools
+- Random encounter rate variation
 - `CombatFSM` / `UIFSM` — full turn loop
 - `GameManager` states beyond `OVERWORLD` / `COMBAT` (DIALOGUE, WORLD_MAP, etc.)
