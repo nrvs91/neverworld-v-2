@@ -44,7 +44,7 @@ scenes/overworld/EncounterManager.tscn      NEW
 scripts/combat/VitalsComponent.gd           NEW — cur_hp, cur_mp, cur_ap + setup/reset
 scripts/combat/TokenContainer.gd            NEW — stub (empty for now)
 scripts/combat/CombatInputComponent.gd      NEW — stub (empty for now)
-scripts/characters/overworld/VisualComponent.gd   MODIFY — make controller optional, add setup()
+scripts/characters/VisualComponent.gd             MODIFY — make controller optional, add setup()
 scenes/combat/components/VitalsComponent.tscn     NEW
 scenes/combat/components/TokenContainer.tscn      NEW
 scenes/combat/components/CombatInputComponent.tscn NEW
@@ -438,7 +438,7 @@ git commit -m "Add TokenContainer and CombatInputComponent stubs"
 
 **Important:** This is a targeted addition to an existing file — don't restructure or rename anything.
 
-**File:** Modify `scripts/characters/overworld/VisualComponent.gd`
+**File:** Modify `scripts/characters/VisualComponent.gd` (this is what `scenes/characters/VisualComponent.tscn` actually references — there is also a duplicate at `scripts/characters/overworld/VisualComponent.gd`, leave that one alone for now)
 
 - [ ] Add a `setup()` method to `VisualComponent.gd`:
 
@@ -508,8 +508,7 @@ func reset_for_combat() -> void:
 - [ ] Create `scenes/combat/CombatCharacter.tscn` in the Godot editor:
   - Root: `Node3D` named `CombatCharacter`, attach `CombatCharacter.gd`
   - Add child: instance `scenes/combat/components/VitalsComponent.tscn`
-  - Add child: `Node3D` named `VisualComponent` with `VisualComponent.gd` attached — **leave `controller` export empty** (null = combat mode)
-  - Add an `AnimatedSprite3D` as a child of `VisualComponent`, named `AnimatedSprite3D`
+  - Add child: instance the **existing** `scenes/characters/VisualComponent.tscn` — **leave `controller` export empty** (null = combat mode, the guard added in Task 9 handles this)
   - Add child: instance `scenes/combat/components/TokenContainer.tscn`
   - Add child: instance `scenes/combat/components/CombatInputComponent.tscn`
   - Save
