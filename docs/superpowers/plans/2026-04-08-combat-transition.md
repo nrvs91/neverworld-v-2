@@ -107,7 +107,7 @@ extends Resource
 
 # Which enemies appear in which slots. Index 0–5 = EnemySlot1–6.
 # Null entry = empty slot. Untyped Array to allow null entries.
-@export var enemy_slots: Array = []
+@export var enemy_slots: Array[EnemyData] = []
 
 @export var background: Texture2D
 @export var bgm: AudioStream
@@ -266,14 +266,12 @@ git commit -m "Add StepCounter: counts steps via ExplorationEvents, emits thresh
 class_name EncounterPool
 extends Node
 
-signal encounter_ready(config: CombatConfig)
-
 @export var encounters: Array[CombatConfig] = []
 
-func pick() -> void:
+func pick() -> CombatConfig:
     if encounters.is_empty():
         Log.warn("EncounterPool.pick() called but encounters array is empty")
-        return
+        return null
 
     var total_weight: int = 0
     for c in encounters:
@@ -284,11 +282,10 @@ func pick() -> void:
         roll -= c.weight
         if roll < 0:
             Log.info("EncounterPool picked:", c.resource_path)
-            encounter_ready.emit(c)
-            return
+            return c
 
-    # Fallback — floating point drift safety net
-    encounter_ready.emit(encounters[-1])
+    # Fallback — rounding safety net
+    return encounters[-1]
 ```
 
 - [ ] Create `scenes/overworld/EncounterPool.tscn`: new scene, `Node` root named `EncounterPool`, attach script, save.
@@ -303,7 +300,7 @@ git commit -m "Add EncounterPool: weighted random CombatConfig picker"
 
 ## Task 6 — EncounterManager
 
-**What this is:** The thin glue node that lives on each map. It owns a `StepCounter` and an `EncounterPool` as children, and connects them: when `StepCounter` fires `threshold_reached`, it tells `EncounterPool` to pick. When `EncounterPool` fires `encounter_ready`, it emits on `CombatEvents`. That's the whole script.
+**What this is:** The thin glue node that lives on each map. It owns a `StepCounter` and an `EncounterPool` as children, and connects them: when `StepCounter` fires `threshold_reached`, it calls `EncounterPool.pick()` and emits the result on `CombatEvents`. That's the whole script.
 
 **Files:**
 - Create: `scripts/overworld/EncounterManager.gd`
@@ -321,13 +318,11 @@ extends Node
 func _ready() -> void:
     Log.info("EncounterManager ready")
     step_counter.threshold_reached.connect(_on_threshold_reached)
-    encounter_pool.encounter_ready.connect(_on_encounter_ready)
 
 func _on_threshold_reached() -> void:
-    encounter_pool.pick()
-
-func _on_encounter_ready(config: CombatConfig) -> void:
-    CombatEvents.encounter_triggered.emit(config)
+    var config := encounter_pool.pick()
+    if config != null:
+        CombatEvents.encounter_triggered.emit(config)
 ```
 
 - [ ] Create `scenes/overworld/EncounterManager.tscn`:
@@ -588,7 +583,7 @@ func _ready() -> void:
 func initialize() -> void:
     for i in _characters.size():
         var slot_data = PartyManager.get_slot(i)
-        if slot_data == null:
+        if slot_data.is_empty():
             continue
         _characters[i].initialize_player(slot_data.player_data, slot_data.save_data)
 ```
@@ -601,7 +596,7 @@ extends Node
 
 const CombatCharacterScene = preload("res://scenes/combat/CombatCharacter.tscn")
 
-func initialize(enemy_slots: Array) -> void:
+func initialize(enemy_slots: Array[EnemyData]) -> void:
     clear()
     var slots = get_children()
     for i in enemy_slots.size():
