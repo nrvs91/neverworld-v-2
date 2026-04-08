@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://overworld_character.tscn" id="1_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://player_input_component.tscn" id="2_lquwl"]
 [ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://movement_component.tscn" id="3_7mycd"]
-[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://VisualComponent.tscn" id="4_272bh"]
+[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/VisualComponent.tscn" id="4_272bh"]
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7dm0k"]
 
