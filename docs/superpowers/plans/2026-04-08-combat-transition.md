@@ -461,7 +461,7 @@ func _ready() -> void:
 
 - [ ] Commit:
 ```bash
-git add scripts/characters/overworld/VisualComponent.gd
+git add scripts/characters/VisualComponent.gd
 git commit -m "VisualComponent: make controller optional, add setup() for combat use"
 ```
 
@@ -505,7 +505,7 @@ func reset_for_combat() -> void:
 - [ ] Create `scenes/combat/CombatCharacter.tscn` in the Godot editor:
   - Root: `Node3D` named `CombatCharacter`, attach `CombatCharacter.gd`
   - Add child: instance `scenes/combat/components/VitalsComponent.tscn`
-  - Add child: instance the **existing** `scenes/characters/VisualComponent.tscn` — **leave `controller` export empty** (null = combat mode, the guard added in Task 9 handles this)
+  - Add child: instance the **existing** `scenes/characters/VisualComponent.tscn` — **rename the node from `CharacterVisualComponent` to `VisualComponent`** so the `@onready` path in `CombatCharacter.gd` finds it. **Leave `controller` export empty** (null = combat mode, the guard added in Task 9 handles this)
   - Add child: instance `scenes/combat/components/TokenContainer.tscn`
   - Add child: instance `scenes/combat/components/CombatInputComponent.tscn`
   - Save
@@ -587,7 +587,7 @@ func initialize() -> void:
         var slot_data = PartyManager.get_slot(i)
         if slot_data.is_empty():
             continue
-        _characters[i].initialize_player(slot_data.player_data, slot_data.save_data)
+        _characters[i].initialize_player(slot_data["player_data"], slot_data["save_data"])
 ```
 
 - [ ] Create `scripts/combat/EnemySpawner.gd`:
@@ -842,8 +842,9 @@ func fade_in() -> void:
   - Child: `ColorRect` named `ColorRect` — set to full screen, black, initial `modulate.a = 0`
   - Child: `AnimationPlayer` named `AnimationPlayer`
   - In AnimationPlayer, create two animations:
-    - `fade_out`: animate `ColorRect.modulate.a` from `0.0` to `1.0` over 0.3s, last keyframe emits `ScreenFader.fade_out_done`
-    - `fade_in`: animate `ColorRect.modulate.a` from `1.0` to `0.0` over 0.3s, last keyframe emits `ScreenFader.fade_in_done`
+    - `fade_out`: animate `ColorRect.modulate:a` from `0.0` to `1.0` over 0.3s. Add a **Call Method Track** targeting the `ScreenFader` node — at the final keyframe (0.3s), call `emit_signal("fade_out_done")`
+    - `fade_in`: animate `ColorRect.modulate:a` from `1.0` to `0.0` over 0.3s. Same thing — Call Method Track at the end calling `emit_signal("fade_in_done")`
+    - **How to add a Call Method Track:** in AnimationPlayer, click "Add Track" → "Call Method Track" → select the `ScreenFader` node → click the timeline at 0.3s → pick `emit_signal` → set the argument to the signal name string
   - Save
 
 - [ ] Commit:
@@ -984,7 +985,7 @@ git commit -m "Add Map_Test scene for end-to-end encounter trigger testing"
   - Same flow triggers immediately without walking
 
 - [ ] Verify the enemy/player Log output:
-  - If `PartyManager` has no party data yet, `PlayerSpawner` will skip slots silently (the `if slot_data == null: continue` guard). That's expected — party data wiring comes later.
+  - If `PartyManager` has no party data yet, `PlayerSpawner` will skip slots silently (the `if slot_data.is_empty(): continue` guard). That's expected — party data wiring comes later.
 
 - [ ] When everything is visible and logging correctly, final commit:
 ```bash
