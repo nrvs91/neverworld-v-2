@@ -22,6 +22,7 @@ Files to create or modify, grouped by concern:
 # Data resources
 scripts/characters/GlobalSaveData.gd        NEW — save file root: party slots + character saves
 scripts/combat/CombatConfig.gd              NEW — one encounter definition: enemies, background, BGM
+scripts/characters/PlayerData.gd            MODIFY — add starting_level: int = 1
 
 # Autoloads / event buses
 scripts/autoloads/ExplorationEvents.gd      NEW — exploration domain signals (step_taken)
@@ -693,11 +694,26 @@ git commit -m "Add CombatScene coordinator: fans initialize(config) to sub-nodes
 
 ## Task 14 — PartyManager autoload
 
-**What this is:** The autoload that holds `GlobalSaveData` and exposes party members. For now it creates a hardcoded test party so we can verify the full pipe without needing save/load infrastructure.
+**What this is:** The autoload that holds `GlobalSaveData` and exposes party members. `start_new_game()` seeds the initial save with Skugge in slot 0. `recruit()` adds any character to the roster using their authored `PlayerData` as the source of truth for starting stats. For now the registry is hardcoded — proper folder scanning comes when more `.tres` files exist.
 
 **Files:**
 - Create: `scripts/autoloads/PartyManager.gd`
 - Create: `scenes/autoloads/PartyManager.tscn`
+- Modify: `scripts/characters/PlayerData.gd` — add `starting_level`
+
+- [ ] Add `starting_level` to `PlayerData.gd`:
+
+```gdscript
+class_name PlayerData
+extends CombatData
+
+@export var character_portrait: Texture2D
+@export var growth_table: GrowthTable
+@export var allowed_gear: Array[EquipmentType.Flags] = []
+@export var starting_level: int = 1
+```
+
+When you author Marta's `PlayerData.tres` later, set her `starting_level = 3` and her `MaxHP`/`MaxMP` to match a level 3 character. `recruit()` reads whatever is authored there — no special casing needed.
 
 - [ ] Create `scripts/autoloads/PartyManager.gd`:
 
@@ -708,7 +724,7 @@ extends Node
 var save_data: GlobalSaveData = null
 
 # Registry of all known PlayerData resources, keyed by character_ID.
-# Populated at _ready from authored .tres files.
+# TODO: replace with folder scan once more PlayerData .tres files exist.
 var _registry: Dictionary = {}
 
 func _ready() -> void:
@@ -717,18 +733,50 @@ func _ready() -> void:
     _load_save()
 
 func _load_registry() -> void:
-    # TODO: replace with a proper scan of the characters/ folder once
-    # PlayerData .tres files exist. Hardcoded for now.
+    # Hardcoded for now — add an entry here each time you create a PlayerData .tres.
+    # Example once Skugge's .tres exists:
+    # _registry["skugge"] = preload("res://data/characters/skugge.tres")
     pass
 
 func _load_save() -> void:
-    # TODO: load from disk. For now, create a stub save.
-    save_data = GlobalSaveData.new()
-    save_data.party_slots = ["", "", ""]
-    Log.info("PartyManager using stub save data")
+    # TODO: load from disk. For now, always start a new game.
+    start_new_game()
 
-# Returns a Dictionary {player_data: PlayerData, save_data: CharacterSaveData},
-# or null if the slot is empty or the character_ID has no registered PlayerData.
+func start_new_game() -> void:
+    save_data = GlobalSaveData.new()
+    # Skugge is always the starting character.
+    # Add her PlayerData .tres to _registry first, then uncomment:
+    # recruit("skugge")
+    # save_data.party_slots[0] = "skugge"
+    Log.info("PartyManager: new game started")
+
+# Adds a character to the roster using their PlayerData as the starting template.
+# Safe to call multiple times — will not overwrite existing save data.
+func recruit(char_id: String) -> void:
+    if save_data.roster.has(char_id):
+        Log.warn("recruit() called for already-known character:", char_id)
+        return
+    var player_data: PlayerData = _registry.get(char_id, null)
+    if player_data == null:
+        Log.error("recruit() failed — no PlayerData registered for:", char_id)
+        return
+    var char_save := CharacterSaveData.new()
+    char_save.character_level = player_data.starting_level
+    char_save.cur_hp = player_data.MaxHP
+    char_save.cur_mp = player_data.MaxMP
+    save_data.roster[char_id] = char_save
+    Log.info("Recruited:", char_id, "at level", char_save.character_level)
+
+# Assigns a roster character to an active party slot (0, 1, or 2).
+func assign_slot(slot: int, char_id: String) -> void:
+    if not save_data.roster.has(char_id):
+        Log.error("assign_slot() failed —", char_id, "not in roster")
+        return
+    save_data.party_slots[slot] = char_id
+    Log.info("Party slot", slot, "assigned to:", char_id)
+
+# Returns {player_data: PlayerData, save_data: CharacterSaveData} for the given slot,
+# or an empty Dictionary if the slot is empty or unregistered.
 func get_slot(index: int) -> Dictionary:
     if index >= save_data.party_slots.size():
         return {}
@@ -746,10 +794,13 @@ func get_slot(index: int) -> Dictionary:
 
 - [ ] Register in `Project → Project Settings → Autoload`: path `res://scenes/autoloads/PartyManager.tscn`, name `PartyManager`.
 
+**To test mid-game recruitment in Task 17:** add a simple `Area3D` to `Map_Test.tscn` with a script that calls `PartyManager.recruit("marta")` and `PartyManager.assign_slot(1, "marta")` on `body_entered`. Once Marta's `PlayerData.tres` exists and is registered, she'll appear in combat slot 1 after the player walks through the trigger.
+
 - [ ] Commit:
 ```bash
 git add scripts/autoloads/PartyManager.gd scenes/autoloads/PartyManager.tscn
-git commit -m "Add PartyManager autoload: holds GlobalSaveData, exposes get_slot()"
+git add scripts/characters/PlayerData.gd
+git commit -m "Add PartyManager: recruit(), assign_slot(), start_new_game() with starting_level on PlayerData"
 ```
 
 ---
