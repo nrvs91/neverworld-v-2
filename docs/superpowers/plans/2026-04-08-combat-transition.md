@@ -86,14 +86,15 @@ scenes/core/game_manager.tscn               MODIFY — add ScreenFader + CombatS
 class_name GlobalSaveData
 extends Resource
 
-# Which characters are currently in the party, by character_ID string.
-# Index = party slot (0, 1, 2). Always 3 entries — empty slot = "".
+# Active party: 3 character_IDs ordered by slot index (0, 1, 2).
+# Empty slot = "". Always exactly 3 entries.
 @export var party_slots: Array[String] = ["", "", ""]
 
-# All known characters, keyed by character_ID.
-# Maps String → CharacterSaveData.
-# Untyped because GDScript typed dicts require Godot 4.4+.
-@export var roster: Dictionary = {}
+# Everyone the player has met or recruited — active party members and bench.
+# Keyed by character_ID. A character is added here via PartyManager.recruit()
+# the first time they join; their save data persists here forever after.
+# TODO: populate this when the recruitment/meeting system is implemented.
+@export var roster: Dictionary[String, CharacterSaveData] = {}
 ```
 
 - [ ] Create `scripts/combat/CombatConfig.gd`:
@@ -107,7 +108,7 @@ extends Resource
 @export var weight: int = 10
 
 # Which enemies appear in which slots. Index 0–5 = EnemySlot1–6.
-# Null entry = empty slot. Untyped Array to allow null entries.
+# Null entry = empty slot.
 @export var enemy_slots: Array[EnemyData] = []
 
 @export var background: Texture2D
