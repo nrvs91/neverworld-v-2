@@ -1,4 +1,3 @@
-class_name ExplorationEvents
 extends Node
 
 signal step_taken

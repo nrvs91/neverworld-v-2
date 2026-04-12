@@ -13,6 +13,9 @@ extends Node3D
 
 @export var controller: Node
 @export var movement_speed := 1.0
+@export var step_distance: float = 1.0
+
+var _distance_accumulated: float = 0.0
 var _direction := Vector2.ZERO
 var _is_running := false
 
@@ -28,6 +31,11 @@ func _physics_process(delta: float) -> void:
 	var speed := movement_speed * (1.8 if _is_running else 1.0)
 	var move := Vector3(rotated.x, 0.0, rotated.y).normalized()
 	get_parent().position += move * speed * delta
+	var move_amount := (move * speed* delta).length()
+	_distance_accumulated += move_amount
+	if _distance_accumulated >= step_distance:
+		_distance_accumulated -= step_distance
+		ExplorationEvents.step_taken.emit()
 
 func _on_direction_changed(dir: Vector2) -> void:
 	_direction = dir

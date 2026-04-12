@@ -1,4 +1,3 @@
-class_name CombatEvents
 extends Node
 
 # Fired by EncounterManager when a random encounter should start.
