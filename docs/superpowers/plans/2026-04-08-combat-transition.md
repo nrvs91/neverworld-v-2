@@ -6,7 +6,7 @@
 
 **Goal:** Wire the full overworld → combat transition pipe so that walking around (or pressing a debug key) triggers a fade to the combat scene, where combatants spawn at authored positions and print their names and HP/MP to the console.
 
-**Architecture:** Four autoloads handle global concerns (GameManager FSM, PartyManager, two event buses). The combat scene is a permanent child of GameManager — always in the tree, disabled when not active, composed of focused sub-nodes. EncounterManager on each map is a thin coordinator between a StepCounter and an EncounterPool.
+**Architecture:** Four autoloads handle global concerns (GameManager FSM, PartyManager, two event buses). The combat scene is a permanent child of GameManager — always in the tree, disabled when not active, composed of focused sub-nodes. EncounterManager on each map is a thin coordinator between four component children: a StepCounter, an EncounterPool (weighted `CombatConfig` picker), a CombatEnvironment (the 3D scene to instance for combat), and a CombatBGM (the audio stream to play). On encounter trigger, the manager emits `(composition, environment_scene, bgm_stream)` — three pieces of data, three args.
 
 **Spec:** `docs/superpowers/specs/2026-04-08-combat-transition-design.md`
 
@@ -21,7 +21,8 @@ Files to create or modify, grouped by concern:
 ```
 # Data resources
 scripts/characters/GlobalSaveData.gd        NEW — save file root: party slots + character saves
-scripts/combat/CombatConfig.gd              NEW — one encounter definition: enemies, background, BGM
+scripts/combat/CombatConfig.gd              NEW — enemy composition for one encounter: six named slots
+scripts/combat/EncounterPoolEntry.gd        NEW — pairs a CombatConfig with a pool weight
 scripts/characters/PlayerData.gd            MODIFY — add starting_level: int = 1
 
 # Autoloads / event buses
@@ -35,10 +36,14 @@ scenes/autoloads/PartyManager.tscn          NEW
 # Overworld / encounter trigger
 scripts/characters/overworld/MovementComponent.gd   MODIFY — emit step_taken via ExplorationEvents
 scripts/overworld/StepCounter.gd            NEW — counts steps, emits threshold_reached
-scripts/overworld/EncounterPool.gd          NEW — weighted random pick from CombatConfigs
-scripts/overworld/EncounterManager.gd       NEW — thin connector between StepCounter + EncounterPool
+scripts/overworld/EncounterPool.gd          NEW — weighted random pick via EncounterPoolEntry resources
+scripts/overworld/CombatEnvironment.gd      NEW — data holder: PackedScene for the 3D combat environment
+scripts/overworld/CombatBGM.gd              NEW — data holder: AudioStream for the combat BGM
+scripts/overworld/EncounterManager.gd       NEW — thin connector: StepCounter + EncounterPool + CombatEnvironment + CombatBGM
 scenes/overworld/StepCounter.tscn           NEW
 scenes/overworld/EncounterPool.tscn         NEW
+scenes/overworld/CombatEnvironment.tscn     NEW
+scenes/overworld/CombatBGM.tscn             NEW
 scenes/overworld/EncounterManager.tscn      NEW
 
 # Combat character
@@ -52,14 +57,12 @@ scenes/combat/components/CombatInputComponent.tscn NEW
 scenes/combat/CombatCharacter.tscn          NEW — assembles all components
 
 # Combat scene
-scripts/combat/CombatBackground.gd          NEW — swaps background visual + BGM
 scripts/combat/PlayerSpawner.gd             NEW — owns player slots, inits permanent combat_characters
 scripts/combat/EnemySpawner.gd              NEW — owns enemy slots, spawns/frees per encounter
-scripts/combat/CombatScene.gd               NEW — thin coordinator, calls sub-spawners
-scenes/combat/CombatBackground.tscn         NEW
+scripts/combat/CombatScene.gd               NEW — thin coordinator: mounts env, starts BGM, calls spawners
 scenes/combat/PlayerSpawner.tscn            NEW
 scenes/combat/EnemySpawner.tscn             NEW
-scenes/combat/CombatScene.tscn              NEW
+scenes/combat/CombatScene.tscn              NEW — root holds EnvironmentMount (Node3D) + BGMPlayer (AudioStreamPlayer)
 
 # Core / GameManager
 scripts/core/ScreenFader.gd                 NEW — fade_out / fade_in, awaitable
@@ -70,13 +73,17 @@ scenes/core/game_manager.tscn               MODIFY — add ScreenFader + CombatS
 
 ---
 
-## Task 1 — GlobalSaveData + CombatConfig resources
+## Task 1 — GlobalSaveData + CombatConfig + EncounterPoolEntry resources
 
-**What these are:** Two `Resource` subclasses that hold authored data. `GlobalSaveData` is the save file root — it knows which characters are in the party and what their current stats are. `CombatConfig` defines one encounter: which enemies appear, in which slots, with what background.
+**What these are:** Three `Resource` subclasses that hold authored data.
+- `GlobalSaveData` is the save file root — it knows which characters are in the party and what their current stats are.
+- `CombatConfig` defines one encounter's **enemy composition** — which enemies appear in which of the six slots. Nothing else. Environment and BGM are area-level concerns, not per-encounter, so they live elsewhere.
+- `EncounterPoolEntry` is the tiny glue resource that pairs a `CombatConfig` with its pool weight. One entry per encounter per pool. Authored in the inspector.
 
 **Files:**
 - Create: `scripts/characters/GlobalSaveData.gd`
 - Create: `scripts/combat/CombatConfig.gd`
+- Create: `scripts/combat/EncounterPoolEntry.gd`
 
 **In Godot, a Resource subclass** is a script that extends `Resource`. You can save instances as `.tres` files in the editor and attach them as exports. Think of `.tres` files as your game's data spreadsheets.
 
@@ -99,29 +106,42 @@ extends Resource
 
 - [ ] Create `scripts/combat/CombatConfig.gd`:
 
-
 ```gdscript
 class_name CombatConfig
 extends Resource
 
-# Relative weight for weighted random pick within an EncounterPool.
-# Higher = more common. Not a percentage — just relative to other entries.
-@export var weight: int = 10
+# Enemy composition for one encounter.
+# Each slot corresponds to a spawn position in EnemySpawner (slot1..slot6).
+# Any slot may be left null — not every fight has six enemies.
 
-# Which enemies appear in which slots. Index 0–5 = EnemySlot1–6.
-# Null entry = empty slot.
-@export var enemy_slots: Array[EnemyData] = []
-
-@export var background: Texture2D
-@export var bgm: AudioStream
+@export var enemy_slot1: EnemyData
+@export var enemy_slot2: EnemyData
+@export var enemy_slot3: EnemyData
+@export var enemy_slot4: EnemyData
+@export var enemy_slot5: EnemyData
+@export var enemy_slot6: EnemyData
 ```
 
-- [ ] Open Godot editor. Verify both scripts appear without errors in the Script editor (no red underlines).
+- [ ] Create `scripts/combat/EncounterPoolEntry.gd`:
+
+```gdscript
+class_name EncounterPoolEntry
+extends Resource
+
+# One entry in an EncounterPool: a specific enemy composition paired with
+# the relative weight used for weighted random picking.
+# Higher weight = more common. Not a percentage — just relative to other entries.
+
+@export var composition: CombatConfig
+@export var weight: int = 10
+```
+
+- [ ] Open Godot editor. Verify all three scripts appear without errors in the Script editor (no red underlines).
 
 - [ ] Commit:
 ```bash
-git add scripts/characters/GlobalSaveData.gd scripts/combat/CombatConfig.gd
-git commit -m "Add GlobalSaveData and CombatConfig resource classes"
+git add scripts/characters/GlobalSaveData.gd scripts/combat/CombatConfig.gd scripts/combat/EncounterPoolEntry.gd
+git commit -m "Add GlobalSaveData, CombatConfig, EncounterPoolEntry resource classes"
 ```
 
 ---
@@ -147,7 +167,13 @@ signal step_taken
 class_name CombatEvents
 extends Node
 
-signal encounter_triggered(config: CombatConfig)
+# Fired by EncounterManager when a random encounter should start.
+# Carries the three pieces of data needed to initialize CombatScene:
+#   - composition: which enemies appear, in which slots
+#   - environment: the 3D scene to instance as the combat backdrop
+#   - bgm:         the audio stream to play during the fight
+# Any of the last two may be null (e.g. for the debug F1 hotkey).
+signal encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
 ```
 
 - [ ] For each script, create a matching `.tscn` scene file. In Godot editor:
