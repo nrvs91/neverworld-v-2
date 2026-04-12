@@ -152,7 +152,7 @@ git commit -m "Add GlobalSaveData, CombatConfig, EncounterPoolEntry resource cla
 
 **In Godot, autoloads** are nodes that are always present in the scene tree, accessible by their registered name from any script. You register them in `Project → Project Settings → Autoload`.
 
-- [ ] Create `scripts/autoloads/ExplorationEvents.gd`:
+- [ ] Create `scripts/autoloads/ExplorationEvents.gd`: <- added>
 
 ```gdscript
 class_name ExplorationEvents
