@@ -99,6 +99,7 @@ extends Resource
 
 - [ ] Create `scripts/combat/CombatConfig.gd`:
 
+
 ```gdscript
 class_name CombatConfig
 extends Resource
