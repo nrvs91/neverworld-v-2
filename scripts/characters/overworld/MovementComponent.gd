@@ -16,6 +16,7 @@ extends Node3D
 @export var step_distance: float = 1.0
 
 var _distance_accumulated: float = 0.0
+var _steps_taken: int = 0
 var _direction := Vector2.ZERO
 var _is_running := false
 
@@ -35,7 +36,9 @@ func _physics_process(delta: float) -> void:
 	_distance_accumulated += move_amount
 	if _distance_accumulated >= step_distance:
 		_distance_accumulated -= step_distance
+		_steps_taken += 1
 		ExplorationEvents.step_taken.emit()
+		Log.debug("step_taken", "count", _steps_taken)
 
 func _on_direction_changed(dir: Vector2) -> void:
 	_direction = dir
