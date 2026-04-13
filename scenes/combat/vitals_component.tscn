@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cgkdn76vntysh"]
+
+[ext_resource type="Script" uid="uid://cqntlobosfgex" path="res://scripts/combat/VitalsComponent.gd" id="1_fs5m4"]
+
+[node name="VitalsComponent" type="Node" unique_id=24523496]
+script = ExtResource("1_fs5m4")

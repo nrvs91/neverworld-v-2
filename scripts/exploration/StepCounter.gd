@@ -14,7 +14,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	ExplorationEvents.step_taken.disconnect(_on_step_taken)
 
-func _on_step_taken(who: Node3D) -> void:
+func _on_step_taken(_who: Node3D) -> void:
 	_counter -= randi_range(1, 8)
 	Log.debug("step_counter", "remaining", _counter)
 	if _counter <= 0:
