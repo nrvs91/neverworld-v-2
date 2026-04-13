@@ -930,15 +930,12 @@ git commit -m "Add ScreenFader: awaitable fade_out/fade_in via AnimationPlayer"
 
 ---
 
-## Task 15 — GameManager FSM
+## Task 15 — GameManager FSM ⚠️ REPLACED
 
-**What this is:** The top-level game state machine. For now: two states (`OVERWORLD`, `COMBAT`), triggered by `CombatEvents.encounter_triggered`. It owns the transition sequence and holds a reference to the current overworld node (set by each map when it enters the tree).
+> **This task has been replaced.** See `docs/superpowers/plans/2026-04-13-game-flow-bootstrap.md` — Task C defines the three-state GameManager (MENU / OVERWORLD / COMBAT) with scene mounting/unmounting, Main Menu, and `Globals.skip_to_overworld` dev toggle. Use that version instead of the two-state version below.
 
-**Files:**
-- Create: `scripts/core/GameManager.gd`
-- Modify: `scenes/core/game_manager.tscn`
-
-- [ ] Create `scripts/core/GameManager.gd`:
+<details>
+<summary>Original two-state version (superseded — kept for reference)</summary>
 
 ```gdscript
 class_name GameManager
@@ -958,8 +955,6 @@ func _ready() -> void:
     combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
 
 func _unhandled_input(event: InputEvent) -> void:
-    # Debug hotkey: press F1 to trigger combat with a blank composition,
-    # no environment, no BGM. CombatScene tolerates null env/BGM and logs a warning.
     if event.is_action_pressed("debug_trigger_combat"):
         CombatEvents.encounter_triggered.emit(CombatConfig.new(), null, null)
 
@@ -983,6 +978,44 @@ func end_combat() -> void:
     await fader.fade_in()
     state = State.OVERWORLD
     Log.info("GameManager: returned to OVERWORLD state")
+```
+
+</details>
+
+---
+
+## Task 16 — Register GameManager + test map ⚠️ REPLACED
+
+> **This task has been replaced.** See `docs/superpowers/plans/2026-04-13-game-flow-bootstrap.md` — Task D covers autoload registration and main scene setup with the new flow. The key difference: `game_manager.tscn` is now the main scene (not `Map_Test.tscn`), and autoload order includes Globals first.
+
+---
+
+## Task 17 — End-to-end verification
+
+**What to verify (updated for the new flow):**
+
+- [ ] **Dev mode** (`Globals.skip_to_overworld = true`): Run the game (F5). Game launches straight to overworld. Check Output panel:
+  - All autoloads log `ready` — Globals, ExplorationEvents, CombatEvents, PartyManager, GameManager
+  - `StepCounter ready, counter = 256` appears
+  - `EncounterManager ready` appears
+
+- [ ] **Menu mode** (`Globals.skip_to_overworld = false`): Run the game. MainMenu appears. Press New Game. Fades to overworld. Same checks as above.
+
+- [ ] Walk the player character. After roughly 256 steps:
+  - `StepCounter threshold reached, resetting to 256`
+  - `EncounterPool picked: ...`
+  - `CombatScene initializing...`
+  - Fade to black, combat scene appears (blank for now — env and BGM are null in the test pool entry)
+  - `CombatScene: no environment scene provided` and `CombatScene: no BGM stream provided` warnings — expected
+  - `CombatScene initialized` in log
+
+- [ ] Press F1 (debug hotkey):
+  - Same flow triggers immediately without walking
+
+- [ ] When everything is visible and logging correctly, final commit:
+```bash
+git add .
+git commit -m "End-to-end combat transition pipe: menu → overworld → fade → combat"
 ```
 
 - [ ] Add the `debug_trigger_combat` input action in `Project → Project Settings → Input Map`. Add it as a new action, bind it to `F1`.
