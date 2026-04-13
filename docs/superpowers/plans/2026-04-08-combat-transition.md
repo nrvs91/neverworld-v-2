@@ -20,27 +20,26 @@ Files to create or modify, grouped by concern:
 
 ```
 # Data resources
-scripts/characters/GlobalSaveData.gd        NEW — save file root: party slots + character saves
+scripts/core/Save/GlobalSaveData.gd        NEW — save file root: party slots + character saves
 scripts/combat/CombatConfig.gd              NEW — enemy composition for one encounter: six named slots
 scripts/combat/EncounterPoolEntry.gd        NEW — pairs a CombatConfig with a pool weight
 scripts/characters/PlayerData.gd            MODIFY — add starting_level: int = 1
 
 # Autoloads / event buses
-scripts/autoloads/ExplorationEvents.gd      NEW — exploration domain signals (step_taken)
-scripts/autoloads/CombatEvents.gd           NEW — combat domain signals (encounter_triggered)
+scripts/exploration/ExplorationEvents.gd   NEW — exploration domain signals (step_taken(who: Node3D))
+scripts/combat/CombatEvents.gd              NEW — combat domain signals (encounter_triggered)
 scripts/autoloads/PartyManager.gd           NEW — holds GlobalSaveData, exposes party slots
-scenes/autoloads/ExplorationEvents.tscn     NEW
-scenes/autoloads/CombatEvents.tscn          NEW
+exploration_events.tscn                     NEW — autoload scene (at project root)
+combat_events.tscn                           NEW — autoload scene (at project root)
 scenes/autoloads/PartyManager.tscn          NEW
 
 # Overworld / encounter trigger
-scripts/characters/overworld/MovementComponent.gd   MODIFY — emit step_taken via ExplorationEvents
-scripts/overworld/StepCounter.gd            NEW — counts steps, emits threshold_reached
+scripts/characters/overworld/MovementComponent.gd   MODIFY — emit step_taken(who) via ExplorationEvents
+scripts/characters/overworld/StepCounter.gd  NEW — counts steps, emits threshold_reached; lives in overworld scene
 scripts/overworld/EncounterPool.gd          NEW — weighted random pick via EncounterPoolEntry resources
 scripts/overworld/CombatEnvironment.gd      NEW — data holder: PackedScene for the 3D combat environment
 scripts/overworld/CombatBGM.gd              NEW — data holder: AudioStream for the combat BGM
 scripts/overworld/EncounterManager.gd       NEW — thin connector: StepCounter + EncounterPool + CombatEnvironment + CombatBGM
-scenes/overworld/StepCounter.tscn           NEW
 scenes/overworld/EncounterPool.tscn         NEW
 scenes/overworld/CombatEnvironment.tscn     NEW
 scenes/overworld/CombatBGM.tscn             NEW
@@ -73,7 +72,7 @@ scenes/core/game_manager.tscn               MODIFY — add ScreenFader + CombatS
 
 ---
 
-## Task 1 — GlobalSaveData + CombatConfig + EncounterPoolEntry resources
+## Task 1 — GlobalSaveData + CombatConfig + EncounterPoolEntry resources ✅
 
 **What these are:** Three `Resource` subclasses that hold authored data.
 - `GlobalSaveData` is the save file root — it knows which characters are in the party and what their current stats are.
@@ -87,7 +86,7 @@ scenes/core/game_manager.tscn               MODIFY — add ScreenFader + CombatS
 
 **In Godot, a Resource subclass** is a script that extends `Resource`. You can save instances as `.tres` files in the editor and attach them as exports. Think of `.tres` files as your game's data spreadsheets.
 
-- [ ] Create `scripts/characters/GlobalSaveData.gd`:
+- [x] Create `scripts/core/Save/GlobalSaveData.gd`:
 
 ```gdscript
 class_name GlobalSaveData
@@ -104,7 +103,7 @@ extends Resource
 @export var roster: Dictionary[String, CharacterSaveData] = {}
 ```
 
-- [ ] Create `scripts/combat/CombatConfig.gd`:
+- [x] Create `scripts/combat/CombatConfig.gd`:
 
 ```gdscript
 class_name CombatConfig
@@ -122,7 +121,7 @@ extends Resource
 @export var enemy_slot6: EnemyData
 ```
 
-- [ ] Create `scripts/combat/EncounterPoolEntry.gd`:
+- [x] Create `scripts/combat/EncounterPoolEntry.gd`:
 
 ```gdscript
 class_name EncounterPoolEntry
@@ -136,7 +135,7 @@ extends Resource
 @export var weight: int = 10
 ```
 
-- [ ] Open Godot editor. Verify all three scripts appear without errors in the Script editor (no red underlines).
+- [x] Open Godot editor. Verify all three scripts appear without errors in the Script editor (no red underlines).
 
 - [ ] Commit:
 ```bash
@@ -146,25 +145,27 @@ git commit -m "Add GlobalSaveData, CombatConfig, EncounterPoolEntry resource cla
 
 ---
 
-## Task 2 — Event buses: ExplorationEvents + CombatEvents
+## Task 2 — Event buses: ExplorationEvents + CombatEvents ✅ (with caveats)
 
 **What these are:** Autoloads that hold only signal declarations — no logic, no state. Any node anywhere in the game can emit or connect to these. They keep systems decoupled: `MovementComponent` doesn't know about `StepCounter`; it just emits a signal into the void.
 
 **In Godot, autoloads** are nodes that are always present in the scene tree, accessible by their registered name from any script. You register them in `Project → Project Settings → Autoload`.
 
-- [ ] Create `scripts/autoloads/ExplorationEvents.gd`: <- added>
+**⚠️ Caveat — no `class_name` on autoloads:** Godot autoload names live in the same global namespace as `class_name`. If an autoload is named `ExplorationEvents` and the script also declares `class_name ExplorationEvents`, the two collide. Solution: **drop `class_name` from autoload event bus scripts.** Autoloads are already globally accessible by their registered name; `class_name` is redundant and causes the collision. This is now the project convention: autoload event buses have no `class_name`.
+
+**⚠️ Caveat — `step_taken` carries `who: Node3D`:** The signal was changed from `signal step_taken` to `signal step_taken(who: Node3D)`. This allows subscribers (like StepCounter) to filter by who stepped — e.g., only counting player steps, not NPC steps. The emitter passes `get_parent()` (the overworld_character node). See Task 4 for the subscriber side.
+
+- [x] Create `scripts/exploration/ExplorationEvents.gd`:
 
 ```gdscript
-class_name ExplorationEvents
 extends Node
 
-signal step_taken
+signal step_taken(who: Node3D)
 ```
 
-- [ ] Create `scripts/autoloads/CombatEvents.gd`:
+- [x] Create `scripts/combat/CombatEvents.gd`:
 
 ```gdscript
-class_name CombatEvents
 extends Node
 
 # Fired by EncounterManager when a random encounter should start.
@@ -176,71 +177,74 @@ extends Node
 signal encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
 ```
 
-- [ ] For each script, create a matching `.tscn` scene file. In Godot editor:
-  - Create a new scene → `Node` as root → rename root to `ExplorationEvents` → attach the script → save as `scenes/autoloads/ExplorationEvents.tscn`
-  - Repeat for `CombatEvents`
+- [x] Create matching `.tscn` files — placed at project root (not `scenes/autoloads/`, which didn't exist). And that's fine — convention can be tightened later.
+  - `exploration_events.tscn`: `Node` root named `ExplorationEvents`, script attached
+  - `combat_events.tscn`: `Node` root named `CombatEvents`, script attached
 
-- [ ] Register both in `Project → Project Settings → Autoload`:
-  - Path: `res://scenes/autoloads/ExplorationEvents.tscn`, Node Name: `ExplorationEvents`
-  - Path: `res://scenes/autoloads/CombatEvents.tscn`, Node Name: `CombatEvents`
+- [x] Register both in `Project → Project Settings → Autoload`:
+  - Path: `res://exploration_events.tscn`, Node Name: `ExplorationEvents`
+  - Path: `res://combat_events.tscn`, Node Name: `CombatEvents`
+  - **Note:** Autoload names use PascalCase (no underscores). If Godot's editor inserts underscores, re-register manually.
 
-- [ ] Run the game (F5). No errors should appear. The autoloads appear in the remote scene tree debugger under root.
+- [x] Run the game (F5). No errors. Autoloads visible in remote scene tree.
 
-- [ ] Commit:
-```bash
-git add scripts/autoloads/ExplorationEvents.gd scripts/autoloads/CombatEvents.gd
-git add scenes/autoloads/ExplorationEvents.tscn scenes/autoloads/CombatEvents.tscn
-git commit -m "Add ExplorationEvents and CombatEvents autoload buses"
-```
+*Note: Initial commit used `class_name` on both, which caused a "Cannot find member" error. `class_name` was removed in a follow-up and autoload names were changed from `Exploration_Events`/`Combat_Events` to `ExplorationEvents`/`CombatEvents`.*
 
 ---
 
-## Task 3 — MovementComponent: emit step_taken
+## Task 3 — MovementComponent: emit step_taken ✅
 
-**What changes:** `MovementComponent` now accumulates distance traveled and emits `ExplorationEvents.step_taken` every `step_distance` units. This is the heartbeat that the encounter system listens to.
+**What changes:** `MovementComponent` now accumulates distance traveled and emits `ExplorationEvents.step_taken(who)` every `step_distance` units. This is the heartbeat that the encounter system listens to.
 
 **Why distance, not time:** A step counter based on time would tick even when standing still. Distance means "you actually walked somewhere." It also naturally maps to footstep audio and VFX later.
 
-**File:** Modify `scripts/characters/overworld/MovementComponent.gd`
+**Why `who: Node3D`:** The signal carries the character that stepped, so subscribers can filter (e.g., StepCounter only counts player steps, not NPC steps). The emitter passes `get_parent()` — the overworld_character node.
 
-- [ ] Add `step_distance` export and `_distance_accumulated` private variable at the top of the class (after the existing exports):
+**File:** Modified `scripts/characters/overworld/MovementComponent.gd`
+
+- [x] Add `step_distance` export, `_distance_accumulated`, and `_steps_taken` private variables:
 
 ```gdscript
 @export var step_distance: float = 1.0
 var _distance_accumulated: float = 0.0
+var _steps_taken: int = 0
 ```
 
-- [ ] In `_physics_process`, after the line `get_parent().position += move * speed * delta`, add the step accumulation:
+- [x] In `_physics_process`, after the position update, accumulate distance and emit on threshold:
 
 ```gdscript
 var move_amount := (move * speed * delta).length()
 _distance_accumulated += move_amount
 if _distance_accumulated >= step_distance:
     _distance_accumulated -= step_distance
-    ExplorationEvents.step_taken.emit()
+    _steps_taken += 1
+    ExplorationEvents.step_taken.emit(get_parent())
+    Log.debug("step_taken", "count", _steps_taken)
 ```
 
 The `_distance_accumulated -= step_distance` (not `= 0.0`) is intentional: it preserves any overshoot, keeping step rate accurate at any framerate.
 
-- [ ] Run the game. Move the character and confirm `ExplorationEvents.step_taken` fires — add a temporary `Log.debug("step taken")` inside the emit block to verify, then remove it.
+`_steps_taken` is a debug counter — useful for verifying the signal fires. Can be removed later.
 
-- [ ] Commit:
-```bash
-git add scripts/characters/overworld/MovementComponent.gd
-git commit -m "MovementComponent: emit ExplorationEvents.step_taken on distance threshold"
-```
+`Log.debug("step_taken", "count", _steps_taken)` uses the Logger under the level that gets filtered in production, so it's safe to leave in.
+
+- [x] Run the game. Move the character and confirm `step_taken count N` appears in the Output panel.
 
 ---
 
-## Task 4 — StepCounter
+## Task 4 — StepCounter ✅ (with caveats)
 
 **What this is:** A simple node that listens to `ExplorationEvents.step_taken` and counts down. When the counter hits zero it emits `threshold_reached` and resets. The counter starts at 256 and decrements by a random amount (1–8) per step — this is the classic random encounter feel.
 
-**File:**
-- Create: `scripts/overworld/StepCounter.gd`
-- Create: `scenes/overworld/StepCounter.tscn`
+**Where it lives:** In the overworld scene, **not** inside the overworld_character scene. It's a system-level concern, not per-character. Connected to MovementComponent purely through the event bus — no parent-child relationship needed. In the test scene, it sits under a "System" node alongside other overworld systems.
 
-- [ ] Create `scripts/overworld/StepCounter.gd`:
+**⚠️ Caveat — player-only filtering not yet active:** The signal carries `who: Node3D`, and StepCounter's callback receives it as `_who`. Eventually, StepCounter should filter with `if not who.is_player: return` so NPCs walking around don't trigger encounter countdowns. For now, since there are no NPCs in the scene, it's accepted as-is. When NPC overworld characters appear, this filter must be added.
+
+**Files:**
+- Created: `scripts/characters/overworld/StepCounter.gd` (not `scripts/overworld/` — placed alongside other overworld character scripts)
+- No `.tscn` yet — placed as a raw node in the editor scene tree (no need for a separate scene file until reuse is needed)
+
+- [x] Created `scripts/characters/overworld/StepCounter.gd`:
 
 ```gdscript
 class_name StepCounter
@@ -253,29 +257,27 @@ const RESET_VALUE: int = 256
 var _counter: int = RESET_VALUE
 
 func _ready() -> void:
-    Log.info("StepCounter ready, counter =", _counter)
-    ExplorationEvents.step_taken.connect(_on_step_taken)
+	Log.info("StepCounter ready, counter =", _counter)
+	ExplorationEvents.step_taken.connect(_on_step_taken)
 
 func _exit_tree() -> void:
-    ExplorationEvents.step_taken.disconnect(_on_step_taken)
+	ExplorationEvents.step_taken.disconnect(_on_step_taken)
 
-func _on_step_taken() -> void:
-    _counter -= randi_range(1, 8)
-    if _counter <= 0:
-        _counter = RESET_VALUE
-        Log.info("StepCounter threshold reached, resetting to", RESET_VALUE)
-        threshold_reached.emit()
+func _on_step_taken(_who: Node3D) -> void:
+	_counter -= randi_range(1, 8)
+	Log.debug("step_counter", "remaining", _counter)
+	if _counter <= 0:
+		_counter = RESET_VALUE
+		Log.info("StepCounter threshold reached, resetting to", RESET_VALUE)
+		threshold_reached.emit()
 ```
 
-- [ ] Create `scenes/overworld/StepCounter.tscn`: new scene, `Node` root named `StepCounter`, attach the script, save.
+Notes on the implementation:
+- `_who` is prefixed with underscore because it's unused — will become `who` once player filtering is added.
+- `Log.debug("step_counter", "remaining", _counter)` shows the countdown per step — helpful for tuning, safe to leave in (debug level is filtered in production).
+- Disconnects from the bus in `_exit_tree()` — required by project convention (CLAUDE.md: "Always disconnect in `_exit_tree()`").
 
-- [ ] Run the game and walk around. You should see `StepCounter threshold reached` appear in the Output panel roughly every 256 steps. Adjust `step_distance` on MovementComponent if thresholds fire too fast or slow.
-
-- [ ] Commit:
-```bash
-git add scripts/overworld/StepCounter.gd scenes/overworld/StepCounter.tscn
-git commit -m "Add StepCounter: counts steps via ExplorationEvents, emits threshold_reached"
-```
+- [x] Run the game and walk around. `StepCounter ready, counter = 256` should appear at startup, and `step_counter remaining N` should tick down each step. `StepCounter threshold reached` appears roughly every 256 steps.
 
 ---
 

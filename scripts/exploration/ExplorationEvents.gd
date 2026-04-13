@@ -1,3 +1,3 @@
 extends Node
 
-signal step_taken
+signal step_taken(who: Node3D)

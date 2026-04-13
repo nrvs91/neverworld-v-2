@@ -30,12 +30,12 @@ func _on_direction_changed(dir: Vector2) -> void:
 	if dir != Vector2.ZERO:
 		_last_direction = dir
 	_play_animation()
-	Log.debug("Direction changed to:", dir)
+	#Log.debug("Direction changed to:", dir)
 
 func _on_run_toggled(running: bool) -> void:
 	_is_running = running
 	_play_animation()
-	Log.debug("Running:", running)
+	#Log.debug("Running:", running)
 
 func _get_animation_direction(dir: Vector2) -> String:
 	match [int(sign(dir.x)), int(sign(dir.y))]:
@@ -64,5 +64,5 @@ func _play_animation():
 	if sprite.animation == anim: 
 		return
 	sprite.play(anim)
-	Log.info("Last direction:", _last_direction)
-	Log.debug("Animation playing:", prefix, direction)
+	#Log.info("Last direction:", _last_direction)
+	#Log.debug("Animation playing:", prefix, direction)

@@ -37,7 +37,7 @@ func _physics_process(delta: float) -> void:
 	if _distance_accumulated >= step_distance:
 		_distance_accumulated -= step_distance
 		_steps_taken += 1
-		ExplorationEvents.step_taken.emit()
+		ExplorationEvents.step_taken.emit(get_parent())
 		Log.debug("step_taken", "count", _steps_taken)
 
 func _on_direction_changed(dir: Vector2) -> void:

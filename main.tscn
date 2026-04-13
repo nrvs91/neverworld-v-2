@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://player_input_component.tscn" id="2_lquwl"]
 [ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://movement_component.tscn" id="3_7mycd"]
 [ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/VisualComponent.tscn" id="4_272bh"]
+[ext_resource type="PackedScene" uid="uid://vjwnefodooxd" path="res://step_counter.tscn" id="5_lquwl"]
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7dm0k"]
 
@@ -86,6 +87,11 @@ visual = NodePath("CharacterVisualComponent")
 [node name="MovementComponent" parent="SubViewportContainer/SubViewport/overworld_character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_7mycd")]
 controller = NodePath("../PlayerInputComponent")
 movement_speed = 1.1
+step_distance = 0.5
 
 [node name="CharacterVisualComponent" parent="SubViewportContainer/SubViewport/overworld_character" unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_272bh")]
 controller = NodePath("../PlayerInputComponent")
+
+[node name="System" type="Node" parent="." unique_id=1536314780]
+
+[node name="StepCounter" parent="System" unique_id=1563926638 instance=ExtResource("5_lquwl")]
