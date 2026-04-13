@@ -18,4 +18,6 @@ func _ready() -> void:
 	Log.info("Game started. Initializing...")
 	Log.info("Project version:", version_number)
 	Log.info("Dev Mode:", dev_mode)
+	if dev_mode == true:
+		Log.info("Skipping to overworld_scene")
 
