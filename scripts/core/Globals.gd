@@ -8,8 +8,14 @@
 
 extends Node
 
+@export var dev_mode := true
+@export var version_number: float = 0.01
+
 static var instance
 func _ready() -> void:
 	instance = self
 	
-	Log.info("Initializing...")
+	Log.info("Game started. Initializing...")
+	Log.info("Project version:", version_number)
+	Log.info("Dev Mode:", dev_mode)
+
