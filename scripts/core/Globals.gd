@@ -20,3 +20,5 @@ func _ready() -> void:
 	Log.info("Dev Mode:", dev_mode)
 	if dev_mode == true:
 		Log.info("Skipping to overworld_scene")
+	else:
+		Log.info("Displaying Main_Menu")
