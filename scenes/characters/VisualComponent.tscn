@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://by04gowfupy6q"]
 
 [ext_resource type="Script" uid="uid://4uv3lpwsy71f" path="res://scripts/characters/VisualComponent.gd" id="1_bbvle"]
-[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://SkuggeAnimations.tres" id="2_x474u"]
+[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_x474u"]
 
 [node name="CharacterVisualComponent" type="Node3D" unique_id=736639217]
 script = ExtResource("1_bbvle")

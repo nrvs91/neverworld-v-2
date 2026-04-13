@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://cljr3sxyildr7"]
 
-[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://overworld_character.tscn" id="1_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://player_input_component.tscn" id="2_lquwl"]
-[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://movement_component.tscn" id="3_7mycd"]
+[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://scenes/characters/overworld_character.tscn" id="1_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://scenes/characters/player_input_component.tscn" id="2_lquwl"]
+[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://scenes/characters/movement_component.tscn" id="3_7mycd"]
 [ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/VisualComponent.tscn" id="4_272bh"]
-[ext_resource type="PackedScene" uid="uid://vjwnefodooxd" path="res://step_counter.tscn" id="5_lquwl"]
+[ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/encounter_manager.tscn" id="5_lquwl"]
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7dm0k"]
 
@@ -94,4 +94,4 @@ controller = NodePath("../PlayerInputComponent")
 
 [node name="System" type="Node" parent="." unique_id=1536314780]
 
-[node name="StepCounter" parent="System" unique_id=1563926638 instance=ExtResource("5_lquwl")]
+[node name="EncounterManager" parent="System" unique_id=1675216195 instance=ExtResource("5_lquwl")]

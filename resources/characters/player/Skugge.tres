@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cm7ipwxu5ifk8" path="res://assets/characters/portraits/Skugge.png" id="1_h48qx"]
 [ext_resource type="Script" uid="uid://32dk04tuy26a" path="res://scripts/characters/PlayerData.gd" id="1_n73al"]
 [ext_resource type="Script" uid="uid://ctf4nx0yni78o" path="res://scripts/characters/GrowthTable.gd" id="2_h48qx"]
-[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://SkuggeAnimations.tres" id="2_weqmv"]
+[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_weqmv"]
 
 [sub_resource type="Resource" id="Resource_weqmv"]
 script = ExtResource("1_2vacv")

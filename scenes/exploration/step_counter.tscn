@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://vjwnefodooxd"]
 
-[ext_resource type="Script" uid="uid://rsidytlp621g" path="res://scripts/characters/overworld/StepCounter.gd" id="1_hxfcd"]
+[ext_resource type="Script" uid="uid://rsidytlp621g" path="res://scripts/exploration/StepCounter.gd" id="1_hxfcd"]
 
 [node name="StepCounter" type="Node" unique_id=1563926638]
 script = ExtResource("1_hxfcd")

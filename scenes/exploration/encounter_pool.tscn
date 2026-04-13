@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bhetgvvx75bn4"]
+
+[ext_resource type="Script" uid="uid://c3ct2tohonpuj" path="res://scripts/exploration/EncounterPool.gd" id="1_7rcyy"]
+
+[node name="EncounterPool" type="Node" unique_id=444306006]
+script = ExtResource("1_7rcyy")

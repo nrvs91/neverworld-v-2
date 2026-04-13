@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dto6pj64gobv5"]
+
+[ext_resource type="Script" uid="uid://gosyc5r416vf" path="res://scripts/exploration/CombatEnvironment.gd" id="1_8sv3n"]
+
+[node name="CombatEnvironment" type="Node" unique_id=1043495217]
+script = ExtResource("1_8sv3n")
