@@ -25,6 +25,10 @@ ExplorationEvents="*uid://b3kfhfuxcmp55"
 
 project/assembly_name="NEVERWORLD_V2"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
 [input]
 
 interact={
