@@ -18,7 +18,7 @@ This spec supersedes the token visualization section of `2026-04-13-combat-visua
 1. **All identity information lives in the HUD.** Nameplates, tokens, resource bars — none of it floats in world space. The world contains only sprites, VFX, and combat text.
 2. **Symmetry.** Enemies and players expose the same resources (HP, MP, AP, tokens). The HUD reflects this — same components, different palette.
 3. **Clutter deferred, not eliminated.** Resistance information exists but is hidden until the moment it's relevant: targeting mode. Everything else is always visible.
-4. **Shared components.** `TokenDisplay.tscn`, `SplitResourceBar.tscn`, and `APStrip.tscn` are instanced in both enemy nameplates and player cards. One scene, many hosts.
+4. **Shared components.** `TokenDisplay.tscn`, `HPBar.tscn` and `MPBar.tscn`, and `APStrip.tscn` are instanced in both enemy nameplates and player cards. One scene, many hosts.
 
 ---
 
@@ -29,7 +29,7 @@ This spec supersedes the token visualization section of `2026-04-13-combat-visua
 - `EnemyNameplate.tscn` — enemy identity card
 - `CombatCard.tscn` — player identity card
 - `TokenDisplay.tscn` — shared token icon row, instanced in both cards
-- `SplitResourceBar.tscn` — shared HP | MP bar, instanced in both cards
+- `HPBar.tscn` and `MPBar.tscn` — shared HP | MP bar, instanced in both cards
 - `APStrip.tscn` — shared segmented AP display (10 cells), instanced in both cards
 - Enemy nameplate ordering, dead-enemy handling, targeting bump
 - Resistance overlay during targeting mode
@@ -69,14 +69,14 @@ An `HFlowContainer` (or `HBoxContainer`) of token icon nodes. Empty until tokens
 
 Instanced **above** the resource bars on `CombatCard`, **below** the resource bars on `EnemyNameplate`. Same scene, different position in the host layout.
 
-### `SplitResourceBar.tscn`
+### `HPBar.tscn` and `MPBar.tscn`
 
-Two `TextureProgressBar` nodes side by side in an `HBoxContainer`:
+Two independent `TextureProgressBar` scenes, placed side by side in the host layout's `HBoxContainer`:
 
-- **Left:** HP — green on `CombatCard`, red on `EnemyNameplate`
-- **Right:** MP — blue on `CombatCard`, a darker muted colour on `EnemyNameplate`
+- `HPBar` — green on `CombatCard`, red on `EnemyNameplate`. Subscribes to `VitalsComponent.hp_changed`.
+- `MPBar` — blue on `CombatCard`, a darker muted colour on `EnemyNameplate`. Subscribes to `VitalsComponent.mp_changed`.
 
-Subscribes to `VitalsComponent.hp_changed` and `VitalsComponent.mp_changed`. Smooth fill, percentage-based. No number label — the bar is the readout.
+Smooth fill, percentage-based. No number label — the bar is the readout.
 
 **First encounter:** on `EnemyNameplate`, the HP side shows `-?-` text and the bar fill is hidden until the enemy's HP has been observed (a flag on `EnemyData` tracks this per enemy type, persisted in save data). MP is always hidden on enemy nameplates for undiscovered enemies.
 
@@ -96,7 +96,9 @@ Same component, same palette (purple), used on both `CombatCard` and `EnemyNamep
 EnemyNameplate (PanelContainer)
   └── VBoxContainer
         ├── NameLabel (Label)              — enemy name; letter suffix if duplicates (e.g. "Draugr B")
-        ├── SplitResourceBar (instanced)   — HP (red) | MP (muted)
+        ├── ResourceRow (HBoxContainer)
+        │     ├── HPBar (instanced)        — red
+        │     └── MPBar (instanced)        — muted dark colour
         ├── APStrip (instanced)            — 10 cells, purple
         └── TokenDisplay (instanced)       — empty until tokens applied
 ```
@@ -115,7 +117,9 @@ EnemyNameplate (PanelContainer)
 CombatCard (PanelContainer)
   └── VBoxContainer
         ├── TokenDisplay (instanced)       — empty until tokens applied
-        ├── SplitResourceBar (instanced)   — HP (green) | MP (blue)
+        ├── ResourceRow (HBoxContainer)
+        │     ├── HPBar (instanced)        — green
+        │     └── MPBar (instanced)        — blue
         ├── Portrait (TextureRect)         — character portrait; enemies have no portrait
         └── APStrip (instanced)            — 10 cells, purple, full width
 ```
@@ -130,8 +134,8 @@ Each card holds a typed reference to its `CombatCharacter`. Wired during `FSMSTA
 
 | Signal source | Subscriber | Effect |
 |---|---|---|
-| `VitalsComponent.hp_changed` | `SplitResourceBar` | Tween HP fill to new value |
-| `VitalsComponent.mp_changed` | `SplitResourceBar` | Tween MP fill to new value |
+| `VitalsComponent.hp_changed` | `HPBar` | Tween HP fill to new value |
+| `VitalsComponent.mp_changed` | `MPBar` | Tween MP fill to new value |
 | `VitalsComponent.ap_changed` | `APStrip` | Snap cells to new integer count |
 | `ActiveTokens.token_added` | `TokenDisplay` | Spawn token icon |
 | `ActiveTokens.token_removed` | `TokenDisplay` | Remove token icon |
