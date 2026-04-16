@@ -11,7 +11,7 @@ func _ready() -> void:
 	step_counter.threshold_reached.connect(_on_threshold_reached)
 
 func _on_threshold_reached() -> void:
-	var composition := encounter_pool.pick_combat()
+	var composition := encounter_pool.pick()
 	if composition == null:
 		return
 	CombatEvents.encounter_triggered.emit(

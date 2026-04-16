@@ -281,7 +281,7 @@ Notes on the implementation:
 
 ---
 
-## Task 5 — EncounterPool
+## Task 5 — EncounterPool ✅
 
 **What this is:** Holds an array of `EncounterPoolEntry` resources and picks one composition using weighted random selection when asked. Each area's `EncounterManager` has its own `EncounterPool` with its own authored entries.
 
@@ -289,11 +289,13 @@ Notes on the implementation:
 
 **Why entries, not raw `CombatConfig`s:** Weight is a property of "how common this encounter is *in this pool*", not of the encounter itself. The same `CombatConfig` could appear in two pools at different weights. Pairing composition and weight via a tiny entry resource keeps authoring clean in the inspector (one foldout per entry with both fields side-by-side) and avoids parallel-array desync bugs.
 
-**Files:**
-- Create: `scripts/overworld/EncounterPool.gd`
-- Create: `scenes/overworld/EncounterPool.tscn`
+**⚠️ Caveat — folder:** Lives in `scripts/exploration/` and `scenes/exploration/`, not `scripts/overworld/` as originally planned. `exploration/` is now the canonical home for all overworld/encounter scripts.
 
-- [ ] Create `scripts/overworld/EncounterPool.gd`:
+**Files:**
+- Create: `scripts/exploration/EncounterPool.gd`
+- Create: `scenes/exploration/EncounterPool.tscn`
+
+- [x] Create `scripts/exploration/EncounterPool.gd`:
 
 ```gdscript
 class_name EncounterPool
@@ -321,13 +323,9 @@ func pick() -> CombatConfig:
     return entries[-1].composition
 ```
 
-- [ ] Create `scenes/overworld/EncounterPool.tscn`: new scene, `Node` root named `EncounterPool`, attach script, save.
+- [x] Create `scenes/exploration/EncounterPool.tscn`: new scene, `Node` root named `EncounterPool`, attach script, save.
 
-- [ ] Commit:
-```bash
-git add scripts/overworld/EncounterPool.gd scenes/overworld/EncounterPool.tscn
-git commit -m "Add EncounterPool: weighted random picker over EncounterPoolEntry resources"
-```
+- [x] Commit.
 
 ---
 
