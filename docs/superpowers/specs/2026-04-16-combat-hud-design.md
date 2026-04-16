@@ -103,7 +103,7 @@ EnemyNameplate (PanelContainer)
         └── TokenDisplay (instanced)       — empty until tokens applied
 ```
 
-**Targeting bump:** when this enemy is the current targeting cursor target, the nameplate's `position.y` shifts down by a small authored offset (e.g. 8px). Reverts when the cursor moves away or targeting ends.
+**Bump behaviour:** see [Card Bump System](#card-bump-system) below.
 
 **Dead enemy:** `hide()` the nameplate. The `HBoxContainer` layout closes the gap naturally. Slot order for living enemies is preserved — left-to-right always matches ascending slot index among survivors.
 
@@ -125,6 +125,46 @@ CombatCard (PanelContainer)
 ```
 
 Player cards are always visible. No hiding on KO — the card stays up, bars empty, so the player can see the downed character's resource state and plan a revive.
+
+**Bump behaviour:** see [Card Bump System](#card-bump-system) below.
+
+---
+
+## Card Bump System
+
+Any character currently **involved in the action** — as caster or as target — gets their card bumped. Direction is determined by which strip the card lives in, not by role:
+
+- **Enemy nameplates** → bump **down** (positive `position.y` offset, e.g. 8px)
+- **Player cards** → bump **up** (negative `position.y` offset)
+
+Player cards bump up because the combat menu opens below the active card — the bump creates visual separation and signals whose turn it is.
+
+### What triggers a bump
+
+| Situation | Bumped cards |
+|---|---|
+| Player's turn, single-target skill | Active player card (up) + targeted enemy nameplate (down) |
+| Player's turn, AoE skill | Active player card (up) + all targeted enemy nameplates (down) |
+| Enemy acting, targeting a player | Acting enemy nameplate (down) + targeted player card (up) |
+| Enemy acting, targeting an enemy (e.g. heal) | Acting enemy nameplate (down) + target enemy nameplate (down) |
+| Targeting cursor cycling (during action select) | Currently highlighted enemy nameplate (down); others at rest |
+
+### One rule
+
+**Involved in the current action = bumped.** The system doesn't need to know whether a character is attacker or target, ally or enemy. It only needs to know: is this character part of what's happening right now?
+
+### Signals
+
+Bump state is driven by two signals on `CombatEvents`:
+
+```gdscript
+signal action_participants_set(caster: CombatCharacter, targets: Array[CombatCharacter])
+signal action_participants_cleared()
+```
+
+`CombatHUD` subscribes to both. On `action_participants_set`: bump the caster's card and all target cards. On `action_participants_cleared`: reset all cards to rest position. The targeting cursor during `FSMSTATE_ActionSelection` uses the same signals — caster is the active player, targets update as the cursor cycles.
+
+Bump transitions are instant (no tween needed — the bump is a readability signal, not an animation).
 
 ---
 

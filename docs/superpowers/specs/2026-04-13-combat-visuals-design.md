@@ -529,6 +529,8 @@ Used by `CombatCard`, `TokenDisplay`, `CombatTextComponent` (for status/buff flo
 signal attack_resolved(target: CombatCharacter, result: AttackResult)
 signal heal_resolved(target: CombatCharacter, amount: int)
 signal actor_downed(actor: CombatCharacter)
+signal action_participants_set(caster: CombatCharacter, targets: Array[CombatCharacter])
+signal action_participants_cleared()
 # (More added as combat systems grow)
 ```
 `AttackResult` shape — a `Resource`, not a Dictionary. Typed fields survive refactors, autocomplete works in the editor, and the class can grow (reflected damage, applied-ailment list, etc.) without retro-fitting callers:
