@@ -78,7 +78,7 @@ Two independent `TextureProgressBar` scenes, placed side by side in the host lay
 
 Smooth fill, percentage-based. No number label — the bar is the readout.
 
-**First encounter:** on `EnemyNameplate`, the HP side shows `-?-` text and the bar fill is hidden until the enemy's HP has been observed (a flag on `EnemyData` tracks this per enemy type, persisted in save data). MP is always hidden on enemy nameplates for undiscovered enemies.
+**On `EnemyNameplate`:** both bars are replaced entirely by a single `?` label until the enemy type has been defeated at least once. You don't know their HP or MP scale until you've killed one. After first defeat the bars show normally. The unlock flag (`has_been_defeated`) lives on `EnemyData`, persisted to save data, and is set when `actor_downed` fires for that enemy type for the first time.
 
 ### `APStrip.tscn`
 
@@ -153,15 +153,23 @@ When the player enters targeting mode for a skill with a known damage type, `Ene
 
 **Behaviour:**
 - `EnemyStrip` receives `targeting_started`. Reads `skill.damage_type`.
-- For each live enemy nameplate: checks that enemy's `ResistanceProfile` for `skill.damage_type`.
-  - `WEAK` → show a `WEAK` badge on the nameplate
-  - `RESISTANT` → show a `RESIST` badge
-  - `IMMUNE` → show an `IMMUNE` badge
-  - Neutral (1×) → no badge (no information worth showing)
-  - **Undiscovered** (not yet triggered in combat) → no badge
+- For each live enemy nameplate: checks that enemy's `ResistanceProfile` for `skill.damage_type`, but only for **discovered** resistances.
+  - `WEAK` (discovered) → show a `WEAK` badge
+  - `RESISTANT` (discovered) → show a `RESIST` badge
+  - `IMMUNE` (discovered) → show an `IMMUNE` badge
+  - Neutral (1×) → no badge even if discovered — not actionable information
+  - **Undiscovered** → no badge
 - Badges are simple `Label` nodes overlaid on the nameplate. Not part of the permanent layout.
 
 **End:** `CombatEvents.targeting_ended` — all badges hidden.
+
+### Resistance Discovery
+
+A resistance is discovered the moment `attack_resolved` fires with a non-neutral outcome (`WEAK`, `RESISTED`, `IMMUNE`) for a given damage type against a given enemy type. The discovery is written immediately to `EnemyData` and persisted to save data — it does not wait for end of combat.
+
+**This means:** if you cast Fireball at an Ifrit and it resolves as `RESISTED`, the Fire/RESIST entry is unlocked right then. The next time you enter targeting with a Fire skill in that same fight, the `RESIST` badge will appear on Ifrit's nameplate.
+
+`MISS` and `PARRY` outcomes carry no element information and do not trigger discovery. Only outcomes with a damage type (`HIT`, `CRIT`, `WEAK`, `RESISTED`) do.
 
 **Scope note:** the inspect view (showing the full resistance table outside of targeting) is deliberately out of scope for the vertical slice.
 
