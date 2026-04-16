@@ -467,89 +467,148 @@ git commit -m "Add VitalsComponent: cur_hp/mp/ap with setup() and reset()"
 
 ---
 
-## Task 8 — Component stubs: TokenContainer + CombatInputComponent
+## Task 8 — Component stubs: ActiveTokens + CombatSFXComponent
 
-**What these are:** Two components that need to exist in the scene tree now (so `CombatCharacter.tscn` can be fully assembled) but don't have any behaviour yet. A stub is a valid, complete script — it just doesn't do much. This is intentional: we're building the skeleton first.
+**What these are:** Two components that need to exist in the scene tree now so `CombatCharacter.tscn` can be fully assembled. Stubs only — behaviour comes later.
+
+`CombatInputComponent` was originally planned here. It has been **deleted** — combat input is a scene-level concern, not a per-character component. See `docs/superpowers/specs/2026-04-13-combat-visuals-design.md`.
 
 **Files:**
-- Create: `scripts/combat/TokenContainer.gd` + `scenes/combat/components/TokenContainer.tscn`
-- Create: `scripts/combat/CombatInputComponent.gd` + `scenes/combat/components/CombatInputComponent.tscn`
+- Create: `scripts/combat/ActiveTokens.gd` + `scenes/combat/components/ActiveTokens.tscn`
+- Create: `scripts/combat/CombatSFXComponent.gd` + `scenes/combat/components/CombatSFXComponent.tscn`
 
-- [ ] Create `scripts/combat/TokenContainer.gd`:
+- [ ] Create `scripts/combat/ActiveTokens.gd`:
 
 ```gdscript
-class_name TokenContainer
+class_name ActiveTokens
 extends Node
 
-# Holds active combat tokens for a character.
+# Holds active combat tokens for this character.
+# Emits signals when tokens are added, removed, or updated.
 # Stub — full implementation in a future task.
+
+signal token_added(token: Resource)
+signal token_removed(token: Resource)
+signal token_updated(token: Resource)
 
 func flush() -> void:
-    Log.info("TokenContainer flushed (stub)")
+    Log.info("ActiveTokens flushed (stub)")
 ```
 
-- [ ] Create `scripts/combat/CombatInputComponent.gd`:
+- [ ] Create `scripts/combat/CombatSFXComponent.gd`:
 
 ```gdscript
-class_name CombatInputComponent
+class_name CombatSFXComponent
 extends Node
 
-# Handles player input during combat: action selection, targeting.
+# Plays character-level audio: swing, cast, hurt, KO, footstep.
 # Stub — full implementation in a future task.
+
+func play_swing() -> void: pass
+func play_cast() -> void: pass
+func play_hurt() -> void: pass
+func play_ko() -> void: pass
+func play_footstep() -> void: pass
 ```
 
 - [ ] Create both `.tscn` files following the same pattern as Task 7.
 
 - [ ] Commit:
 ```bash
-git add scripts/combat/TokenContainer.gd scenes/combat/components/TokenContainer.tscn
-git add scripts/combat/CombatInputComponent.gd scenes/combat/components/CombatInputComponent.tscn
-git commit -m "Add TokenContainer and CombatInputComponent stubs"
+git add scripts/combat/ActiveTokens.gd scenes/combat/components/ActiveTokens.tscn
+git add scripts/combat/CombatSFXComponent.gd scenes/combat/components/CombatSFXComponent.tscn
+git commit -m "Add ActiveTokens and CombatSFXComponent stubs"
 ```
 
 ---
 
-## Task 9 — VisualComponent: combat adaptation
+## Task 9 — CombatVisuals scene skeleton
 
-**What changes:** The existing `VisualComponent` (`scripts/characters/overworld/VisualComponent.gd`) connects to a `controller` node for movement signals. In combat, characters don't move — they just display an idle sprite. We need to make `controller` optional and add a `setup()` method so `CombatCharacter` can hand it a `SpriteFrames` resource.
+**What changed:** The original plan here was to patch the overworld `VisualComponent` for combat use. That approach has been **replaced**. Combat gets its own dedicated visual component — `CombatVisuals` — which owns the `AnimatedSprite3D`, tweens local position for approach/recover, and drives the animation beat API. The overworld `VisualComponent` is not touched.
 
-**Important:** This is a targeted addition to an existing file — don't restructure or rename anything.
+**Full spec:** `docs/superpowers/specs/2026-04-13-combat-visuals-design.md` — read the `CombatVisuals` API section before writing any code here.
 
-**File:** Modify `scripts/characters/VisualComponent.gd` (this is what `scenes/characters/VisualComponent.tscn` actually references — there is also a duplicate at `scripts/characters/overworld/VisualComponent.gd`, leave that one alone for now)
+**Files:**
+- Create: `scripts/combat/CombatVisuals.gd`
+- Create: `scenes/combat/components/CombatVisuals.tscn`
 
-- [ ] Add a `setup()` method to `VisualComponent.gd`:
+- [ ] Create `scripts/combat/CombatVisuals.gd` — skeleton only, all methods stubbed:
 
 ```gdscript
+class_name CombatVisuals
+extends Node3D
+
+@onready var sprite: AnimatedSprite3D = $AnimatedSprite3D
+
+var _base_state: StringName = &"Idle"
+var _action_playing: bool = false
+
 func setup(sprite_frames: SpriteFrames) -> void:
     sprite.sprite_frames = sprite_frames
-    sprite.play("Idle_Down")
-    Log.info("VisualComponent setup with sprite_frames")
+    sprite.play(_base_state)
+    Log.info("CombatVisuals setup")
+
+func set_base_state(state: StringName) -> void:
+    _base_state = state
+    if not _action_playing:
+        sprite.play(_base_state)
+    Log.debug("CombatVisuals base state set:", state)
+
+func approach(target_offset: Vector3, duration: float = 0.2) -> void:
+    Log.debug("CombatVisuals approach (stub)")
+
+func recover(duration: float = 0.2) -> void:
+    Log.debug("CombatVisuals recover (stub)")
+
+func attack_to_motion_hold() -> void: pass
+func attack_to_strike_hold() -> void: pass
+func attack_to_recover_hold() -> void: pass
+func attack_finish() -> void: pass
+
+func cast_to_motion_hold() -> void: pass
+func cast_to_release_hold() -> void: pass
+func cast_to_recover_hold() -> void: pass
+func cast_finish() -> void: pass
+
+func play_combat_entry() -> void: pass
+func play_combat_exit() -> void: pass
+func play_item_use() -> void: pass
+func play_hurt() -> void: pass
+func play_dodge_slide() -> void: pass
+func play_ko() -> void: pass
+func play_custom(anim_name: String) -> void: pass
 ```
 
-- [ ] Guard the `controller` connections in `_ready()` so they're skipped when `controller` is null (combat use):
+- [ ] Create `scenes/combat/components/CombatVisuals.tscn` in the Godot editor:
+  - Root: `Node3D` named `CombatVisuals`, attach `CombatVisuals.gd`
+  - Add child: `AnimatedSprite3D` named `AnimatedSprite3D`
+  - Save
 
-```gdscript
-func _ready() -> void:
-    Log.info("Initializing...")
-    if controller == null:
-        return
-    controller.direction_changed.connect(_on_direction_changed)
-    controller.run_toggled.connect(_on_run_toggled)
-```
-
-- [ ] Run the game. Overworld character movement should work exactly as before.
+- [ ] Run the game. No errors. The scene should open cleanly in the editor.
 
 - [ ] Commit:
 ```bash
-git add scripts/characters/VisualComponent.gd
-git commit -m "VisualComponent: make controller optional, add setup() for combat use"
+git add scripts/combat/CombatVisuals.gd scenes/combat/components/CombatVisuals.tscn
+git commit -m "Add CombatVisuals skeleton: stubbed animation beat API"
 ```
 
 ---
 
 ## Task 10 — CombatCharacter scene
 
-**What this is:** The composed scene for a single combatant in combat — player or enemy. It assembles all the components built in Tasks 7–9. The root script is thin: it has an `initialize()` method that receives data and fans it out to each component.
+**What this is:** The composed scene for a single combatant in combat — player or enemy. Assembles the components from Tasks 7–9. The root script is thin: `initialize_player()` and `initialize_enemy()` fan data out to each component.
+
+**Scene shape** (per `docs/superpowers/specs/2026-04-13-combat-visuals-design.md`):
+```
+CombatCharacter (Node3D)
+  ├── VitalsComponent
+  ├── ActiveTokens
+  ├── CombatVisuals (Node3D)
+  │     └── AnimatedSprite3D
+  ├── CombatSFXComponent
+  ├── VFXAnchor (Node3D)
+  └── CombatTextAnchor (Node3D)
+```
 
 **Files:**
 - Create: `scripts/combat/CombatCharacter.gd`
@@ -562,38 +621,50 @@ class_name CombatCharacter
 extends Node3D
 
 @onready var vitals: VitalsComponent = $VitalsComponent
-@onready var visual: VisualComponent = $VisualComponent
-@onready var tokens: TokenContainer = $TokenContainer
+@onready var tokens: ActiveTokens = $ActiveTokens
+@onready var visuals: CombatVisuals = $CombatVisuals
+@onready var sfx: CombatSFXComponent = $CombatSFXComponent
+@onready var vfx_anchor: Node3D = $VFXAnchor
+@onready var combat_text_anchor: Node3D = $CombatTextAnchor
 
-# Called for player characters (reading from save data)
 func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
-    visual.setup(data.character_sprite)
-    vitals.setup(save_data.cur_hp, save_data.cur_mp)
-    Log.info("CombatCharacter (player) initialized:", data.character_name, vitals.cur_hp, vitals.cur_mp)
+    visuals.setup(data.character_sprite)
+    vitals.setup(save_data.cur_hp, save_data.cur_mp, save_data.cur_ap)
+    Log.info("CombatCharacter (player) initialized:", data.character_name)
 
-# Called for enemy characters (reading from base stats)
 func initialize_enemy(data: EnemyData) -> void:
-    visual.setup(data.character_sprite)
-    vitals.setup(data.MaxHP, data.MaxMP)
-    Log.info("CombatCharacter (enemy) initialized:", data.character_name, vitals.cur_hp, vitals.cur_mp)
+    visuals.setup(data.character_sprite)
+    vitals.setup(data.max_hp, data.max_mp, data.starting_ap)
+    Log.info("CombatCharacter (enemy) initialized:", data.character_name)
 
 func reset_for_combat() -> void:
     vitals.reset()
     tokens.flush()
+
+func get_anchor(kind: StringName) -> Node3D:
+    match kind:
+        &"vfx":         return vfx_anchor
+        &"combat_text": return combat_text_anchor
+    Log.error("CombatCharacter.get_anchor: unknown kind", kind, name)
+    return null
 ```
 
 - [ ] Create `scenes/combat/CombatCharacter.tscn` in the Godot editor:
   - Root: `Node3D` named `CombatCharacter`, attach `CombatCharacter.gd`
   - Add child: instance `scenes/combat/components/VitalsComponent.tscn`
-  - Add child: instance the **existing** `scenes/characters/VisualComponent.tscn` — **rename the node from `CharacterVisualComponent` to `VisualComponent`** so the `@onready` path in `CombatCharacter.gd` finds it. **Leave `controller` export empty** (null = combat mode, the guard added in Task 9 handles this)
-  - Add child: instance `scenes/combat/components/TokenContainer.tscn`
-  - Add child: instance `scenes/combat/components/CombatInputComponent.tscn`
+  - Add child: instance `scenes/combat/components/ActiveTokens.tscn`
+  - Add child: instance `scenes/combat/components/CombatVisuals.tscn`
+  - Add child: instance `scenes/combat/components/CombatSFXComponent.tscn`
+  - Add child: `Node3D` named `VFXAnchor` — set position to `(0, 1.0, 0)`
+  - Add child: `Node3D` named `CombatTextAnchor` — set position to `(0, 1.8, 0)`
   - Save
+
+- [ ] Run the game. No errors.
 
 - [ ] Commit:
 ```bash
 git add scripts/combat/CombatCharacter.gd scenes/combat/CombatCharacter.tscn
-git commit -m "Add CombatCharacter scene: assembled from VitalsComponent, VisualComponent, TokenContainer"
+git commit -m "Add CombatCharacter scene: VitalsComponent, ActiveTokens, CombatVisuals, CombatSFXComponent, anchors"
 ```
 
 ---
