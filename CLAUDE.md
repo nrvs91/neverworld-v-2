@@ -57,6 +57,8 @@ The goal is a playable demo — not polished in assets, but complete end-to-end:
 
 Everything else is out of scope until this is done.
 
+**Vertical slice defines scope, not quality.** "We're in vertical slice" is never a reason to defer architecture, leave a system half-designed, or ship something "to be ironed out later." If a system is in scope, it ships with full, maintainable design. Placeholder *art* is fine. Placeholder *systems* are not — they become permanent.
+
 ---
 
 ## GDD Is the Source of Truth
