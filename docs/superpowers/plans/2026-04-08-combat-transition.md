@@ -349,7 +349,7 @@ When `StepCounter` fires, the manager asks the pool for a composition, then read
 - Create: `scenes/overworld/CombatBGM.tscn`
 - Create: `scenes/overworld/EncounterManager.tscn`
 
-- [ ] Create `scripts/overworld/CombatEnvironment.gd`:
+- [x] Create `scripts/overworld/CombatEnvironment.gd`:
 
 ```gdscript
 class_name CombatEnvironment
@@ -361,7 +361,7 @@ extends Node
 @export var scene: PackedScene
 ```
 
-- [ ] Create `scripts/overworld/CombatBGM.gd`:
+- [x] Create `scripts/overworld/CombatBGM.gd`:
 
 ```gdscript
 class_name CombatBGM
@@ -372,7 +372,7 @@ extends Node
 @export var stream: AudioStream
 ```
 
-- [ ] Create `scripts/overworld/EncounterManager.gd`:
+- [x] Create `scripts/overworld/EncounterManager.gd`:
 
 ```gdscript
 class_name EncounterManager
@@ -398,11 +398,11 @@ func _on_threshold_reached() -> void:
     )
 ```
 
-- [ ] Create `scenes/overworld/CombatEnvironment.tscn`: new scene, `Node` root named `CombatEnvironment`, attach script, save.
+- [x] Create `scenes/overworld/CombatEnvironment.tscn`: new scene, `Node` root named `CombatEnvironment`, attach script, save.
 
-- [ ] Create `scenes/overworld/CombatBGM.tscn`: new scene, `Node` root named `CombatBGM`, attach script, save.
+- [x] Create `scenes/overworld/CombatBGM.tscn`: new scene, `Node` root named `CombatBGM`, attach script, save.
 
-- [ ] Create `scenes/overworld/EncounterManager.tscn`:
+- [x] Create `scenes/overworld/EncounterManager.tscn`:
   - Root: `Node` named `EncounterManager`, attach `EncounterManager.gd`
   - Add child: instance `StepCounter.tscn`, name it `StepCounter`
   - Add child: instance `EncounterPool.tscn`, name it `EncounterPool`

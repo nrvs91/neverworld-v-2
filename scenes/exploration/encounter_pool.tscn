@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://c3ct2tohonpuj" path="res://scripts/exploration/EncounterPool.gd" id="1_7rcyy"]
 
-[node name="EncounterPool" type="Node" unique_id=444306006]
+[node name="EncounterPool" type="Node" unique_id=372091500]
 script = ExtResource("1_7rcyy")
