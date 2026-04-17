@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bd7enjie0adp0"]
+
+[ext_resource type="Script" uid="uid://csnx4ht0uxk8k" path="res://CombatVisuals.gd" id="1_dlml0"]
+
+[node name="CombatVisuals" type="Node" unique_id=928173393]
+script = ExtResource("1_dlml0")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="." unique_id=90111933]

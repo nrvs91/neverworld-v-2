@@ -530,7 +530,7 @@ git commit -m "Add ActiveTokens and CombatSFXComponent stubs"
 - Create: `scripts/combat/CombatVisuals.gd`
 - Create: `scenes/combat/components/CombatVisuals.tscn`
 
-- [ ] Create `scripts/combat/CombatVisuals.gd` — skeleton only, all methods stubbed:
+- [x] Create `scripts/combat/CombatVisuals.gd` — skeleton only, all methods stubbed:
 
 ```gdscript
 class_name CombatVisuals
@@ -577,14 +577,14 @@ func play_ko() -> void: pass
 func play_custom(anim_name: String) -> void: pass
 ```
 
-- [ ] Create `scenes/combat/components/CombatVisuals.tscn` in the Godot editor:
+- [x] Create `scenes/combat/components/CombatVisuals.tscn` in the Godot editor:
   - Root: `Node3D` named `CombatVisuals`, attach `CombatVisuals.gd`
   - Add child: `AnimatedSprite3D` named `AnimatedSprite3D`
   - Save
 
-- [ ] Run the game. No errors. The scene should open cleanly in the editor.
+- [x] Run the game. No errors. The scene should open cleanly in the editor.
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/CombatVisuals.gd scenes/combat/components/CombatVisuals.tscn
 git commit -m "Add CombatVisuals skeleton: stubbed animation beat API"
