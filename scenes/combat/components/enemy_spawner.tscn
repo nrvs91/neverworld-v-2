@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://b0ryywb45q8y3"]
+
+[ext_resource type="Script" uid="uid://q3uxscggn5or" path="res://scripts/combat/EnemySpawner.gd" id="1_c7jr5"]
+
+[node name="EnemySpawner" type="Node" unique_id=687542022]
+script = ExtResource("1_c7jr5")
+
+[node name="Slot1" type="Node3D" parent="." unique_id=890595647]
+
+[node name="Slot2" type="Node3D" parent="." unique_id=738042403]
+
+[node name="Slot3" type="Node3D" parent="." unique_id=1915819194]
+
+[node name="Slot4" type="Node3D" parent="." unique_id=1002240731]
+
+[node name="Slot5" type="Node3D" parent="." unique_id=1011409719]
+
+[node name="Slot6" type="Node3D" parent="." unique_id=1537939853]

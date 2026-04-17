@@ -18,4 +18,4 @@ func initialize_enemy(data: EnemyData) -> void:
 
 func reset_for_combat() -> void:
 	tokens.flush()
-	Log.info("Active token flushed.")
+	Log.info("Active tokens flushed.")

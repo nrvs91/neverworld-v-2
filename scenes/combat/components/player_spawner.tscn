@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://brfxpemqq6odb"]
+
+[ext_resource type="Script" uid="uid://b0aodnfvicqv5" path="res://scripts/combat/PlayerSpawner.gd" id="1_t8qta"]
+[ext_resource type="PackedScene" uid="uid://cf5l83v15605k" path="res://scenes/combat/combat_character.tscn" id="2_ywcoo"]
+
+[node name="PlayerSpawner" type="Node" unique_id=1188138308]
+script = ExtResource("1_t8qta")
+
+[node name="Slot1" type="Node3D" parent="." unique_id=1436921648]
+
+[node name="CombatCharacter" parent="Slot1" unique_id=1740194572 instance=ExtResource("2_ywcoo")]
+
+[node name="Slot2" type="Node3D" parent="." unique_id=344212923]
+
+[node name="CombatCharacter" parent="Slot2" unique_id=1012702137 instance=ExtResource("2_ywcoo")]
+
+[node name="Slot3" type="Node3D" parent="." unique_id=1869200601]
+
+[node name="CombatCharacter" parent="Slot3" unique_id=1376967416 instance=ExtResource("2_ywcoo")]
