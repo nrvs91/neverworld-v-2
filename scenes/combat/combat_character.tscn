@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://cf5l83v15605k"]
+
+[ext_resource type="Script" uid="uid://d3belk5qjktjd" path="res://scripts/combat/CombatCharacter.gd" id="1_m4757"]
+[ext_resource type="PackedScene" uid="uid://cgkdn76vntysh" path="res://scenes/combat/components/vitals_component.tscn" id="2_rmej7"]
+[ext_resource type="PackedScene" uid="uid://c1h4pe14xscwd" path="res://scenes/combat/components/active_tokens.tscn" id="3_1vnrn"]
+[ext_resource type="PackedScene" uid="uid://bd7enjie0adp0" path="res://scenes/combat/components/combat_visuals.tscn" id="4_jdvnq"]
+[ext_resource type="PackedScene" uid="uid://b6km2wpo0tfrr" path="res://scenes/combat/components/combat_sfx_component.tscn" id="5_driwo"]
+
+[node name="CombatCharacter" type="Node3D" unique_id=1740194572]
+script = ExtResource("1_m4757")
+
+[node name="VitalsComponent" parent="." unique_id=24523496 instance=ExtResource("2_rmej7")]
+
+[node name="ActiveTokens" parent="." unique_id=2074358308 instance=ExtResource("3_1vnrn")]
+
+[node name="CombatVisuals" parent="." unique_id=928173393 instance=ExtResource("4_jdvnq")]
+
+[node name="CombatSFXComponent" parent="." unique_id=1268131957 instance=ExtResource("5_driwo")]
