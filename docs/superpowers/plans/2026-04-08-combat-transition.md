@@ -475,7 +475,7 @@ git commit -m "Add VitalsComponent: cur_hp/mp/ap with setup() and reset()"
 - Create: `scripts/combat/ActiveTokens.gd` + `scenes/combat/components/ActiveTokens.tscn`
 - Create: `scripts/combat/CombatSFXComponent.gd` + `scenes/combat/components/CombatSFXComponent.tscn`
 
-- [ ] Create `scripts/combat/ActiveTokens.gd`:
+- [x] Create `scripts/combat/ActiveTokens.gd`:
 
 ```gdscript
 class_name ActiveTokens
@@ -493,7 +493,7 @@ func flush() -> void:
     Log.info("ActiveTokens flushed (stub)")
 ```
 
-- [ ] Create `scripts/combat/CombatSFXComponent.gd`:
+- [x] Create `scripts/combat/CombatSFXComponent.gd`:
 
 ```gdscript
 class_name CombatSFXComponent
@@ -509,9 +509,9 @@ func play_ko() -> void: pass
 func play_footstep() -> void: pass
 ```
 
-- [ ] Create both `.tscn` files following the same pattern as Task 7.
+- [x] Create both `.tscn` files following the same pattern as Task 7.
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/ActiveTokens.gd scenes/combat/components/ActiveTokens.tscn
 git add scripts/combat/CombatSFXComponent.gd scenes/combat/components/CombatSFXComponent.tscn

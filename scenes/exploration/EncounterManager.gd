@@ -19,3 +19,5 @@ func _on_threshold_reached() -> void:
 		combat_environment.scene,
 		combat_bgm.stream,
 	)
+func _exit_tree() -> void:
+	step_counter.threshold_reached.disconnect(_on_threshold_reached)

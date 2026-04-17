@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bncdin51bj5yj"]
 
-[ext_resource type="Script" uid="uid://ce1r8w6i01vj5" path="res://scripts/exploration/EncounterManager.gd" id="1_gek2l"]
+[ext_resource type="Script" uid="uid://ce1r8w6i01vj5" path="res://scenes/exploration/EncounterManager.gd" id="1_gek2l"]
 [ext_resource type="PackedScene" uid="uid://38taytrpa2q7" path="res://scenes/combat/combat_bgm.tscn" id="2_bymy1"]
 [ext_resource type="PackedScene" uid="uid://dto6pj64gobv5" path="res://scenes/combat/combat_environment.tscn" id="3_13d6k"]
 [ext_resource type="PackedScene" uid="uid://bhetgvvx75bn4" path="res://scenes/exploration/encounter_pool.tscn" id="4_1w02n"]
