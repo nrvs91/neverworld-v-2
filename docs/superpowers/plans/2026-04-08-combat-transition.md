@@ -427,7 +427,7 @@ git commit -m "Add EncounterManager + CombatEnvironment + CombatBGM: per-map enc
 - Create: `scripts/combat/VitalsComponent.gd`
 - Create: `scenes/combat/components/VitalsComponent.tscn`
 
-- [ ] Create `scripts/combat/VitalsComponent.gd`:
+- [x] Create `scripts/combat/VitalsComponent.gd`:
 
 ```gdscript
 class_name VitalsComponent
@@ -455,9 +455,9 @@ func reset() -> void:
 
 `setup()` is called at `CombatStart` (reading from save data or enemy base stats). `reset()` will be called by the state reset pass — for now just resets AP.
 
-- [ ] Create `scenes/combat/components/VitalsComponent.tscn`: `Node` root named `VitalsComponent`, attach script, save. You'll need to create the `scenes/combat/components/` folder first.
+- [x] Create `scenes/combat/components/VitalsComponent.tscn`: `Node` root named `VitalsComponent`, attach script, save. You'll need to create the `scenes/combat/components/` folder first.
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/VitalsComponent.gd scenes/combat/components/VitalsComponent.tscn
 git commit -m "Add VitalsComponent: cur_hp/mp/ap with setup() and reset()"

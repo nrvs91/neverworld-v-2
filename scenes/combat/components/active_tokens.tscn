@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c1h4pe14xscwd"]
+
+[ext_resource type="Script" uid="uid://de3fx3rqf42o0" path="res://scripts/combat/ActiveTokens.gd" id="1_ihg65"]
+
+[node name="ActiveTokens" type="Node" unique_id=2074358308]
+script = ExtResource("1_ihg65")
