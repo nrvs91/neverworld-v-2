@@ -5,3 +5,17 @@ extends Node3D
 @onready var tokens: ActiveTokens = $ActiveTokens
 @onready var visuals: CombatVisuals = $CombatVisuals
 @onready var sfx: CombatSFXComponent = $CombatSFXComponent
+
+func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
+	visuals.setup(data.character_sprite)
+	vitals.setup(save_data.cur_hp, save_data.cur_mp)
+	Log.info(data.character_name, "initialized with:", "HP: %d MP: %d" % [vitals.cur_hp, vitals.cur_mp] )
+
+func initialize_enemy(data: EnemyData) -> void:
+	visuals.setup(data.character_sprite)
+	vitals.setup(data.MaxHP, data.MaxMP)
+	Log.info(data.character_name, "initialized with:", "HP: %d MP: %d" % [vitals.cur_hp, vitals.cur_mp] )
+
+func reset_for_combat() -> void:
+	tokens.flush()
+	Log.info("Active token flushed.")

@@ -612,7 +612,7 @@ CombatCharacter (Node3D)
 - Create: `scripts/combat/CombatCharacter.gd`
 - Create: `scenes/combat/CombatCharacter.tscn`
 
-- [ ] Create `scripts/combat/CombatCharacter.gd`:
+- [x] Create `scripts/combat/CombatCharacter.gd`:
 
 ```gdscript
 class_name CombatCharacter
@@ -647,7 +647,7 @@ func get_anchor(kind: StringName) -> Node3D:
     return null
 ```
 
-- [ ] Create `scenes/combat/CombatCharacter.tscn` in the Godot editor:
+- [x] Create `scenes/combat/CombatCharacter.tscn` in the Godot editor:
   - Root: `Node3D` named `CombatCharacter`, attach `CombatCharacter.gd`
   - Add child: instance `scenes/combat/components/VitalsComponent.tscn`
   - Add child: instance `scenes/combat/components/ActiveTokens.tscn`
@@ -657,9 +657,9 @@ func get_anchor(kind: StringName) -> Node3D:
   - Add child: `Node3D` named `CombatTextAnchor` — set position to `(0, 1.8, 0)`
   - Save
 
-- [ ] Run the game. No errors.
+- [x] Run the game. No errors.
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/CombatCharacter.gd scenes/combat/CombatCharacter.tscn
 git commit -m "Add CombatCharacter scene: VitalsComponent, ActiveTokens, CombatVisuals, CombatSFXComponent, anchors"
