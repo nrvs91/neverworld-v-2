@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 Globals="*uid://daeb0hc18td04"
 CombatEvents="*uid://b5fsf8prw34tw"
 ExplorationEvents="*uid://b3kfhfuxcmp55"
+PartyManager="*uid://chixfnmc51pve"
 
 [display]
 
