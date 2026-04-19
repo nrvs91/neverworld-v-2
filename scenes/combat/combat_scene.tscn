@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dk5r7ftfimkna"]
+
+[ext_resource type="Script" uid="uid://cumyi103il3iq" path="res://scripts/combat/CombatScene.gd" id="1_jecyb"]
+[ext_resource type="PackedScene" uid="uid://brfxpemqq6odb" path="res://scenes/combat/components/player_spawner.tscn" id="4_n81vl"]
+[ext_resource type="PackedScene" uid="uid://b0ryywb45q8y3" path="res://scenes/combat/components/enemy_spawner.tscn" id="5_w220i"]
+
+[node name="CombatScene" type="Node" unique_id=149856879]
+script = ExtResource("1_jecyb")
+
+[node name="PlayerSpawner" parent="." unique_id=1188138308 instance=ExtResource("4_n81vl")]
+
+[node name="EnemySpawner" parent="." unique_id=687542022 instance=ExtResource("5_w220i")]
+
+[node name="EnvironmentMount" type="Node3D" parent="." unique_id=1573305683]
+
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="." unique_id=1097180899]

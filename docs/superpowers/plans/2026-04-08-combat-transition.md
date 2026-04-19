@@ -675,7 +675,7 @@ git commit -m "Add CombatCharacter scene: VitalsComponent, ActiveTokens, CombatV
 - Create: `scripts/combat/PlayerSpawner.gd` + `scenes/combat/PlayerSpawner.tscn`
 - Create: `scripts/combat/EnemySpawner.gd` + `scenes/combat/EnemySpawner.tscn`
 
-- [ ] Create `scripts/combat/PlayerSpawner.gd`:
+- [x] Create `scripts/combat/PlayerSpawner.gd`:
 
 ```gdscript
 class_name PlayerSpawner
@@ -699,7 +699,7 @@ func initialize() -> void:
         _characters[i].initialize_player(slot_data["player_data"], slot_data["save_data"])
 ```
 
-- [ ] Create `scripts/combat/EnemySpawner.gd`:
+- [x] Create `scripts/combat/EnemySpawner.gd`:
 
 ```gdscript
 class_name EnemySpawner
@@ -734,19 +734,19 @@ func clear() -> void:
     Log.info("EnemySpawner cleared")
 ```
 
-- [ ] Create `scenes/combat/PlayerSpawner.tscn`:
+- [x] Create `scenes/combat/PlayerSpawner.tscn`:
   - Root: `Node` named `PlayerSpawner`, attach script
   - Three children: `Node3D` named `Slot1`, `Slot2`, `Slot3` — position them in 3D space at authored positions (roughly -2, 0, 2 on the X axis for now)
   - Inside each Slot: instance a `CombatCharacter.tscn`
   - Save
 
-- [ ] Create `scenes/combat/EnemySpawner.tscn`:
+- [x] Create `scenes/combat/EnemySpawner.tscn`:
   - Root: `Node` named `EnemySpawner`, attach script
   - Six children: `Node3D` named `Slot1`–`Slot6` — position them opposite the player slots
   - Leave slots empty — enemies are instantiated at runtime
   - Save
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/PlayerSpawner.gd scenes/combat/PlayerSpawner.tscn
 git add scripts/combat/EnemySpawner.gd scenes/combat/EnemySpawner.tscn
@@ -1002,54 +1002,6 @@ git commit -m "Add ScreenFader: awaitable fade_out/fade_in via AnimationPlayer"
 ## Task 15 — GameManager FSM ⚠️ REPLACED
 
 > **This task has been replaced.** See `docs/superpowers/plans/2026-04-13-game-flow-bootstrap.md` — Task C defines the three-state GameManager (MENU / OVERWORLD / COMBAT) with scene mounting/unmounting, Main Menu, and `Globals.skip_to_overworld` dev toggle. Use that version instead of the two-state version below.
-
-<details>
-<summary>Original two-state version (superseded — kept for reference)</summary>
-
-```gdscript
-class_name GameManager
-extends Node
-
-enum State { OVERWORLD, COMBAT }
-
-var state: State = State.OVERWORLD
-var current_overworld: Node = null
-
-@onready var fader: ScreenFader = $ScreenFader
-@onready var combat_scene: CombatScene = $CombatScene
-
-func _ready() -> void:
-    Log.info("GameManager ready")
-    CombatEvents.encounter_triggered.connect(_on_encounter_triggered)
-    combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
-
-func _unhandled_input(event: InputEvent) -> void:
-    if event.is_action_pressed("debug_trigger_combat"):
-        CombatEvents.encounter_triggered.emit(CombatConfig.new(), null, null)
-
-func _on_encounter_triggered(composition: CombatConfig, environment_scene: PackedScene, bgm_stream: AudioStream) -> void:
-    if state != State.OVERWORLD:
-        return
-    state = State.COMBAT
-    if current_overworld != null:
-        current_overworld.process_mode = Node.PROCESS_MODE_DISABLED
-    await fader.fade_out()
-    combat_scene.process_mode = Node.PROCESS_MODE_INHERIT
-    combat_scene.initialize(composition, environment_scene, bgm_stream)
-    await fader.fade_in()
-    Log.info("GameManager: entered COMBAT state")
-
-func end_combat() -> void:
-    await fader.fade_out()
-    combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
-    if current_overworld != null:
-        current_overworld.process_mode = Node.PROCESS_MODE_INHERIT
-    await fader.fade_in()
-    state = State.OVERWORLD
-    Log.info("GameManager: returned to OVERWORLD state")
-```
-
-</details>
 
 ---
 
