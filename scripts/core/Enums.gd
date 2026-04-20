@@ -17,3 +17,9 @@ enum LogLevel {
 	WARNING,
 	ERROR
 }
+
+enum GameState {
+	MAINMENU,
+	OVERWORLD,
+	COMBAT
+}

@@ -96,8 +96,8 @@ GameManager doesn't care what the current scene *is*. It knows three states and 
 
 That's it. One export. You set it in the editor inspector on the Globals node. When `true`, GameManager skips the menu. When `false`, it shows the menu normally.
 
-- [ ] Add the export to Globals.gd
-- [ ] Verify in the editor that the property appears in the Globals inspector
+- [x] Add the export to Globals.gd
+- [x] Verify in the editor that the property appears in the Globals inspector
 
 ---
 
@@ -126,9 +126,9 @@ The scene is a `Control` (or `CanvasLayer`) with:
 
 That's it. No title art, no animation. A button and a callback. You'll add the rest later.
 
-- [ ] Create `scripts/ui/MainMenu.gd`
-- [ ] Create `scenes/ui/MainMenu.tscn` — Control or CanvasLayer root, centered button, signal wired
-- [ ] Run the game with `skip_to_overworld = true`. Menu shouldn't appear (GM skips it). Verify this works *before* implementing the menu branch.
+- [x] Create `scripts/ui/MainMenu.gd`
+- [x] Create `scenes/ui/MainMenu.tscn` — Control or CanvasLayer root, centered button, signal wired
+- [x] Run the game with `skip_to_overworld = true`. Menu shouldn't appear (GM skips it). Verify this works *before* implementing the menu branch.
 
 ---
 
