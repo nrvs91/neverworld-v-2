@@ -33,10 +33,22 @@ func start_new_game() -> void:
 	_load_overworld("res://main.tscn")
 	await screen_fader.fade_in()
 	state = Enums.GameState.OVERWORLD
-	Log.info("")
-
+	Log.info("New Game started!")
 
 func _load_overworld(path: String) -> void:
 	var scene: PackedScene = load(path)
 	var instance: Node = scene.instantiate()
 	current_scene.add_child(instance)
+
+func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream) -> void:
+	Log.info("Encounter triggered, transitioning to combat")
+	if state != Enums.GameState.OVERWORLD:
+		return
+	current_overworld.process_mode = Node.PROCESS_MODE_DISABLED
+	await screen_fader.fade_out()
+	state = Enums.GameState.COMBAT
+	combat_scene.process_mode = Node.PROCESS_MODE_INHERIT
+	combat_scene.initialize(composition, environment, bgm)
+	await screen_fader.fade_in()
+
+	
