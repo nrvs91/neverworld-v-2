@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EncounterPoolEntry" format=3 uid="uid://dd2x1oemljy4y"]
+
+[ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="1_2vuw3"]
+[ext_resource type="Resource" uid="uid://c848v0kcigvch" path="res://resources/combat config/test_combatconfig.tres" id="1_23jk2"]
+
+[resource]
+script = ExtResource("1_2vuw3")
+composition = ExtResource("1_23jk2")
+metadata/_custom_type_script = "uid://bfpdwl1kiumbn"

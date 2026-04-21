@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="CombatConfig" format=3 uid="uid://c848v0kcigvch"]
+
+[ext_resource type="Script" uid="uid://belmvcu0giqeb" path="res://scripts/combat/CombatConfig.gd" id="1_32m7r"]
+[ext_resource type="Script" uid="uid://db0mir7kfmgdv" path="res://scripts/characters/EnemyData.gd" id="2_hsjgl"]
+
+[resource]
+script = ExtResource("1_32m7r")
+slots = Array[ExtResource("2_hsjgl")]([null, null, null])
+metadata/_custom_type_script = "uid://belmvcu0giqeb"

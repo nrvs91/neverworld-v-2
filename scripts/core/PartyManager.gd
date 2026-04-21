@@ -9,7 +9,7 @@ var _registry: Dictionary = {}
 func _ready() -> void:
 	Log.info("PartyManager ready")
 	_load_registry()
-	_load_save()
+	#_load_save()
 
 func _load_registry() -> void:
 	# Hardcoded for now — add an entry here each time you create a PlayerData .tres.

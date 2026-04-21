@@ -41,9 +41,9 @@ func _load_overworld(path: String) -> void:
 	current_scene.add_child(instance)
 
 func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream) -> void:
-	Log.info("Encounter triggered, transitioning to combat")
 	if state != Enums.GameState.OVERWORLD:
 		return
+	Log.info("Encounter triggered, transitioning to combat")
 	current_overworld.process_mode = Node.PROCESS_MODE_DISABLED
 	await screen_fader.fade_out()
 	state = Enums.GameState.COMBAT
@@ -51,4 +51,10 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
 	combat_scene.initialize(composition, environment, bgm)
 	await screen_fader.fade_in()
 
-	
+func end_combat() -> void:
+	Log.info("Combat finished, transitioning to overworld")
+	await screen_fader.fade_out()
+	combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
+	current_overworld.process_mode = Node.PROCESS_MODE_INHERIT
+	await screen_fader.fade_in()
+	state = Enums.GameState.OVERWORLD

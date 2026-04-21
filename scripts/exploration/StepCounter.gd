@@ -3,7 +3,7 @@ extends Node
 
 signal threshold_reached
 
-const RESET_VALUE: int = 256
+const RESET_VALUE: int = 32
 
 var _counter: int = RESET_VALUE
 

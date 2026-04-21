@@ -11,16 +11,17 @@ config_version=5
 [application]
 
 config/name="NEVERWORLD_V2"
-run/main_scene="uid://c630i4ag3u530"
+run/main_scene="uid://b31ecmih7vxaa"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 Globals="*uid://daeb0hc18td04"
-CombatEvents="*uid://b5fsf8prw34tw"
 ExplorationEvents="*uid://b3kfhfuxcmp55"
+CombatEvents="*uid://b5fsf8prw34tw"
 PartyManager="*uid://chixfnmc51pve"
+GameManager="*uid://c630i4ag3u530"
 
 [display]
 
