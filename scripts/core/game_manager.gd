@@ -39,6 +39,7 @@ func _load_overworld(path: String) -> void:
 	var scene: PackedScene = load(path)
 	var instance: Node = scene.instantiate()
 	current_scene.add_child(instance)
+	current_overworld = instance
 
 func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream) -> void:
 	if state != Enums.GameState.OVERWORLD:

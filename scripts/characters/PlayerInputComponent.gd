@@ -27,7 +27,7 @@ func _physics_process(_delta: float) -> void:
 	direction.y = Input.get_axis("movement_up", "movement_down")
 
 	if direction != _last_direction:
-		Log.debug("Input direction: ", direction)
+		#Log.debug("Input direction: ", direction)
 		_last_direction = direction
 		direction_changed.emit(direction)
 	

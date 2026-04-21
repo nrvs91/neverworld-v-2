@@ -16,7 +16,7 @@ func _exit_tree() -> void:
 
 func _on_step_taken(_who: Node3D) -> void:
 	_counter -= randi_range(1, 8)
-	Log.debug("step_counter", "remaining", _counter)
+	#Log.debug("step_counter", "remaining", _counter)
 	if _counter <= 0:
 		_counter = RESET_VALUE
 		Log.info("StepCounter threshold reached, resetting to", RESET_VALUE)
