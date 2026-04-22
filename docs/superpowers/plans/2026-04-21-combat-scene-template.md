@@ -20,6 +20,7 @@
 scripts/combat/PlayerSpawner.gd        MODIFY — rewrite to ephemeral (mirrors EnemySpawner)
 scenes/combat/components/player_spawner.tscn  MODIFY — remove pre-placed CombatCharacters from slots
 scripts/combat/CombatCharacter.gd      MODIFY — remove reset_for_combat() (dead code)
+scripts/combat/EnemySpawner.gd         MODIFY — add Log.info to initialize() for consistency
 scripts/combat/CombatScene.gd          MODIFY — add camera.make_current(), add cleanup(), clear on init
 scenes/combat/combat_scene.tscn        MODIFY — add Camera3D, CameraTargets, placeholder floor
 scripts/core/game_manager.gd           MODIFY — save/restore overworld camera, call cleanup()
@@ -75,13 +76,23 @@ func reset_for_combat() -> void:
     Log.info("Active tokens flushed.")
 ```
 
+- [ ] Open `scripts/combat/EnemySpawner.gd`. Add a log line at the end of `initialize()` so both spawners are consistent:
+
+```gdscript
+func initialize(composition: CombatConfig) -> void:
+    clear()
+    # ... existing spawn logic stays exactly as-is ...
+    Log.info("EnemySpawner initialized")  # add this line at the end
+```
+
 - [ ] Run the game (F5). Walk until an encounter triggers. In the Output panel you should see:
-  - `PlayerSpawner cleared` (from the `clear()` call inside `initialize()`)
-  - `PlayerSpawner initialized`
-  - `EnemySpawner cleared`
+  - `PlayerSpawner cleared` then `PlayerSpawner initialized`
+  - `EnemySpawner cleared` then `EnemySpawner initialized`
   - No errors about missing children or null references
 
   If PartyManager has no party data yet, you'll see no character init lines for players — that's expected.
+
+  **Note on subsequent encounters:** On the second encounter onwards, `PlayerSpawner cleared` will appear **twice** — once from `cleanup()` at end of combat, and again from the internal `clear()` inside `initialize()`. That's intentional — `initialize()` always clears first so it's safe to call even if cleanup wasn't called. The double log is normal, not a bug.
 
 - [ ] Commit:
 ```bash
@@ -97,7 +108,11 @@ git commit -m "Make PlayerSpawner ephemeral: spawn/clear per encounter, mirrors 
 
 **How Godot cameras work:** In Godot 4, exactly one `Camera3D` is "current" per viewport at a time. `make_current()` tells Godot "render through me now." It doesn't matter which node calls it or where in the tree the camera lives. Disabling a node with `process_mode = DISABLED` does NOT automatically un-current its camera — you have to explicitly switch.
 
-**Files:** Modify `scripts/combat/CombatScene.gd`, modify `scripts/core/game_manager.gd`
+**Files:** Modify `scripts/combat/CombatScene.gd`, modify `scripts/core/game_manager.gd`, modify `scenes/combat/combat_scene.tscn`
+
+- [ ] **Editor first:** Open `scenes/combat/combat_scene.tscn` in the Godot editor. Add a `Camera3D` node as a direct child of the root `CombatScene` node, named `Camera3D`. Set `Projection` to `Orthographic` and `Size` to `3.0`. Leave position and rotation at defaults for now — Task 3 sets the final values. Save the scene.
+
+  **Do this before touching any script.** The script you're about to write references `$Camera3D` via `@onready` — if that node doesn't exist in the scene when the game runs, Godot throws a null reference error.
 
 - [ ] Open `scripts/combat/CombatScene.gd`. Rewrite it:
 
@@ -137,10 +152,11 @@ func _clear_environment() -> void:
 
 Note: `player_spawner.initialize()` already calls `clear()` internally, so the old `reset_characters()` call is gone. `cleanup()` is the new method GameManager will call at end of combat.
 
-- [ ] Open `scripts/core/game_manager.gd`. Add a variable to store the overworld camera:
+- [ ] Open `scripts/core/game_manager.gd`. Add a variable to store the overworld camera. Place it next to the existing `var current_overworld: Node = null` line — keep related state together:
 
 ```gdscript
-var _overworld_camera: Camera3D = null
+var current_overworld: Node = null    # already exists
+var _overworld_camera: Camera3D = null  # add this line right below it
 ```
 
 - [ ] In `_on_encounter_triggered()`, save the current camera before switching. Add this line **before** `combat_scene.process_mode = Node.PROCESS_MODE_INHERIT`:
@@ -165,12 +181,6 @@ func end_combat() -> void:
     await screen_fader.fade_in()
     state = Enums.GameState.OVERWORLD
 ```
-
-- [ ] Now open `scenes/combat/combat_scene.tscn` in the Godot editor. Add a `Camera3D` node as a direct child of the root `CombatScene` node, named `Camera3D`.
-
-  Set it to **orthographic** projection: in the Inspector with the Camera3D selected, set `Projection` to `Orthographic`. Set `Size` to `3.0`. This matches the overworld camera.
-
-  For the rotation and position: look at the overworld's Camera3D in the editor (it's in your existing overworld scene) and copy its `rotation` values to this camera. The goal is the same isometric angle. Leave the position at `(0, 0, 0)` for now — you'll move it in Task 3 once slot positions are in place.
 
 - [ ] Run the game (F5). Trigger an encounter. The screen should no longer go to a black void — you'll be looking through the combat camera, which currently frames the origin. It'll look empty (no floor yet, slots at origin), but **no black screen** means the camera switch worked.
 
