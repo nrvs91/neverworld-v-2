@@ -7,7 +7,6 @@ extends Node
 @onready var bgm_player: AudioStreamPlayer = $BGMPlayer
 
 func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioStream):
-	player_spawner.reset_characters()
 	player_spawner.initialize()
 	enemy_spawner.initialize(composition)
 	if environment:
