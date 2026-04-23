@@ -1,23 +1,23 @@
 class_name PlayerSpawner
 extends Node
 
-var _characters: Array[CombatCharacter] = []
-
-func _ready() -> void:
-	for slot in get_children():
-		var character: CombatCharacter = slot.get_child(0)
-		_characters.append(character)
-	Log.info("PlayerSpawner ready, slots:", _characters.size())
+const CombatCharacterScene = preload("res://scenes/combat/combat_character.tscn")                                                                 
 
 func initialize() -> void:
-	for i in _characters.size():
-		var character = _characters[i]
+	clear()
+	var slots = get_children()
+	for i in slots.size():
+		var slot = slots[i]
 		var slot_data = PartyManager.get_slot(i)
-		if slot_data.is_empty(): 
+		if slot_data.is_empty():
 			continue
-		else:
-			character.initialize_player(slot_data["player_data"], slot_data["save_data"])
+		var character = CombatCharacterScene.instantiate()
+		slot.add_child(character)
+		character.initialize_player(slot_data["player_data"], slot_data["save_data"])
+	Log.info("PlayerSpawner initialized.")
 
-func reset_characters() -> void:
-	for character in _characters:
-		character.reset_for_combat()
+func clear() -> void:
+	for slot in get_children():
+		for child in slot.get_children():
+			child.queue_free()
+	Log.info("PlayerSpawner cleared")

@@ -19,3 +19,4 @@ func initialize(composition: CombatConfig):
 		var character = CombatCharacterScene.instantiate()
 		slots[i].add_child(character)
 		character.initialize_enemy(enemy_data)
+	Log.info("EnemySpawner initialized.")

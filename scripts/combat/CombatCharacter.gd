@@ -15,7 +15,3 @@ func initialize_enemy(data: EnemyData) -> void:
 	visuals.setup(data.character_sprite)
 	vitals.setup(data.MaxHP, data.MaxMP)
 	Log.info(data.character_name, "initialized with:", "HP: %d MP: %d" % [vitals.cur_hp, vitals.cur_mp] )
-
-func reset_for_combat() -> void:
-	tokens.flush()
-	Log.info("Active tokens flushed.")
