@@ -3,7 +3,9 @@ extends Node
 @onready var screen_fader: ScreenFader = $ScreenFader
 @onready var combat_scene: CombatScene = $CombatScene
 @onready var current_scene: Node =  $CurrentScene
+
 var current_overworld: Node = null
+var _overworld_camera: Camera3D
 var state: Enums.GameState = Enums.GameState.MAINMENU
 const MAIN_MENU_SCENE: PackedScene = preload("res://scenes/UI/main_menu.tscn")
 
@@ -46,6 +48,7 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
 		return
 	Log.info("Encounter triggered, transitioning to combat")
 	current_overworld.process_mode = Node.PROCESS_MODE_DISABLED
+	_overworld_camera = get_viewport().get_camera_3d()
 	await screen_fader.fade_out()
 	state = Enums.GameState.COMBAT
 	combat_scene.process_mode = Node.PROCESS_MODE_INHERIT
@@ -55,7 +58,10 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
 func end_combat() -> void:
 	Log.info("Combat finished, transitioning to overworld")
 	await screen_fader.fade_out()
+	combat_scene.cleanup()
 	combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
+	if _overworld_camera != null:
+		_overworld_camera.make_current()
 	current_overworld.process_mode = Node.PROCESS_MODE_INHERIT
 	await screen_fader.fade_in()
 	state = Enums.GameState.OVERWORLD
