@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cynamhv88cbaw"]
+
+[sub_resource type="Environment" id="Environment_4ac7y"]
+background_mode = 1
+background_color = Color(0.44652337, 0.5697383, 0.57104266, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.58383155, 0.58383155, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4ac7y"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3sx7c"]
+
+[node name="SpikeRoot" type="Node" unique_id=1196368249]
+
+[node name="EnvWrapper" type="Node" parent="." unique_id=1137833059]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="EnvWrapper" unique_id=1212685673]
+environment = SubResource("Environment_4ac7y")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="EnvWrapper" unique_id=503740185]
+transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1797707576]
+transform = Transform3D(0.70710677, -0.35355338, 0.6123724, 0, 0.8660254, 0.5, -0.70710677, -0.35355338, 0.6123724, 3, 3, 3)
+projection = 1
+current = true
+size = 4.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1166045773]
+mesh = SubResource("BoxMesh_4ac7y")
+surface_material_override/0 = SubResource("StandardMaterial3D_3sx7c")
