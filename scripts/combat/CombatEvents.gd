@@ -7,3 +7,4 @@ extends Node
 #   - bgm:         the audio stream to play during the fight
 # Any of the last two may be null (e.g. for the debug F1 hotkey).
 signal encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
+signal scripted_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
