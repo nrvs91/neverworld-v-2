@@ -394,4 +394,7 @@ The current codebase already implements much of this design under different name
 **Verification step in the implementation plan:**
 The "process-disabled zone keeps rendering its `WorldEnvironment`" assumption is load-bearing for this whole architecture. The implementation plan must start with a small spike that confirms this behaviour in Godot 4.6 before any rename/migration work begins. If render nodes don't behave as expected under `PROCESS_MODE_DISABLED`, the design needs revisiting.
 
+**Verification result: PASSED (2026-04-27)**
+Spike scene `scenes/spikes/process_disabled_render_test.tscn` — a `WorldEnvironment` + `DirectionalLight3D` nested under a plain `Node` (`EnvWrapper`), with a lit cube in view. After 5 seconds, `EnvWrapper.process_mode = PROCESS_MODE_DISABLED` was set at runtime. The cube's ambient tint and directional shading were completely unchanged. Render nodes keep rendering regardless of process mode on their ancestor. Architecture proceeds as designed.
+
 **Implementation order is plan territory, not spec.** A separate implementation plan will sequence the migration so each step is testable in Godot before moving on.

@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://cynamhv88cbaw"]
 
+[ext_resource type="Script" uid="uid://c4wh7rsviiymg" path="res://scenes/spikes/process_disabled_render_test.gd" id="1_3sx7c"]
+
 [sub_resource type="Environment" id="Environment_4ac7y"]
 background_mode = 1
 background_color = Color(0.44652337, 0.5697383, 0.57104266, 1)
@@ -11,6 +13,7 @@ ambient_light_color = Color(1, 0.58383155, 0.58383155, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3sx7c"]
 
 [node name="SpikeRoot" type="Node" unique_id=1196368249]
+script = ExtResource("1_3sx7c")
 
 [node name="EnvWrapper" type="Node" parent="." unique_id=1137833059]
 
