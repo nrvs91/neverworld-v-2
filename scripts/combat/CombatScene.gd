@@ -22,12 +22,3 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 		bgm_player.stream = bgm
 		bgm_player.play()
 	Log.info("CombatScene initialized.")
-
-func cleanup () -> void:
-	player_spawner.clear()
-	enemy_spawner.clear()
-	bgm_player.stop()
-	for i in environment_mount.get_children():
-		i.queue_free()
-	_clear_environment()
-	Log.info("CombatScene cleaned up.")

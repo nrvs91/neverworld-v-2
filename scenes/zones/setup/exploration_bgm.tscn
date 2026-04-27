@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://boj4winxencra"]
+
+[ext_resource type="Script" uid="uid://igynwyd17e6w" path="res://scripts/zones/ExplorationBGM.gd" id="1_qdr7s"]
+
+[node name="ExplorationBGM" type="AudioStreamPlayer" unique_id=236339470]
+script = ExtResource("1_qdr7s")

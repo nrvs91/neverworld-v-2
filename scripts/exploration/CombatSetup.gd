@@ -1,4 +1,4 @@
-class_name EncounterManager
+class_name CombatSetup
 extends Node
 
 @onready var step_counter: StepCounter = $StepCounter
@@ -7,7 +7,7 @@ extends Node
 @onready var combat_bgm: CombatBGM = $CombatBGM
 
 func _ready() -> void:
-	Log.info("EncounterManager ready")
+	Log.info("CombatSetup ready")
 	step_counter.threshold_reached.connect(_on_threshold_reached)
 
 func _on_threshold_reached() -> void:

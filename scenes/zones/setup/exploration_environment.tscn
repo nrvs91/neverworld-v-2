@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dg60q5mivu3gm"]
+
+[ext_resource type="Script" uid="uid://ca8megnfi6xfc" path="res://scripts/zones/ExplorationEnvironment.gd" id="1_t2v8a"]
+
+[node name="ExplorationEnvironment" type="Node" unique_id=331584603]
+script = ExtResource("1_t2v8a")

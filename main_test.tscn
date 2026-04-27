@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://cljr3sxyildr7"]
 
-[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://scenes/characters/overworld_character.tscn" id="1_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://scenes/characters/player_input_component.tscn" id="2_lquwl"]
-[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://scenes/characters/movement_component.tscn" id="3_7mycd"]
-[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/VisualComponent.tscn" id="4_272bh"]
-[ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/encounter_manager.tscn" id="5_lquwl"]
-[ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="6_272bh"]
-[ext_resource type="Resource" uid="uid://dd2x1oemljy4y" path="res://resources/combat config/combat_pools/test_enviroment_1.tres" id="7_5vw27"]
+[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://scenes/characters/overworld_character.tscn" id="1_5liib"]
+[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://scenes/characters/player_input_component.tscn" id="2_wtkvm"]
+[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://scenes/characters/movement_component.tscn" id="3_t8fg7"]
+[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/VisualComponent.tscn" id="4_w3bg8"]
+[ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/zones/setup/combat_setup.tscn" id="5_y7den"]
+[ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="6_48rq1"]
+[ext_resource type="Resource" uid="uid://dd2x1oemljy4y" path="res://resources/combat config/combat_pools/test_enviroment_1.tres" id="7_76qxq"]
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7dm0k"]
 
@@ -25,7 +25,7 @@ albedo_color = Color(1, 0.3019608, 1, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
 albedo_color = Color(0.25490198, 1, 1, 1)
 
-[node name="Main" type="Node" unique_id=1572606780]
+[node name="MainTest" type="Node" unique_id=1572606780]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1816998461]
 camera_attributes = SubResource("CameraAttributesPractical_7dm0k")
@@ -57,27 +57,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20000005, 0.1, -3.5000002)
 mesh = SubResource("BoxMesh_ig7tw")
 surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")
 
-[node name="overworld_character" parent="." unique_id=1453498207 node_paths=PackedStringArray("movement", "player_input", "visual") instance=ExtResource("1_1bvp3")]
+[node name="overworld_character" parent="." unique_id=1453498207 node_paths=PackedStringArray("movement", "player_input", "visual") instance=ExtResource("1_5liib")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 movement = NodePath("MovementComponent")
 player_input = NodePath("PlayerInputComponent")
 visual = NodePath("CharacterVisualComponent")
 
-[node name="PlayerInputComponent" parent="overworld_character" unique_id=947896155 instance=ExtResource("2_lquwl")]
+[node name="PlayerInputComponent" parent="overworld_character" unique_id=947896155 instance=ExtResource("2_wtkvm")]
 
-[node name="MovementComponent" parent="overworld_character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_7mycd")]
+[node name="MovementComponent" parent="overworld_character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_t8fg7")]
 controller = NodePath("../PlayerInputComponent")
 movement_speed = 1.1
 step_distance = 0.5
 
-[node name="CharacterVisualComponent" parent="overworld_character" unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_272bh")]
+[node name="CharacterVisualComponent" parent="overworld_character" unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_w3bg8")]
 controller = NodePath("../PlayerInputComponent")
 
 [node name="System" type="Node" parent="." unique_id=1536314780]
 
-[node name="EncounterManager" parent="System" unique_id=1675216195 instance=ExtResource("5_lquwl")]
+[node name="CombatSetup" parent="System" unique_id=1675216195 instance=ExtResource("5_y7den")]
 
-[node name="EncounterPool" parent="System/EncounterManager" index="2" unique_id=444306006]
-entries = Array[ExtResource("6_272bh")]([ExtResource("7_5vw27")])
+[node name="EncounterPool" parent="System/CombatSetup" index="2" unique_id=444306006]
+entries = Array[ExtResource("6_48rq1")]([ExtResource("7_76qxq")])
 
-[editable path="System/EncounterManager"]
+[editable path="System/CombatSetup"]

@@ -1,15 +1,14 @@
 [gd_scene format=3 uid="uid://c630i4ag3u530"]
 
-[ext_resource type="Script" uid="uid://dx264tylicvvl" path="res://scripts/core/game_manager.gd" id="1_vegsa"]
+[ext_resource type="Script" uid="uid://dx264tylicvvl" path="res://scripts/core/GameManager.gd" id="1_vegsa"]
 [ext_resource type="PackedScene" uid="uid://bb8y5pk8vl366" path="res://scenes/core/screen_fader.tscn" id="2_504au"]
-[ext_resource type="PackedScene" uid="uid://dk5r7ftfimkna" path="res://scenes/combat/combat_scene.tscn" id="3_35d60"]
+[ext_resource type="PackedScene" uid="uid://cjdbek1xujf70" path="res://scenes/zones/rowahl_plains.tscn" id="2_vegsa"]
 [ext_resource type="PackedScene" uid="uid://l556qax1nlnr" path="res://scenes/core/current_scene.tscn" id="4_ktsht"]
 
 [node name="GameManager" type="Node" unique_id=238766830]
 script = ExtResource("1_vegsa")
+starting_zone = ExtResource("2_vegsa")
 
 [node name="ScreenFader" parent="." unique_id=508449453 instance=ExtResource("2_504au")]
-
-[node name="CombatScene" parent="." unique_id=149856879 instance=ExtResource("3_35d60")]
 
 [node name="CurrentScene" parent="." unique_id=765220425 instance=ExtResource("4_ktsht")]

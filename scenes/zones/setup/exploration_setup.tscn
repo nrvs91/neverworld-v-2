@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://ccc01hbmakpr1"]
+
+[ext_resource type="Script" uid="uid://d3p0krxurlikw" path="res://scripts/zones/ExplorationSetup.gd" id="1_6cf66"]
+[ext_resource type="PackedScene" uid="uid://dg60q5mivu3gm" path="res://scenes/zones/setup/exploration_environment.tscn" id="2_pdqlu"]
+[ext_resource type="PackedScene" uid="uid://boj4winxencra" path="res://scenes/zones/setup/exploration_bgm.tscn" id="3_mbpxm"]
+
+[node name="ExplorationSetup" type="Node" unique_id=331584603]
+script = ExtResource("1_6cf66")
+
+[node name="ExplorationBGM" parent="." unique_id=513321565 instance=ExtResource("3_mbpxm")]
+
+[node name="ExplorationEnvironment" parent="." unique_id=1731598771 instance=ExtResource("2_pdqlu")]
