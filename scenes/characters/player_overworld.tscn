@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://b41chumy0hvcy"]
+
+[ext_resource type="Script" uid="uid://c8v7dpd23hu5k" path="res://scenes/characters/PlayerOverworld.gd" id="1_5mj0f"]
+[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://scenes/characters/components/player_input_component.tscn" id="2_glrvo"]
+[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://scenes/characters/components/movement_component.tscn" id="3_6velj"]
+[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/components/visuals_component.tscn" id="4_y1y88"]
+
+[node name="PlayerOverworld" type="Node3D" unique_id=1620993226]
+script = ExtResource("1_5mj0f")
+
+[node name="PlayerInputComponent" parent="." unique_id=947896155 instance=ExtResource("2_glrvo")]
+
+[node name="MovementComponent" parent="." unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_6velj")]
+controller = NodePath("../PlayerInputComponent")
+
+[node name="VisualComponent" parent="." unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_y1y88")]
+controller = NodePath("../PlayerInputComponent")
+
+[editable path="PlayerInputComponent"]

@@ -9,10 +9,12 @@ var current_overworld: Node = null
 var _overworld_camera: Camera3D
 var _current_combat: CombatScene = null
 var state: Enums.GameState = Enums.GameState.MAINMENU
+var _pawn: PlayerOverworld = null
 
 #PRELOADS
 const MAIN_MENU_SCENE: PackedScene = preload("res://scenes/UI/main_menu.tscn")
 const COMBAT_SCENE: PackedScene = preload("res://scenes/combat/combat_scene.tscn")
+const PLAYER_SCENE: PackedScene = preload("res://scenes/characters/player_overworld.tscn")
 
 func _ready() -> void:
 	CombatEvents.encounter_triggered.connect(_on_encounter_triggered)
@@ -45,6 +47,9 @@ func _load_overworld(zone: PackedScene) -> void:
 	var instance: Node = zone.instantiate()
 	current_scene.add_child(instance)
 	current_overworld = instance
+	if _pawn == null:
+		_pawn = PLAYER_SCENE.instantiate()
+		add_child(_pawn)
 
 func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream) -> void:
 	if state != Enums.GameState.OVERWORLD:

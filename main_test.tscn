@@ -1,9 +1,5 @@
 [gd_scene format=3 uid="uid://cljr3sxyildr7"]
 
-[ext_resource type="PackedScene" uid="uid://ctx81yny1u0ep" path="res://scenes/characters/overworld_character.tscn" id="1_5liib"]
-[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://scenes/characters/player_input_component.tscn" id="2_wtkvm"]
-[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://scenes/characters/movement_component.tscn" id="3_t8fg7"]
-[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/VisualComponent.tscn" id="4_w3bg8"]
 [ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/zones/setup/combat_setup.tscn" id="5_y7den"]
 [ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="6_48rq1"]
 [ext_resource type="Resource" uid="uid://dd2x1oemljy4y" path="res://resources/combat config/combat_pools/test_enviroment_1.tres" id="7_76qxq"]
@@ -56,22 +52,6 @@ surface_material_override/0 = SubResource("StandardMaterial3D_ig7tw")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20000005, 0.1, -3.5000002)
 mesh = SubResource("BoxMesh_ig7tw")
 surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")
-
-[node name="overworld_character" parent="." unique_id=1453498207 node_paths=PackedStringArray("movement", "player_input", "visual") instance=ExtResource("1_5liib")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
-movement = NodePath("MovementComponent")
-player_input = NodePath("PlayerInputComponent")
-visual = NodePath("CharacterVisualComponent")
-
-[node name="PlayerInputComponent" parent="overworld_character" unique_id=947896155 instance=ExtResource("2_wtkvm")]
-
-[node name="MovementComponent" parent="overworld_character" unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_t8fg7")]
-controller = NodePath("../PlayerInputComponent")
-movement_speed = 1.1
-step_distance = 0.5
-
-[node name="CharacterVisualComponent" parent="overworld_character" unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_w3bg8")]
-controller = NodePath("../PlayerInputComponent")
 
 [node name="System" type="Node" parent="." unique_id=1536314780]
 
