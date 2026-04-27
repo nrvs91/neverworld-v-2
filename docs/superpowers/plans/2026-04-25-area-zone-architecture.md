@@ -18,17 +18,37 @@
 
 ## Phases at a Glance
 
-| # | Phase | Tasks | What works after |
-|---|---|---|---|
-| 0 | Verification spike | 1 | Confirm the load-bearing assumption (process-disabled rendering) before touching real code |
-| 1 | Combat scene lifecycle refactor | 3 | CombatScene instantiated on demand instead of permanent disabled child |
-| 2 | EncounterManager → Combat rename | 1 | Same orchestration logic with the new identity |
-| 3 | Exploration container | 3 | New Exploration subtree mirroring Combat, slotted into main.tscn |
-| 4 | Main.tscn → Zone restructure | 3 | main.tscn matches the new Zone template; geometry moved into ExplorationEnvironment |
-| 5 | Player pawn lifecycle | 3 | Pawn lives under GameManager, lazily instantiated, frozen during combat |
-| 6 | Camera rebinding | 2 | RemoteTransform3D follow-camera, rebound per zone load |
-| 7 | TRANSITIONING state + zone-to-zone transitions | 4 | Second test zone, ZoneExit triggers, working zone-to-zone with state guards |
-| 8 | Area resource | 2 | First test Area .tres, GameManager loads entry zone from Area |
+| # | Phase | Tasks | Status | What works after |
+|---|---|---|---|---|
+| 0 | Verification spike | 1 | ✅ DONE | Confirm the load-bearing assumption (process-disabled rendering) before touching real code |
+| 1 | Combat scene lifecycle refactor | 3 | ✅ DONE | CombatScene instantiated on demand instead of permanent disabled child |
+| 2 | EncounterManager → CombatSetup rename | 1 | ✅ DONE | Same orchestration logic with the new identity |
+| 3 | Exploration container | 3 | ✅ DONE | New ExplorationSetup subtree mirroring CombatSetup |
+| 4 | Zone template + test zone | 3 | ✅ DONE | zone_template.tscn + rowahl_plains.tscn loading via GameManager export |
+| 5 | Player pawn lifecycle | 3 | ✅ DONE | Pawn lives under GameManager, lazily instantiated, frozen during combat |
+| 6 | Camera rebinding | 2 | ⏳ NEXT | RemoteTransform3D follow-camera, rebound per zone load |
+| 7 | TRANSITIONING state + zone-to-zone transitions | 4 | ⬜ TODO | Second test zone, ZoneExit triggers, working zone-to-zone with state guards |
+| 8 | Area resource | 2 | ⬜ TODO | First test Area .tres, GameManager loads entry zone from Area |
+
+---
+
+## Deviations from Plan (as-built, 2026-04-27)
+
+These are intentional divergences made during implementation. The plan below reflects the original design; these notes describe what actually shipped.
+
+| Plan said | What was built | Why |
+|---|---|---|
+| Rename EncounterManager → `Combat` | Renamed to `CombatSetup` | `Combat` was too bare as a class_name — `CombatSetup` is unambiguous |
+| Rename `Exploration` container | Named `ExplorationSetup` | Symmetry with `CombatSetup` |
+| `ExplorationBGM extends Node` with internal `AudioStreamPlayer` | `ExplorationBGM extends AudioStreamPlayer` | Simpler — no wrapper needed, `play()`/`stop()` built in |
+| `ExplorationEnvironment` has `instantiate_environment()`/`clear()` | `ExplorationEnvironment` is a pure data holder (`@export var scene: PackedScene` only) | The container doesn't need those methods yet; GameManager drives loading |
+| `Exploration` has `enter()`/`exit()` | `ExplorationSetup` has `pause_for_combat()`/`resume_after_combat()` only | Full enter/exit lifecycle deferred until zone-to-zone transitions (Phase 7) |
+| Scripts in `scripts/exploration/` | Scripts in `scripts/zones/` | Better reflects gameplay context |
+| Scenes in `scenes/exploration/` | Scenes in `scenes/zones/setup/` | Same reason |
+| Restructure `main.tscn` into Zone template in-place | Created `zone_template.tscn` + `rowahl_plains.tscn` fresh; `main.tscn` kept as sandbox | Cleaner to build correct from scratch than restructure a legacy scene |
+| `overworld_character.tscn` modified in place, components added | `overworld_character.tscn`/`.gd` deleted; `player_overworld.tscn`/`PlayerOverworld.gd` created | Composition insight: each actor type is its own scene; no shared god-template |
+| `GameManager` loads initial zone via hardcoded `main.tscn` string | `GameManager` has `@export var starting_zone: PackedScene` | Removes hardcoded path; Area resource wires in during Phase 8 |
+| Pawn freeze wired in Task 13 (separate step) | Pawn freeze wired during Phase 5 together with pawn lifecycle | Natural to do at the same time |
 
 ---
 
@@ -82,7 +102,7 @@ The whole architecture leans on one Godot 4.6 behaviour: that `WorldEnvironment`
 - Create: `scenes/spikes/process_disabled_render_test.tscn`
 - Create: `scripts/spikes/process_disabled_render_test.gd`
 
-- [ ] **Step 1: Create the spike scene**
+- [x] **Step 1: Create the spike scene**
 
 In the Godot editor, create a new scene at `scenes/spikes/process_disabled_render_test.tscn`. Root is a plain `Node` named `SpikeRoot`. Children:
 
@@ -97,7 +117,7 @@ SpikeRoot (Node + script below)
 
 Save the scene.
 
-- [ ] **Step 2: Add the spike script**
+- [x] **Step 2: Add the spike script**
 
 Create `scripts/spikes/process_disabled_render_test.gd`:
 
@@ -116,7 +136,7 @@ func _ready() -> void:
 
 Attach the script to `SpikeRoot` in the editor. Save.
 
-- [ ] **Step 3: Run the spike scene directly**
+- [x] **Step 3: Run the spike scene directly**
 
 In the Godot editor, with `process_disabled_render_test.tscn` open, press **F6** (Run Current Scene), not F5. F5 runs the main scene; F6 runs the open scene. You should see:
 
@@ -125,13 +145,13 @@ In the Godot editor, with `process_disabled_render_test.tscn` open, press **F6**
 
 Output panel should show all three `Log.info` lines and **no errors**.
 
-- [ ] **Step 4: Document the result**
+- [x] **Step 4: Document the result**
 
 If the cube stays lit after disable: the architecture is sound. Continue to Phase 1.
 
 If the cube goes dark or loses lighting after disable: **stop**. The per-zone-lighting story doesn't work and the spec needs revisiting. Add a note to the spec under a new "Verification Result" section explaining what happened, then have a conversation about alternative architectures (e.g., GameManager owning lighting persistently).
 
-- [ ] **Step 5: Commit (whichever direction)**
+- [x] **Step 5: Commit (whichever direction)**
 
 ```bash
 git add scenes/spikes/process_disabled_render_test.tscn scripts/spikes/process_disabled_render_test.gd
@@ -153,7 +173,7 @@ The spec changes how `CombatScene` is owned. Instead of a permanent disabled chi
 **Files:**
 - Modify: `autoloads/CombatEvents.gd`
 
-- [ ] **Step 1: Find the existing `encounter_triggered` declaration**
+- [x] **Step 1: Find the existing `encounter_triggered` declaration**
 
 Open `autoloads/CombatEvents.gd`. You'll see the existing signal:
 
@@ -161,7 +181,7 @@ Open `autoloads/CombatEvents.gd`. You'll see the existing signal:
 signal encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
 ```
 
-- [ ] **Step 2: Add `scripted_encounter_triggered` directly below it**
+- [x] **Step 2: Add `scripted_encounter_triggered` directly below it**
 
 ```gdscript
 signal encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
@@ -170,13 +190,13 @@ signal scripted_encounter_triggered(composition: CombatConfig, environment: Pack
 
 Same payload shape. Different intent.
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 Press F5. The game should run normally — main menu (or dev_mode jump to overworld), step counter ticking, encounter triggering, combat playing. Nothing visible should change because nothing emits the new signal yet.
 
 Check the Output panel: no errors, no warnings about the new signal.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add autoloads/CombatEvents.gd
@@ -193,7 +213,7 @@ git commit -m "Add scripted_encounter_triggered signal alongside encounter_trigg
 - Modify: `scripts/core/game_manager.gd`
 - Modify: `scenes/core/game_manager.tscn` (remove permanent CombatScene child)
 
-- [ ] **Step 1: Open `scripts/core/game_manager.gd` and find the existing combat reference**
+- [x] **Step 1: Open `scripts/core/game_manager.gd` and find the existing combat reference**
 
 You'll see at the top:
 
@@ -209,7 +229,7 @@ combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
 
 These are about to disappear.
 
-- [ ] **Step 2: Replace the `@onready` with a preload constant + instance var**
+- [x] **Step 2: Replace the `@onready` with a preload constant + instance var**
 
 Remove the `@onready var combat_scene` line. Add at the top of the script body, just after `extends Node`:
 
@@ -218,7 +238,7 @@ const CombatSceneTemplate: PackedScene = preload("res://scenes/combat/combat_sce
 var _current_combat: CombatScene = null
 ```
 
-- [ ] **Step 3: Remove the `_ready()` line that disabled the combat scene**
+- [x] **Step 3: Remove the `_ready()` line that disabled the combat scene**
 
 Delete this line:
 
@@ -228,7 +248,7 @@ combat_scene.process_mode = Node.PROCESS_MODE_DISABLED
 
 It served the old permanent-child design and means nothing now.
 
-- [ ] **Step 4: Rewrite `_on_encounter_triggered`**
+- [x] **Step 4: Rewrite `_on_encounter_triggered`**
 
 Find the current handler. Replace its body with:
 
@@ -249,7 +269,7 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
 
 Note: `state = Enums.GameState.COMBAT` happens **before** fade-in. We'll add the proper TRANSITIONING state in Phase 7. For now, the existing OVERWORLD/COMBAT model continues to work.
 
-- [ ] **Step 5: Rewrite `end_combat`**
+- [x] **Step 5: Rewrite `end_combat`**
 
 Replace the body with:
 
@@ -268,13 +288,13 @@ func end_combat() -> void:
 
 `queue_free()` recursively frees children, so the spawners, environment mount contents, BGM player — all get cleaned up automatically.
 
-- [ ] **Step 6: Open `scenes/core/game_manager.tscn` in the Godot editor**
+- [x] **Step 6: Open `scenes/core/game_manager.tscn` in the Godot editor**
 
 Find the `CombatScene` child node in the scene tree. **Right-click → Delete**. This removes the permanent disabled child. The scene now has just `ScreenFader`, `CurrentScene`, and any other persistent children.
 
 Save the scene.
 
-- [ ] **Step 7: Run the game and trigger combat**
+- [x] **Step 7: Run the game and trigger combat**
 
 Press F5. Walk until an encounter triggers. You should see:
 
@@ -293,7 +313,7 @@ Now trigger end_combat (your debug key, or however you currently exit combat). Y
 
 If you trigger another encounter, the same cycle works again with a fresh `_current_combat` instance.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add scripts/core/game_manager.gd scenes/core/game_manager.tscn
@@ -309,7 +329,7 @@ git commit -m "Convert CombatScene to on-demand instantiation, remove permanent 
 **Files:**
 - Modify: `scripts/combat/CombatScene.gd`
 
-- [ ] **Step 1: Open `scripts/combat/CombatScene.gd`**
+- [x] **Step 1: Open `scripts/combat/CombatScene.gd`**
 
 You'll see the `cleanup()` method:
 
@@ -323,7 +343,7 @@ func cleanup () -> void:
     Log.info("CombatScene cleaned up.")
 ```
 
-- [ ] **Step 2: Verify nothing calls `cleanup()`**
+- [x] **Step 2: Verify nothing calls `cleanup()`**
 
 Run a project-wide search for `cleanup(` (Godot Editor → Project → Search in Files, or grep). Expected: no matches outside of `CombatScene.gd` itself. If anything does call it, fix that caller before deleting the method.
 
@@ -331,15 +351,15 @@ Run a project-wide search for `cleanup(` (Godot Editor → Project → Search in
 grep -r "cleanup()" /home/bart/Projects/neverworld-v-2/scripts/
 ```
 
-- [ ] **Step 3: Delete the method entirely**
+- [x] **Step 3: Delete the method entirely**
 
 Remove the whole `cleanup()` block from `CombatScene.gd`. Save.
 
-- [ ] **Step 4: Run the game**
+- [x] **Step 4: Run the game**
 
 Press F5. Trigger combat, end combat, trigger combat again. No errors about missing methods. The behaviour should be identical to Task 3's verification — `queue_free()` does the cleanup work.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/combat/CombatScene.gd
@@ -361,13 +381,13 @@ The current `EncounterManager` is structurally exactly what the spec calls the `
 - Rename: `scenes/encounter_manager.tscn` → `scenes/exploration/combat.tscn`
 - Modify: `main.tscn` (update path reference + node name)
 
-- [ ] **Step 1: Move and rename the script file**
+- [x] **Step 1: Move and rename the script file**
 
 ```bash
 git mv scripts/exploration/EncounterManager.gd scripts/exploration/Combat.gd
 ```
 
-- [ ] **Step 2: Update the script's `class_name` and the inner field types**
+- [x] **Step 2: Update the script's `class_name` and the inner field types**
 
 Open `scripts/exploration/Combat.gd`. Change the top:
 
@@ -378,7 +398,7 @@ extends Node
 
 The rest of the file logic (`@onready var step_counter`, `_on_threshold_reached`, etc.) stays exactly as is.
 
-- [ ] **Step 3: Move and rename the scene file**
+- [x] **Step 3: Move and rename the scene file**
 
 In Godot editor (closed first to avoid stale references), or via shell:
 
@@ -389,19 +409,19 @@ git mv scenes/encounter_manager.tscn scenes/exploration/combat.tscn
 
 Reopen the editor.
 
-- [ ] **Step 4: Update the scene's root node name and script reference**
+- [x] **Step 4: Update the scene's root node name and script reference**
 
 Open `scenes/exploration/combat.tscn` in the editor. The root node is named `EncounterManager` — rename it to `Combat`. The script reference at the top of the .tscn file may already be referenced via UID, in which case Godot updates the path automatically. If it shows broken, point the script field back at `res://scripts/exploration/Combat.gd`.
 
 Save the scene.
 
-- [ ] **Step 5: Update `main.tscn` to reference the renamed scene and node**
+- [x] **Step 5: Update `main.tscn` to reference the renamed scene and node**
 
 Open `main.tscn` in the editor. Find the existing `EncounterManager` instance under `System/`. The instance reference (PackedScene path) should auto-update via UID, but the node name will still say `EncounterManager`. Rename the instance node to `Combat`.
 
 Save `main.tscn`.
 
-- [ ] **Step 6: Run the game and trigger an encounter**
+- [x] **Step 6: Run the game and trigger an encounter**
 
 Press F5. The encounter pipeline should still work end-to-end:
 
@@ -418,7 +438,7 @@ grep -rn "EncounterManager" /home/bart/Projects/neverworld-v-2/scripts/
 
 If any matches, update them to `Combat`. Common locations: GameManager (probably none), test code (none in this project).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add scripts/exploration/Combat.gd scenes/exploration/combat.tscn main.tscn
@@ -439,7 +459,7 @@ Mirror the Combat container with a parallel Exploration container. New thin hold
 - Create: `scripts/exploration/ExplorationBGM.gd`
 - Create: `scenes/exploration/exploration_bgm.tscn`
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 Create `scripts/exploration/ExplorationBGM.gd`:
 
@@ -470,17 +490,17 @@ func stop() -> void:
 
 The internal `AudioStreamPlayer` is created at runtime so the scene file stays clean — only one node, one export.
 
-- [ ] **Step 2: Create the scene**
+- [x] **Step 2: Create the scene**
 
 In the Godot editor, create a new scene at `scenes/exploration/exploration_bgm.tscn`. Single root: `Node`, name `ExplorationBGM`, attach the script you just wrote. Leave `stream` empty (it'll be set per-zone later). Save.
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. The new files don't change runtime behaviour yet — just verify nothing about adding the script broke parsing.
 
 Output panel: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/exploration/ExplorationBGM.gd scenes/exploration/exploration_bgm.tscn
@@ -497,7 +517,7 @@ git commit -m "Add ExplorationBGM node — AudioStream holder mirroring CombatBG
 - Create: `scripts/exploration/ExplorationEnvironment.gd`
 - Create: `scenes/exploration/exploration_environment.tscn`
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 Create `scripts/exploration/ExplorationEnvironment.gd`:
 
@@ -525,15 +545,15 @@ func clear() -> void:
 
 `extends Node3D` rather than `Node` — geometry needs a 3D parent so child mesh nodes inherit a transform. The combat-side `CombatEnvironment` script extends `Node` because the combat scene's `EnvironmentMount` is the actual `Node3D` parent. Here we collapse those two roles.
 
-- [ ] **Step 2: Create the scene**
+- [x] **Step 2: Create the scene**
 
 Create `scenes/exploration/exploration_environment.tscn`. Root: `Node3D` named `ExplorationEnvironment`, attach the script. Leave `scene` empty. Save.
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. No behavioural change yet. Verify no parse errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/exploration/ExplorationEnvironment.gd scenes/exploration/exploration_environment.tscn
@@ -550,7 +570,7 @@ git commit -m "Add ExplorationEnvironment node — PackedScene holder for zone g
 - Create: `scripts/exploration/Exploration.gd`
 - Create: `scenes/exploration/exploration.tscn`
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 Create `scripts/exploration/Exploration.gd`:
 
@@ -582,7 +602,7 @@ func resume_after_combat() -> void:
 
 `enter()`/`exit()` are full lifecycle hooks called by GameManager on zone load/unload. `pause_for_combat()`/`resume_after_combat()` are narrower — only stop/start BGM without touching the environment, called when combat begins or ends inside the same zone. The container doesn't store state; it just routes lifecycle calls to its children.
 
-- [ ] **Step 2: Create the scene**
+- [x] **Step 2: Create the scene**
 
 Create `scenes/exploration/exploration.tscn`. Root: `Node` named `Exploration`, attach the script. Add child instances:
 
@@ -594,11 +614,11 @@ Exploration (Node + Exploration.gd)
 
 Save.
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. The Exploration scene exists but isn't instanced anywhere yet. No behaviour change. Verify no parse errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/exploration/Exploration.gd scenes/exploration/exploration.tscn
@@ -619,7 +639,7 @@ Restructure `main.tscn` to match the Zone template. Pull geometry out into a sep
 - Create: `scenes/exploration/zones/forest_path_environment.tscn`
 - Modify: `main.tscn`
 
-- [ ] **Step 1: Create the geometry scene**
+- [x] **Step 1: Create the geometry scene**
 
 In the Godot editor, create a new scene at `scenes/exploration/zones/forest_path_environment.tscn`. Root: `Node3D` named `ForestPathEnvironment`. Save (you'll need to make the directory first if it doesn't exist).
 
@@ -627,7 +647,7 @@ In the Godot editor, create a new scene at `scenes/exploration/zones/forest_path
 mkdir -p /home/bart/Projects/neverworld-v-2/scenes/exploration/zones
 ```
 
-- [ ] **Step 2: Move geometry from main.tscn into the new scene**
+- [x] **Step 2: Move geometry from main.tscn into the new scene**
 
 In Godot editor, open `main.tscn`. Select `Floor` (the green plane), `MeshInstance3D` (the pink sphere), and `MeshInstance3D2` (the cyan box). Cut them (Ctrl+X).
 
@@ -635,17 +655,17 @@ Open `scenes/exploration/zones/forest_path_environment.tscn`. Select the root `F
 
 Save the geometry scene.
 
-- [ ] **Step 3: Verify main.tscn is intact otherwise**
+- [x] **Step 3: Verify main.tscn is intact otherwise**
 
 Back in `main.tscn`, the geometry should be gone but everything else (WorldEnvironment, DirectionalLight3D, CameraRig, overworld_character, System/Combat) should still be there. Save `main.tscn`.
 
-- [ ] **Step 4: Run the game (transitional state — expect a placeholder world)**
+- [x] **Step 4: Run the game (transitional state — expect a placeholder world)**
 
 F5. The main scene will run, but it'll look empty (no floor, no shapes) because we haven't yet wired the new geometry scene back via `ExplorationEnvironment`. The character will fall through where the floor was. Don't be alarmed — this is expected for one task.
 
 Output panel: no errors. The character/scene is broken visually but logically running.
 
-- [ ] **Step 5: Commit (broken visual state, will be fixed in Task 10)**
+- [x] **Step 5: Commit (broken visual state, will be fixed in Task 10)**
 
 ```bash
 git add main.tscn scenes/exploration/zones/forest_path_environment.tscn
@@ -662,7 +682,7 @@ git commit -m "Extract main.tscn geometry into forest_path_environment.tscn"
 - Modify: `main.tscn`
 - Modify: `scripts/core/game_manager.gd`
 
-- [ ] **Step 1: Instance Exploration into main.tscn**
+- [x] **Step 1: Instance Exploration into main.tscn**
 
 Open `main.tscn`. Select the root node. Add an instance of `scenes/exploration/exploration.tscn` as a direct child. The new tree section looks like:
 
@@ -676,13 +696,13 @@ Main
     └── Combat
 ```
 
-- [ ] **Step 2: Wire the geometry reference**
+- [x] **Step 2: Wire the geometry reference**
 
 In the editor's scene tree, click on `Exploration/ExplorationEnvironment`. In the Inspector on the right, find the `Scene` export. Drag `scenes/exploration/zones/forest_path_environment.tscn` from the FileSystem panel onto that field (or click and pick the file).
 
 Save `main.tscn`.
 
-- [ ] **Step 3: Have GameManager call `Exploration.enter()` after loading**
+- [x] **Step 3: Have GameManager call `Exploration.enter()` after loading**
 
 Open `scripts/core/game_manager.gd`. Find `_load_overworld`:
 
@@ -711,7 +731,7 @@ func _load_overworld(path: String) -> void:
 
 The `get_node_or_null` keeps the warning soft — if main.tscn doesn't have an Exploration node yet (or after we restructure further), it logs but doesn't crash.
 
-- [ ] **Step 4: Run the game**
+- [x] **Step 4: Run the game**
 
 F5. You should see:
 
@@ -724,7 +744,7 @@ F5. You should see:
 
 If geometry doesn't appear, double-check the Inspector field was actually set — drag-and-drop sometimes fails silently.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add main.tscn scripts/core/game_manager.gd
@@ -740,7 +760,7 @@ git commit -m "Wire Exploration container in main.tscn — geometry loads via Ex
 **Files:**
 - Modify: `main.tscn`
 
-- [ ] **Step 1: Open main.tscn in the editor**
+- [x] **Step 1: Open main.tscn in the editor**
 
 Current structure (after Task 10):
 
@@ -775,11 +795,11 @@ Main (Zone — will be renamed/replaced later)
 
 Note: `CameraRig` is currently a Node3D wrapping the Camera3D with an offset. The spec puts `Camera3D` directly under `System`. The transform information in `CameraRig` and on the camera will need to be combined.
 
-- [ ] **Step 2: Move System children into proper position**
+- [x] **Step 2: Move System children into proper position**
 
 If `System` already exists (it does — Combat is currently inside it), reuse it. Drag `WorldEnvironment` and `DirectionalLight3D` into `System`.
 
-- [ ] **Step 3: Move Camera3D under System (preserving its world transform)**
+- [x] **Step 3: Move Camera3D under System (preserving its world transform)**
 
 The current setup is `CameraRig` (Node3D with offset transform) holding `Camera3D` (with its own transform inside the rig). Combine them:
 
@@ -790,19 +810,19 @@ d. Delete the now-empty `CameraRig` node.
 
 If this gets fiddly, an alternative: move `CameraRig` itself (with the camera inside) under `System`. Either works — the spec calls for `Camera3D` under `System`, but if a wrapping rig helps you author camera offsets, keep it.
 
-- [ ] **Step 4: Move Combat out of System**
+- [x] **Step 4: Move Combat out of System**
 
 In the scene tree, drag `System/Combat` out and drop it onto the root `Main` node so it becomes a Zone-level sibling of `System` and `Exploration`.
 
-- [ ] **Step 5: Add SpawnPoints container with default marker**
+- [x] **Step 5: Add SpawnPoints container with default marker**
 
 Add a plain `Node` as a child of `Main`, name it `SpawnPoints`. Inside it, add a `Marker3D` named `default`. Position the marker where the player should appear on zone entry (e.g., the location where `overworld_character` currently sits — match its transform).
 
-- [ ] **Step 6: Add the Triggers container**
+- [x] **Step 6: Add the Triggers container**
 
 Add a plain `Node` as a child of `Main`, name it `Triggers`. Leave it empty for now — Task 20 adds a `ZoneExit` instance to it. Even though it's empty, having the container present matches the Zone template and prevents `Triggers` becoming an inconsistent "sometimes-here" node across zones.
 
-- [ ] **Step 7: Save and run**
+- [x] **Step 7: Save and run**
 
 Save `main.tscn`. Press F5. The game should run identically to before — same camera framing, same geometry, same encounter flow. Combat should still trigger and end correctly.
 
@@ -812,7 +832,7 @@ If anything's broken, the most likely culprits are:
 
 Output panel: no errors related to missing nodes.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add main.tscn
@@ -833,13 +853,13 @@ Move the `overworld_character` instance out of the zone scene and into GameManag
 - Modify: `main.tscn` (delete the character instance)
 - Modify: `scripts/core/game_manager.gd` (add OverworldPawnTemplate, instantiate in `_ready`)
 
-- [ ] **Step 1: Delete `overworld_character` from main.tscn**
+- [x] **Step 1: Delete `overworld_character` from main.tscn**
 
 In Godot editor, open `main.tscn`. Select the `overworld_character` instance and any of its component children (`PlayerInputComponent`, `MovementComponent`, `CharacterVisualComponent`). Delete them.
 
 Save.
 
-- [ ] **Step 2: Add the OverworldPawnTemplate constant + `_pawn` var to GameManager**
+- [x] **Step 2: Add the OverworldPawnTemplate constant + `_pawn` var to GameManager**
 
 Open `scripts/core/game_manager.gd`. At the top, near the other constants:
 
@@ -848,7 +868,7 @@ const OverworldPawnTemplate: PackedScene = preload("res://scenes/characters/over
 var _pawn: Node3D = null
 ```
 
-- [ ] **Step 3: Instantiate the pawn after the zone loads**
+- [x] **Step 3: Instantiate the pawn after the zone loads**
 
 Modify `_load_overworld` to spawn the pawn at the zone's default spawn point:
 
@@ -881,13 +901,13 @@ func _load_overworld(path: String) -> void:
         exploration.enter()
 ```
 
-- [ ] **Step 4: Make sure the pawn is in the "player" group**
+- [x] **Step 4: Make sure the pawn is in the "player" group**
 
 Open `scenes/characters/overworld_character.tscn` in the editor. With the root node selected, in the Node panel (top right area), click the **Groups** tab. Add the group `player` if it isn't already there. Save.
 
 This matters for `ZoneExit` later — it filters trigger entries to bodies in the `player` group.
 
-- [ ] **Step 5: Run the game**
+- [x] **Step 5: Run the game**
 
 F5. You should see:
 - `Overworld pawn instantiated`
@@ -897,7 +917,7 @@ F5. You should see:
 
 If the character spawns at origin but you expected it at a specific spot, double-check the Marker3D was positioned correctly in Task 11.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add main.tscn scripts/core/game_manager.gd scenes/characters/overworld_character.tscn
@@ -913,7 +933,7 @@ git commit -m "Move overworld_character to GameManager-managed instantiation, ad
 **Files:**
 - Modify: `scripts/core/game_manager.gd`
 
-- [ ] **Step 1: Add the pawn freeze to `_on_encounter_triggered`**
+- [x] **Step 1: Add the pawn freeze to `_on_encounter_triggered`**
 
 In `_on_encounter_triggered`, after `current_overworld.process_mode = Node.PROCESS_MODE_DISABLED`, add:
 
@@ -922,7 +942,7 @@ In `_on_encounter_triggered`, after `current_overworld.process_mode = Node.PROCE
         _pawn.process_mode = Node.PROCESS_MODE_DISABLED
 ```
 
-- [ ] **Step 2: Add the pawn unfreeze to `end_combat`**
+- [x] **Step 2: Add the pawn unfreeze to `end_combat`**
 
 In `end_combat`, after `current_overworld.process_mode = Node.PROCESS_MODE_INHERIT`, add:
 
@@ -931,11 +951,11 @@ In `end_combat`, after `current_overworld.process_mode = Node.PROCESS_MODE_INHER
         _pawn.process_mode = Node.PROCESS_MODE_INHERIT
 ```
 
-- [ ] **Step 3: Verify the freeze works**
+- [x] **Step 3: Verify the freeze works**
 
 F5. Trigger combat. While the combat scene is up, the overworld should be frozen — but more importantly, the pawn should be frozen. There's no easy way to test this directly during combat (no input reaches the pawn from the combat scene anyway in current code), but you can sanity-check by adding a temporary `Log.info` in `MovementComponent._physics_process` that prints when it runs. Before this fix, that log fires during combat. After this fix, it stops firing. Then remove the temporary log.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/core/game_manager.gd
@@ -950,7 +970,7 @@ git commit -m "Freeze player pawn during combat via process_mode toggle"
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Add a temporary diagnostic to GameManager**
+- [x] **Step 1: Add a temporary diagnostic to GameManager**
 
 In `_load_overworld`, after instantiating the pawn, temporarily add:
 
@@ -958,7 +978,7 @@ In `_load_overworld`, after instantiating the pawn, temporarily add:
     Log.info("Pawn in 'player' group:", _pawn.is_in_group("player"))
 ```
 
-- [ ] **Step 2: Run and check**
+- [x] **Step 2: Run and check**
 
 F5. Output panel should show:
 
@@ -968,11 +988,11 @@ Pawn in 'player' group: true
 
 If it says false, go back to Task 12 step 4 and verify the group was actually saved on the .tscn file.
 
-- [ ] **Step 3: Remove the diagnostic line**
+- [x] **Step 3: Remove the diagnostic line**
 
 Delete the `Log.info("Pawn in 'player' group: ...")` line. Save.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/core/game_manager.gd
