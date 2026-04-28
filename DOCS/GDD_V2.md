@@ -19,19 +19,14 @@
 
 ## SKILL SYSTEM
 
-### Core Principle: Mnemonics
-
-Skills are **Mnemonics** — physical objects that encode technique, combat knowledge, and concentrated belief. You don't learn a skill, you *run* a mnemonic. You don't train an ability, you *carry* one.
-
+Core Principle: Mnemonics
+Skills are Mnemonics — physical objects that encode technique, combat knowledge, and concentrated belief. You don't learn a skill, you run a mnemonic. You don't train an ability, you carry one.
 In NEVERWORLD's post-singularity setting, the boundary between information and matter has eroded. The unconscious layer — where emotion, belief, and hyperstition accumulate — seeps into physical reality wherever the signal is strong enough. Mnemonics are nodes where that layer punched through and crystallized. Some predate living memory. Nobody knows who encoded the first ones. They exist, they work, and that's enough.
-
 This is hyperstition made literal: a technique that became real because enough people believed it, used it, and passed it on. The mnemonic works because it has always worked. Belief and matter are the same thing here.
+Mechanically: Mnemonics are discrete, ownable items — not entries in a character-locked tree, not stat unlocks, not class features. Each instance is its own object. Skugge's copy and Vargi's copy are two separate things. They grow, get reforged, and can be lost. Think equipment, not abilities.
+Any character can carry any mnemonic. What differentiates characters is not an exclusive list but which mnemonics they're drawn toward, invest in, and build around.
 
-**Mechanically:** Mnemonics are discrete, ownable items — not entries in a character-locked tree, not stat unlocks, not class features. Each instance is its own object. Skugge's copy and Vargi's copy are two separate things. They grow, get reforged, and can be lost. Think equipment, not abilities.
-
-Mnemonics are acquirable party-wide — any character can carry any mnemonic. New instances can be scribed from the Compendium for RESONANCE as many times as you can afford. What differentiates characters is not an exclusive list but which mnemonics they're drawn toward, invest in, and build around.
-
-> **TODO:** Debate whether to encourage character-mnemonic affinity mechanically. Example: a dagger mnemonic used by Skugge ranks up faster than the same mnemonic in Vargi's hands. Rewards thematic coherence without hard gating. Risk: creates invisible pressure that feels punishing if the player doesn't know about it.
+TODO: Debate whether to encourage character-mnemonic affinity mechanically. Example: a dagger mnemonic used by Skugge ranks up faster than the same mnemonic in Vargi's hands. Rewards thematic coherence without hard gating. Risk: creates invisible pressure that feels punishing if the player doesn't know about it.
 
 ---
 
@@ -126,86 +121,47 @@ This is the core pressure to engage with the RESONANCE system. Ignoring skill in
 
 ---
 
-### Mnemonic Progression
+Mnemonic Progression
+All mnemonic progression is driven by RESONANCE — the party's shared resource. Spending RESONANCE advances a mnemonic along its chain, whether that means a vertical rank increase or committing to a branch.
+The upgrade path is branching, not linear. RESONANCE investment upgrades a skill vertically (Uskrav → Uskrav II → Uskrav III). At certain thresholds, the skill reaches a branch point — a permanent, no-take-backs reforge decision. Pick one branch; the other is gone from that instance. Branches can themselves become new trunks.
+Vertical upgrades — same skill, better numbers. Branch points — permanent identity mutation. Choose once.
+Branch decisions carry real weight. There is no respec. Finding a second copy of a mnemonic in the world means the opportunity to go the other way — on a new instance, with a clean slate.
+Mnemonic Graph
+Every mnemonic has a navigable graph — its full chain laid out as nodes, each showing rank, Power, costs, and what the RESONANCE investment unlocks next. Locked nodes display their upgrade cost. Unlocked nodes display what you've already committed. Branch points show both paths, with one permanently closed once the decision is made.
+The graph is a planning tool as much as a status screen. You can inspect any mnemonic in your party's possession — including ones sitting unequipped — and plan investment before committing.
+Chain Design Principles
+Depth is a design signal, not a quality signal. A 1-node chain means the skill is complete at base. A 5-node branching chain means the designer wants the player to commit and choose. Neither is better — depth reflects the skill's role in the game.
+Vertical ranks: same identity, better numbers. The primary lever is Power. Other changes (cost shifts, secondary effects) are optional — only used when they reinforce something specific, not as a default.
+Branch points: identity mutations, not upgrades. Both paths should feel genuinely different. Tools for making branches distinct:
 
-Mnemonics have two distinct states: **BASE** and **UPGRADED/MUTATED.**
+Power trade-off — one branch takes a Power cut in exchange for a mechanic
+Cost personality — AP or HP% changes that reinforce the branch's identity
+Conditional mechanics — the payoff requires setup (DoT on target, ally low HP, etc.)
+Reliability vs ceiling — guaranteed hit/effect vs higher raw output with risk
 
-**BASE** is the entry point — the skill as it exists before investment. Usually more reserved mechanically.
-
-**UPGRADED/MUTATED** is only reachable by climbing the chain. Most are earned through RESONANCE investment — the mnemonic is reforged, not replaced.
-
-The upgrade path is **branching, not linear.** RESONANCE investment upgrades a skill vertically (Uskrav → Uskrav II → Uskrav III). At certain thresholds, the skill reaches a **branch point** — a permanent, no-take-backs reforge decision. Pick one branch; the other is gone from that instance. Branches can themselves become new trunks.
-
-**Vertical upgrades** — same skill, improved. **Branch points** — permanent identity mutation. Choose once.
-
-#### Chain Design Principles
-
-**Depth is a design signal, not a quality signal.** A 1-node chain means the skill is complete at base. A 5-node branching chain means the designer wants the player to commit and choose. Neither is better — depth reflects the skill's role in the game.
-
-**Vertical ranks: same identity, better numbers.** The primary lever is Power. Other changes (cost shifts, secondary effects) are optional — only used when they reinforce something specific, not as a default.
-
-**Branch points: identity mutations, not upgrades.** Both paths should feel genuinely different. Tools for making branches distinct:
-- **Power trade-off** — one branch takes a Power cut in exchange for a mechanic
-- **Cost personality** — AP or HP% changes that reinforce the branch's identity
-- **Conditional mechanics** — the payoff requires setup (DoT on target, ally low HP, etc.)
-- **Reliability vs ceiling** — guaranteed hit/effect vs higher raw output with risk
-
-**Costs are tools, not progression rules.** AP and HP% costs don't automatically decrease as a skill ranks up. They change only when that change means something.
-
-#### Worked Example: Uskrav Chain
-
+Costs are tools, not progression rules. AP and HP% costs don't automatically decrease as a skill ranks up. They change only when that change means something.
+Worked Example: Uskrav Chain
 Skugge's starting dagger skill. An elaborate chain — not every mnemonic will look like this.
-
-```
 Uskrav
   └── Uskrav II
         └── Uskrav III
               ├── Sporlaus   (reliability branch)
               └── Tvingar
                     └── Tvingar II
-```
-
-| Node | Power | AP | HP% | Special |
-|------|-------|----|-----|---------|
-| Uskrav | 30 | 2 | 15% | — |
-| Uskrav II | 45 | 2 | 15% | — |
-| Uskrav III | 70 | 2 | 15% | — |
-| Sporlaus | 55 | 1 | 5% | True Strike (never misses) |
-| Tvingar | 55 | 2 | 25% | Guaranteed crit if target has DoT |
-| Tvingar II | 75 | 2 | 25% | Guaranteed crit if target has DoT |
-
-**Trunk (I→II→III):** same cost, increasing Power. Rewards RESONANCE investment with raw output.
-
-**Sporlaus:** power cut in exchange for reliability — 1 AP, 5% HP, never misses. Low-maintenance consistent pressure.
-
-**Tvingar:** same power cut, higher HP cost (25%), guaranteed crit against DoT targets. Miss the setup and you've paid 25% HP for a weak hit. Land it and effective Power is 82.5 — above the trunk.
-
-**Tvingar II:** recovers the power gap (75 vs trunk's 70) while keeping the condition and cost. Rewards full commitment to the branch.
-
+NodePowerAPHP%SpecialUskrav30215%—Uskrav II45215%—Uskrav III70215%—Sporlaus5515%True Strike (never misses)Tvingar55225%Guaranteed crit if target has DoTTvingar II75225%Guaranteed crit if target has DoT
+Trunk (I→II→III): same cost, increasing Power. Rewards RESONANCE investment with raw output.
+Sporlaus: power cut in exchange for reliability — 1 AP, 5% HP, never misses. Low-maintenance consistent pressure.
+Tvingar: same power cut, higher HP cost (25%), guaranteed crit against DoT targets. Miss the setup and you've paid 25% HP for a weak hit. Land it and effective Power is 82.5 — above the trunk.
+Tvingar II: recovers the power gap (75 vs trunk's 70) while keeping the condition and cost. Rewards full commitment to the branch.
 The branch decision is reliability vs ceiling. Sporlaus players don't build around DoT. Tvingar players commit to setup — and when it lands, they hit harder than anything else in the chain.
-
 ---
 
-### Acquisition
-
-#### The Skill Compendium
-
-The Compendium is the party's skill catalogue — a grimoire with blank pages. Known skills appear by name and can be scribed (spend RESONANCE to create an instance). Unknown skills appear as **???** — slots you know exist but can't access yet.
-
-The catalogue is not a spreadsheet available from the start. You build it by engaging with the world. Knowing what's behind a ??? before anyone else does is itself a form of progress.
-
-#### REFRACTION
-
-A character can learn a skill directly from an enemy by witnessing it while under a DEFENSIVE stance and surviving combat. The witnessed skill is added to the Compendium as a known template — no longer ???, available for purchase.
-
-REFRACTION is the *discovery* vector — it introduces skills into the Compendium that couldn't be predicted or purchased. Engaging with the world fills the grimoire.
-
-> Acquisition condition details (defend stance required? HP threshold? specific setup?) — TBD.
-
-#### Loot
-
-Skills can drop from enemies or appear in chests as physical items. Picking one up adds its template to the Compendium and makes the skill available for scribing.
-
+#Acquisition
+Mnemonics are physical objects and enter the party's possession as such.
+Loot — dropped by enemies or found in chests. Pick it up, it's yours, equip it immediately if you want.
+Purchase — some mnemonics are sold by merchants. Standard item transaction, no additional friction.
+Unique — certain mnemonics are one-of-a-kind. They exist once in the world. Whether they have simple chains or complex branching trees is a per-mnemonic design decision — uniqueness is about scarcity, not complexity.
+There is no catalogue, no scribing, no discovery layer. A mnemonic you don't have is one you haven't found yet.
 ---
 
 ## RESOURCE SYSTEM
