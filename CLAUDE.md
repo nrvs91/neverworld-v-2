@@ -44,23 +44,6 @@ Or open in the Godot editor and press F5.
 
 ---
 
-## Vertical Slice Target
-
-The goal is a playable demo — not polished in assets, but complete end-to-end:
-
-- 3 player characters, levels 1–5
-- A few overworld scenes (roughly 3)
-- 3 enemies + 1 boss
-- Loot, rest points, chests
-- Level-up flow: stat growth choice + mnemonic rank-up
-- REFRACTION: witnessing and learning an enemy skill
-
-Everything else is out of scope until this is done.
-
-**Vertical slice defines scope, not quality.** "We're in vertical slice" is never a reason to defer architecture, leave a system half-designed, or ship something "to be ironed out later." If a system is in scope, it ships with full, maintainable design. Placeholder *art* is fine. Placeholder *systems* are not — they become permanent.
-
----
-
 ## GDD Is the Source of Truth
 
 Before implementing any gameplay system, combat mechanic, skill behaviour, or progression feature — read the relevant section of `DOCS/GDD_V2.md`.
