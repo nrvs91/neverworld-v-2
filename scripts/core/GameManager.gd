@@ -50,12 +50,28 @@ func _load_overworld(zone: PackedScene) -> void:
 	if _pawn == null:
 		_pawn = PLAYER_SCENE.instantiate()
 		add_child(_pawn)
+	var marker = instance.get_node_or_null("SpawnPoints/default")
+	if marker == null:
+		_pawn.global_position = Vector3.ZERO
+		Log.warn("Default Spawn point missing. Placing Player on fallback.")
+	else:
+		_pawn.global_position = marker.global_position
+	var zone_camera = instance.get_node_or_null("System/Camera3D")
+	if zone_camera == null:
+		Log.warn("Camera missng. Undable to set up CameraAnchor")
+	else:
+		var anchor = _pawn.get_node_or_null("CameraAnchor")
+		if anchor == null:
+			Log.warn("CameraAnchor is missing. Unable to set up ZoneCamera")
+		else:
+			anchor.remote_path = anchor.get_path_to(zone_camera)
 
 func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream) -> void:
 	if state != Enums.GameState.OVERWORLD:
 		return
 	Log.info("Encounter triggered, transitioning to combat")
 	current_overworld.process_mode = Node.PROCESS_MODE_DISABLED
+	_pawn.process_mode = Node.PROCESS_MODE_DISABLED
 	_overworld_camera = get_viewport().get_camera_3d()
 	await screen_fader.fade_out()
 	state = Enums.GameState.COMBAT
@@ -72,5 +88,6 @@ func end_combat() -> void:
 	if _overworld_camera != null:
 		_overworld_camera.make_current()
 	current_overworld.process_mode = Node.PROCESS_MODE_INHERIT
+	_pawn.process_mode = Node.PROCESS_MODE_INHERIT
 	await screen_fader.fade_in()
 	state = Enums.GameState.OVERWORLD

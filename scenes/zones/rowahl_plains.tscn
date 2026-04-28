@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://ccc01hbmakpr1" path="res://scenes/zones/setup/exploration_setup.tscn" id="1_80lvc"]
 [ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/zones/setup/combat_setup.tscn" id="2_m2wtn"]
+[ext_resource type="PackedScene" uid="uid://dw4jfiinqlyv0" path="res://assets/test_environment_1.glb" id="3_m2wtn"]
 
 [sub_resource type="Environment" id="Environment_pnqbc"]
 
@@ -12,6 +13,12 @@
 [node name="WorldEnvironment" type="WorldEnvironment" parent="System" unique_id=1893818430]
 environment = SubResource("Environment_pnqbc")
 
+[node name="Camera3D" type="Camera3D" parent="System" unique_id=1763710473]
+transform = Transform3D(0.7071068, 0.4055798, -0.579228, 0, 0.81915206, 0.57357645, 0.7071068, -0.4055798, 0.579228, -15, 7, 5)
+projection = 1
+current = true
+size = 3.0
+
 [node name="ExplorationSetup" parent="." unique_id=331584603 instance=ExtResource("1_80lvc")]
 
 [node name="CombatSetup" parent="." unique_id=1675216195 instance=ExtResource("2_m2wtn")]
@@ -19,6 +26,8 @@ environment = SubResource("Environment_pnqbc")
 [node name="SpawnPoints" type="Node" parent="." unique_id=1833450442]
 
 [node name="default" type="Marker3D" parent="SpawnPoints" unique_id=1146954943]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 0)
+gizmo_extents = 0.34
 
 [node name="NPCs" type="Node" parent="." unique_id=366449179]
 
@@ -27,3 +36,5 @@ environment = SubResource("Environment_pnqbc")
 [node name="Triggers" type="Node" parent="." unique_id=1287523267]
 
 [node name="Puzzles" type="Node" parent="." unique_id=1582270558]
+
+[node name="test_environment_1" parent="." unique_id=291813257 instance=ExtResource("3_m2wtn")]
