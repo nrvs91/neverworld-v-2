@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://6h6i51jeqcbu"]
+
+[ext_resource type="Script" uid="uid://bb5uxtrlfuehu" path="res://scenes/exploration/ZoneExit.gd" id="1_o201w"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_k7k46"]
+
+[node name="ZoneExit" type="Area3D" unique_id=1283177127]
+script = ExtResource("1_o201w")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1106621684]
+shape = SubResource("BoxShape3D_k7k46")
