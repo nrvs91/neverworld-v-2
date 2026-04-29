@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://ccc01hbmakpr1" path="res://scenes/zones/setup/exploration_setup.tscn" id="1_80lvc"]
 [ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/zones/setup/combat_setup.tscn" id="2_m2wtn"]
 [ext_resource type="PackedScene" uid="uid://dw4jfiinqlyv0" path="res://assets/test_environment_1.glb" id="3_m2wtn"]
+[ext_resource type="PackedScene" uid="uid://6h6i51jeqcbu" path="res://scenes/exploration/zone_exit.tscn" id="3_snxrr"]
 
 [sub_resource type="Environment" id="Environment_pnqbc"]
 background_mode = 1
@@ -10,6 +11,12 @@ background_color = Color(0.881864, 0.45411357, 0.881864, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.9779369, 0.97793704, 0.9779369, 1)
 ambient_light_sky_contribution = 0.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_snxrr"]
+albedo_color = Color(0.64946765, 0.6398333, 0.35272712, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_snxrr"]
+material = SubResource("StandardMaterial3D_snxrr")
 
 [node name="Rowahl Plains" type="Node" unique_id=1134829635]
 
@@ -34,6 +41,14 @@ gizmo_extents = 0.34
 
 [node name="Triggers" type="Node" parent="." unique_id=1287523267]
 
+[node name="ZoneExit" parent="Triggers" unique_id=1283177127 instance=ExtResource("3_snxrr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 0)
+target_zone_path = "uid://bycspkshkiamj"
+
 [node name="Puzzles" type="Node" parent="." unique_id=1582270558]
 
 [node name="test_environment_1" parent="." unique_id=291813257 instance=ExtResource("3_m2wtn")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1107922429]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 11, 0, 2)
+mesh = SubResource("PrismMesh_snxrr")

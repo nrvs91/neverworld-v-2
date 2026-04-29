@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/components/visuals_component.tscn" id="4_4jwtf"]
 [ext_resource type="PackedScene" uid="uid://de6gnapkjibq3" path="res://scenes/core/camera_component.tscn" id="5_6g8yd"]
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_jt2er"]
+
 [node name="PlayerExploration" type="Node3D" unique_id=1620993226]
 script = ExtResource("1_jt2er")
 
@@ -23,6 +25,11 @@ frame = 4
 frame_progress = 0.63207173
 
 [node name="CameraComponent" parent="." unique_id=2069835473 instance=ExtResource("5_6g8yd")]
+
+[node name="TriggerVolume" type="Area3D" parent="." unique_id=81506135 groups=["player"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TriggerVolume" unique_id=1835915395]
+shape = SubResource("CapsuleShape3D_jt2er")
 
 [editable path="PlayerInputComponent"]
 [editable path="VisualComponent"]

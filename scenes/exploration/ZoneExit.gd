@@ -1,21 +1,22 @@
 class_name ZoneExit extends Area3D
 
-@export var target_zone: PackedScene
+@export_file("*.tscn") var target_zone_path: String
 @export var target_spawn_point: StringName = &"default"
 
 func _ready() -> void:
-	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
 	Log.info("ready")
 
-func _on_body_entered(body: Node3D) -> void:
-	if not body.is_in_group("player"):
+func _on_area_entered(area: Area3D) -> void:
+	if not area.is_in_group("player"):
 		return
-	if target_zone == null:
-		Log.warn("no target zone set")
+	if target_zone_path.is_empty():
+		Log.warn("no target zone path set")
 		return
-	Log.info("zone exit triggered, target:", target_zone.resource_path) 
-	ExplorationEvents.zone_exit_requested.emit(target_zone, target_spawn_point)
+	var zone := load(target_zone_path) as PackedScene
+	Log.info("zone exit triggered, target:", target_zone_path)
+	ExplorationEvents.zone_exit_requested.emit(zone, target_spawn_point)
 
 func _exit_tree() -> void:
-	if body_entered.is_connected(_on_body_entered):
-		body_entered.disconnect(_on_body_entered)
+	if area_entered.is_connected(_on_area_entered):
+		area_entered.disconnect(_on_area_entered)

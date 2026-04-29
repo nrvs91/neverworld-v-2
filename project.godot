@@ -39,6 +39,10 @@ project/assembly_name="NEVERWORLD_V2"
 
 enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 
+[global_group]
+
+player=""
+
 [input]
 
 interact={

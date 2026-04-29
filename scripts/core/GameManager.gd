@@ -3,7 +3,6 @@ extends Node
 @onready var screen_fader: ScreenFader = $ScreenFader
 @onready var current_scene: Node =  $CurrentScene
 
-signal new_signal
 @export var starting_zone: PackedScene
 
 var current_exploration: Node = null
@@ -18,6 +17,7 @@ const COMBAT_SCENE: PackedScene = preload("res://scenes/combat/combat_scene.tscn
 const PLAYER_SCENE: PackedScene = preload("res://scenes/characters/player_exploration.tscn")
 
 func _ready() -> void:
+	ExplorationEvents.zone_exit_requested.connect(_on_zone_exit_requested)
 	CombatEvents.encounter_triggered.connect(_on_encounter_triggered)
 	if Globals.dev_mode == true:
 		start_new_game()
@@ -39,19 +39,25 @@ func start_new_game() -> void:
 	PartyManager.start_new_game()
 	await screen_fader.fade_out()
 	_clear_current_scene()
-	_load_exploration(starting_zone)
+	_load_zone(starting_zone)
 	await screen_fader.fade_in()
 	state = Enums.GameState.EXPLORATION
 	Log.info("new game started")
 
-func _load_exploration(zone: PackedScene) -> void:
+func _load_zone(zone: PackedScene, spawn_point: StringName = &"default") -> void:
+	if zone == null:
+		Log.error("_load_zone called with null zone")
+		return
+	if current_exploration != null:
+		current_exploration.queue_free()
+		current_exploration = null
 	var instance: Node = zone.instantiate()
 	current_scene.add_child(instance)
 	current_exploration = instance
 	if _pawn == null:
 		_pawn = PLAYER_SCENE.instantiate()
 		add_child(_pawn)
-	var marker = instance.get_node_or_null("SpawnPoints/default")
+	var marker = instance.get_node_or_null("SpawnPoints/" + spawn_point)
 	if marker == null:
 		_pawn.global_position = Vector3.ZERO
 		Log.warn("spawn point missing, using fallback")
@@ -86,5 +92,16 @@ func end_combat() -> void:
 		_exploration_camera.make_current()
 	current_exploration.process_mode = Node.PROCESS_MODE_INHERIT
 	_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+	await screen_fader.fade_in()
+	state = Enums.GameState.EXPLORATION
+
+func _on_zone_exit_requested(target_zone: PackedScene, target_spawn_point: StringName) -> void:
+	if state != Enums.GameState.EXPLORATION:
+		Log.warn("zone exit ignored, not in EXPLORATION state")
+		return
+	Log.info("zone exit, loading:", target_zone.resource_path)
+	state = Enums.GameState.TRANSITION
+	await screen_fader.fade_out()
+	_load_zone(target_zone, target_spawn_point)
 	await screen_fader.fade_in()
 	state = Enums.GameState.EXPLORATION
