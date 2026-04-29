@@ -20,6 +20,7 @@ enum LogLevel {
 
 enum GameState {
 	MAINMENU,
-	OVERWORLD,
+	EXPLORATION,
+	TRANSITION,
 	COMBAT
 }

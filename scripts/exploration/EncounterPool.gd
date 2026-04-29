@@ -5,7 +5,7 @@ extends Node
 
 func pick() -> CombatConfig:
 	if entries.is_empty():
-		Log.warn("EncounterPool.pick() called but entries array is empty")
+		Log.warn("pick called on empty pool")
 		return null
 
 	var total_weight: int = 0
@@ -16,7 +16,7 @@ func pick() -> CombatConfig:
 	for entry in entries:
 		roll -= entry.weight
 		if roll < 0:
-			Log.info("EncounterPool picked:", entry.composition.resource_path)
+			Log.info("encounter picked", entry.composition.resource_path)
 			return entry.composition
 	#fallback
 	return entries[-1].composition

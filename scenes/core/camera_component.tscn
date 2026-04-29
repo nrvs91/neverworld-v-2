@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://de6gnapkjibq3"]
+
+[ext_resource type="Script" uid="uid://dvdrvnl8uu0mn" path="res://scenes/core/CameraController.gd" id="1_ppk64"]
+
+[node name="CameraComponent" type="Node3D" unique_id=2069835473]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=331281008]
+transform = Transform3D(0.7071068, 0.4055798, -0.579228, 0, 0.81915206, 0.57357645, 0.7071068, -0.4055798, 0.579228, -2.5, 2.6032882, 2)
+projection = 1
+current = true
+size = 3.0
+near = 0.001
+script = ExtResource("1_ppk64")

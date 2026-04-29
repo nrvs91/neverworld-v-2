@@ -14,10 +14,10 @@ func initialize() -> void:
 		var character = CombatCharacterScene.instantiate()
 		slot.add_child(character)
 		character.initialize_player(slot_data["player_data"], slot_data["save_data"])
-	Log.info("PlayerSpawner initialized.")
+	Log.info("ready")
 
 func clear() -> void:
 	for slot in get_children():
 		for child in slot.get_children():
 			child.queue_free()
-	Log.info("PlayerSpawner cleared")
+	Log.info("cleared")

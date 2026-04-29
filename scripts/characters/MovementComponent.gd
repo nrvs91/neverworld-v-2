@@ -21,7 +21,7 @@ var _direction := Vector2.ZERO
 var _is_running := false
 
 func _ready() -> void:
-	Log.info("Initializing...")
+	Log.info("ready")
 	controller.direction_changed.connect(_on_direction_changed)
 	controller.run_toggled.connect(_on_run_toggled)
 
@@ -38,7 +38,7 @@ func _physics_process(delta: float) -> void:
 		_distance_accumulated -= step_distance
 		_steps_taken += 1
 		ExplorationEvents.step_taken.emit(get_parent())
-		Log.debug("step_taken", "count", _steps_taken)
+		#Log.debug("step taken", _steps_taken)
 
 func _on_direction_changed(dir: Vector2) -> void:
 	_direction = dir

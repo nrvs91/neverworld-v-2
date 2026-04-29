@@ -21,4 +21,4 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 	if bgm:
 		bgm_player.stream = bgm
 		bgm_player.play()
-	Log.info("CombatScene initialized.")
+	Log.info("ready")

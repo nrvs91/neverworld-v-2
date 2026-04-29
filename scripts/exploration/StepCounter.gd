@@ -8,7 +8,7 @@ const RESET_VALUE: int = 32
 var _counter: int = RESET_VALUE
 
 func _ready() -> void:
-	Log.info("StepCounter ready, counter =", _counter)
+	Log.info("ready", _counter)
 	ExplorationEvents.step_taken.connect(_on_step_taken)
 
 func _exit_tree() -> void:
@@ -19,5 +19,5 @@ func _on_step_taken(_who: Node3D) -> void:
 	#Log.debug("step_counter", "remaining", _counter)
 	if _counter <= 0:
 		_counter = RESET_VALUE
-		Log.info("StepCounter threshold reached, resetting to", RESET_VALUE)
+		Log.info("threshold reached, resetting", RESET_VALUE)
 		threshold_reached.emit()

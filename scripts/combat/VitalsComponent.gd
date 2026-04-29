@@ -13,10 +13,10 @@ func setup(hp: int, mp: int) -> void:
 	cur_hp = hp #isnt this always setting up current hp to max HP? reseting HP/MP?
 	cur_mp = mp
 	cur_ap = 3 #will it be possible to tweak this for bosses or modify this with some buffs, from gear, so you enter combat with more/less AP?
-	Log.info("VitalsComponent setup complete")
+	Log.info("ready")
 func reset() -> void:
 	cur_ap = 3
-	Log.info("VitalsComponent reset - AP = 3")
+	Log.info("reset")
 
 
 ## this component will later hold all methods regarding spending/gaining etc, of the resources

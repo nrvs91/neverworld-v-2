@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://b41chumy0hvcy"]
+
+[ext_resource type="Script" uid="uid://c8v7dpd23hu5k" path="res://scenes/characters/PlayerExploration.gd" id="1_jt2er"]
+[ext_resource type="PackedScene" uid="uid://t5i7fhrvyl0o" path="res://scenes/characters/components/player_input_component.tscn" id="2_m6jkt"]
+[ext_resource type="PackedScene" uid="uid://d4bsxo6a0ttbm" path="res://scenes/characters/components/movement_component.tscn" id="3_sylyq"]
+[ext_resource type="PackedScene" uid="uid://by04gowfupy6q" path="res://scenes/characters/components/visuals_component.tscn" id="4_4jwtf"]
+[ext_resource type="PackedScene" uid="uid://de6gnapkjibq3" path="res://scenes/core/camera_component.tscn" id="5_6g8yd"]
+
+[node name="PlayerExploration" type="Node3D" unique_id=1620993226]
+script = ExtResource("1_jt2er")
+
+[node name="PlayerInputComponent" parent="." unique_id=947896155 instance=ExtResource("2_m6jkt")]
+
+[node name="MovementComponent" parent="." unique_id=468235915 node_paths=PackedStringArray("controller") instance=ExtResource("3_sylyq")]
+controller = NodePath("../PlayerInputComponent")
+
+[node name="VisualComponent" parent="." unique_id=736639217 node_paths=PackedStringArray("controller") instance=ExtResource("4_4jwtf")]
+controller = NodePath("../PlayerInputComponent")
+
+[node name="AnimatedSprite3D" parent="VisualComponent" index="0" unique_id=994641630]
+animation = &"Run_Left"
+frame = 4
+frame_progress = 0.63207173
+
+[node name="CameraComponent" parent="." unique_id=2069835473 instance=ExtResource("5_6g8yd")]
+
+[editable path="PlayerInputComponent"]
+[editable path="VisualComponent"]

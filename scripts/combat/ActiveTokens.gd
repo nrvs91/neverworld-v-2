@@ -10,4 +10,4 @@ signal token_removed(token: Resource)
 signal token_updated(token: Resource)
 
 func flush() -> void:
-	Log.info("ActiveTokens flushed (stub)")
+	Log.info("flushed")

@@ -9,9 +9,9 @@ extends Node3D
 func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	visuals.setup(data.character_sprite)
 	vitals.setup(save_data.cur_hp, save_data.cur_mp)
-	Log.info(data.character_name, "initialized with:", "HP: %d MP: %d" % [vitals.cur_hp, vitals.cur_mp] )
+	Log.info("character ready", data.character_name)
 
 func initialize_enemy(data: EnemyData) -> void:
 	visuals.setup(data.character_sprite)
 	vitals.setup(data.MaxHP, data.MaxMP)
-	Log.info(data.character_name, "initialized with:", "HP: %d MP: %d" % [vitals.cur_hp, vitals.cur_mp] )
+	Log.info("character ready", data.character_name)

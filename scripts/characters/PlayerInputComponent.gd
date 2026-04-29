@@ -19,7 +19,7 @@ var _last_direction := Vector2.ZERO
 var _last_running := false
 
 func _ready() -> void:
-	Log.info("Initializing...")
+	Log.info("ready")
 
 func _physics_process(_delta: float) -> void:
 	var direction := Vector2.ZERO
