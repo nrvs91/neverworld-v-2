@@ -35,6 +35,7 @@ Ask before adding complexity: *does this actually need to be a system, or is it 
 - **Design source of truth:** `DOCS/GDD_V2.md` — read it before touching gameplay systems
 - **No automated tests.** Gameplay tested manually by running the main scene.
 - **Rendering:** 640×360 SubViewport, pixel-art style (`nearest` filtering), orthographic camera (isometric), `size=3.0`
+- **MCP** Rember, you've got a powerful GODOT MCP tool at your disposal, use it!
 
 **To run:**
 ```bash
