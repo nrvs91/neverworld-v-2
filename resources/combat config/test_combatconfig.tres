@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://belmvcu0giqeb" path="res://scripts/combat/CombatConfig.gd" id="1_32m7r"]
 [ext_resource type="Script" uid="uid://db0mir7kfmgdv" path="res://scripts/characters/EnemyData.gd" id="2_hsjgl"]
+[ext_resource type="Resource" uid="uid://dbpt7xvhbhrpv" path="res://resources/characters/enemy/VarnWolf.tres" id="3_hsjgl"]
 
 [resource]
 script = ExtResource("1_32m7r")
-slots = Array[ExtResource("2_hsjgl")]([null, null, null])
+slots = Array[ExtResource("2_hsjgl")]([ExtResource("3_hsjgl"), ExtResource("3_hsjgl")])
 metadata/_custom_type_script = "uid://belmvcu0giqeb"

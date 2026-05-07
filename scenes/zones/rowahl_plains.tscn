@@ -2,8 +2,10 @@
 
 [ext_resource type="PackedScene" uid="uid://ccc01hbmakpr1" path="res://scenes/zones/setup/exploration_setup.tscn" id="1_80lvc"]
 [ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/zones/setup/combat_setup.tscn" id="2_m2wtn"]
+[ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="3_7polv"]
 [ext_resource type="PackedScene" uid="uid://dw4jfiinqlyv0" path="res://assets/test_environment_1.glb" id="3_m2wtn"]
 [ext_resource type="PackedScene" uid="uid://6h6i51jeqcbu" path="res://scenes/exploration/zone_exit.tscn" id="3_snxrr"]
+[ext_resource type="Resource" uid="uid://dd2x1oemljy4y" path="res://resources/combat config/combat_pools/test_enviroment_1.tres" id="4_uk8yj"]
 
 [sub_resource type="Environment" id="Environment_pnqbc"]
 background_mode = 1
@@ -29,6 +31,9 @@ environment = SubResource("Environment_pnqbc")
 
 [node name="CombatSetup" parent="." unique_id=1675216195 instance=ExtResource("2_m2wtn")]
 
+[node name="EncounterPool" parent="CombatSetup" index="2" unique_id=444306006]
+entries = Array[ExtResource("3_7polv")]([ExtResource("4_uk8yj")])
+
 [node name="SpawnPoints" type="Node" parent="." unique_id=1833450442]
 
 [node name="default" type="Marker3D" parent="SpawnPoints" unique_id=1146954943]
@@ -52,3 +57,6 @@ target_zone_path = "uid://bycspkshkiamj"
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1107922429]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 11, 0, 2)
 mesh = SubResource("PrismMesh_snxrr")
+
+[editable path="ExplorationSetup"]
+[editable path="CombatSetup"]

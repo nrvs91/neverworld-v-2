@@ -14,7 +14,7 @@ func _ready() -> void:
 func _load_registry() -> void:
 	# Hardcoded for now — add an entry here each time you create a PlayerData .tres.
 	# Example once Skugge's .tres exists:
-	# _registry["skugge"] = preload("res://data/characters/skugge.tres")
+	_registry["skugge"] = preload("res://resources/characters/player/Skugge.tres")
 	pass
 
 func _load_save() -> void:
