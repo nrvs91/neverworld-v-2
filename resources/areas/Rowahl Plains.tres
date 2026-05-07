@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Area" format=3 uid="uid://cl8xvrqtffkpt"]
+
+[ext_resource type="Script" uid="uid://d0m1d6nvb8e2g" path="res://scripts/exploration/Area.gd" id="1_75bkq"]
+[ext_resource type="PackedScene" uid="uid://cjdbek1xujf70" path="res://scenes/zones/rowahl_plains.tscn" id="1_g0xpo"]
+
+[resource]
+script = ExtResource("1_75bkq")
+entry_zone = ExtResource("1_g0xpo")
+metadata/_custom_type_script = "uid://d0m1d6nvb8e2g"

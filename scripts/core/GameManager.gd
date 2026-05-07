@@ -3,7 +3,7 @@ extends Node
 @onready var screen_fader: ScreenFader = $ScreenFader
 @onready var current_scene: Node =  $CurrentScene
 
-@export var starting_zone: PackedScene
+@export var starting_area: Area
 
 var current_exploration: Node = null
 var _exploration_camera: Camera3D
@@ -39,7 +39,7 @@ func start_new_game() -> void:
 	PartyManager.start_new_game()
 	await screen_fader.fade_out()
 	_clear_current_scene()
-	_load_zone(starting_zone)
+	_load_zone(starting_area.entry_zone)
 	await screen_fader.fade_in()
 	state = Enums.GameState.EXPLORATION
 	Log.info("new game started")

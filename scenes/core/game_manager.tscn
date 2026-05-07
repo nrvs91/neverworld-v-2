@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" uid="uid://dx264tylicvvl" path="res://scripts/core/GameManager.gd" id="1_vegsa"]
 [ext_resource type="PackedScene" uid="uid://bb8y5pk8vl366" path="res://scenes/core/screen_fader.tscn" id="2_504au"]
-[ext_resource type="PackedScene" uid="uid://cjdbek1xujf70" path="res://scenes/zones/rowahl_plains.tscn" id="2_vegsa"]
+[ext_resource type="Resource" uid="uid://cl8xvrqtffkpt" path="res://resources/areas/Rowahl Plains.tres" id="2_vegsa"]
 [ext_resource type="PackedScene" uid="uid://l556qax1nlnr" path="res://scenes/core/current_scene.tscn" id="4_ktsht"]
 
 [node name="GameManager" type="Node" unique_id=238766830]
 script = ExtResource("1_vegsa")
-starting_zone = ExtResource("2_vegsa")
+starting_area = ExtResource("2_vegsa")
 
 [node name="ScreenFader" parent="." unique_id=508449453 instance=ExtResource("2_504au")]
 
