@@ -5,11 +5,12 @@
 [ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="3_7polv"]
 [ext_resource type="PackedScene" uid="uid://dw4jfiinqlyv0" path="res://assets/test_environment_1.glb" id="3_m2wtn"]
 [ext_resource type="PackedScene" uid="uid://6h6i51jeqcbu" path="res://scenes/exploration/zone_exit.tscn" id="3_snxrr"]
+[ext_resource type="PackedScene" uid="uid://ckm8xr5ulv3of" path="res://scenes/combat/enviroments/combat_test1.fbx" id="4_nd0o2"]
 [ext_resource type="Resource" uid="uid://dd2x1oemljy4y" path="res://resources/combat config/combat_pools/test_enviroment_1.tres" id="4_uk8yj"]
 
 [sub_resource type="Environment" id="Environment_pnqbc"]
 background_mode = 1
-background_color = Color(0.881864, 0.45411357, 0.881864, 1)
+background_color = Color(0.05, 0.05, 0.1, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.9779369, 0.97793704, 0.9779369, 1)
 ambient_light_sky_contribution = 0.0
@@ -33,6 +34,9 @@ environment = SubResource("Environment_pnqbc")
 scene = ExtResource("3_m2wtn")
 
 [node name="CombatSetup" parent="." unique_id=1675216195 instance=ExtResource("2_m2wtn")]
+
+[node name="CombatEnvironment" parent="CombatSetup" index="1" unique_id=1043495217]
+scene = ExtResource("4_nd0o2")
 
 [node name="EncounterPool" parent="CombatSetup" index="2" unique_id=444306006]
 entries = Array[ExtResource("3_7polv")]([ExtResource("4_uk8yj")])

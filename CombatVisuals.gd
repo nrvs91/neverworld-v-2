@@ -8,7 +8,12 @@ var _action_playing: bool = false
 
 func setup(sprite_frames: SpriteFrames) -> void:
 	sprite.sprite_frames = sprite_frames
-	sprite.play(_base_state)
+	if sprite_frames.has_animation(_base_state):
+		sprite.play(_base_state)
+	else:
+		var fallback := sprite_frames.get_animation_names()[0]
+		sprite.play(fallback)
+		Log.warn("CombatVisuals: no Idle animation, playing", fallback)
 	Log.info("CombatVisuals setup")
 
 func set_base_state(state: StringName) -> void:
