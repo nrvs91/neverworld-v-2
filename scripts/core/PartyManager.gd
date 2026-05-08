@@ -25,8 +25,8 @@ func start_new_game() -> void:
 	save_data = GlobalSaveData.new()
 	# Skugge is always the starting character.
 	# Add her PlayerData .tres to _registry first, then uncomment:
-	# recruit("skugge")
-	# save_data.party_slots[0] = "skugge"
+	recruit("skugge")
+	save_data.party_slots[0] = "skugge"
 	Log.info("new game started")
 
 # Adds a character to the roster using their PlayerData as the starting template.

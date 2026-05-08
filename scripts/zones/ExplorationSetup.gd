@@ -1,3 +1,4 @@
+@tool
 class_name ExplorationSetup
 extends Node
 
@@ -5,6 +6,9 @@ extends Node
 @onready var exploration_bgm: ExplorationBGM = $ExplorationBGM
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		exploration_environment.enter()
+		return
 	Log.info("ready")
 
 func enter() -> void:

@@ -36,7 +36,7 @@ scripts/core/game_manager.gd           MODIFY — save/restore overworld camera,
 
 **Files:** Modify `scripts/combat/PlayerSpawner.gd`, modify `scenes/combat/components/player_spawner.tscn`, modify `scripts/combat/CombatCharacter.gd`
 
-- [ ] Open `scripts/combat/PlayerSpawner.gd`. Replace its entire contents with:
+- [x] Open `scripts/combat/PlayerSpawner.gd`. Replace its entire contents with:
 
 ```gdscript
 class_name PlayerSpawner
@@ -65,9 +65,9 @@ func clear() -> void:
 
 This is now identical in structure to `EnemySpawner`. `initialize()` always calls `clear()` first so it's safe to call multiple times.
 
-- [ ] Open `scenes/combat/components/player_spawner.tscn` in the Godot editor. Each slot node (`Slot1`, `Slot2`, `Slot3`) currently has a `CombatCharacter` as a child. **Delete those CombatCharacter instances** — leave only the bare slot `Node3D` nodes. The slots stay; the characters inside them go.
+- [x] Open `scenes/combat/components/player_spawner.tscn` in the Godot editor. Each slot node (`Slot1`, `Slot2`, `Slot3`) currently has a `CombatCharacter` as a child. **Delete those CombatCharacter instances** — leave only the bare slot `Node3D` nodes. The slots stay; the characters inside them go.
 
-- [ ] Open `scripts/combat/CombatCharacter.gd`. Remove the `reset_for_combat()` method entirely — it's no longer called by anything:
+- [x] Open `scripts/combat/CombatCharacter.gd`. Remove the `reset_for_combat()` method entirely — it's no longer called by anything:
 
 ```gdscript
 # DELETE this method:
@@ -76,7 +76,7 @@ func reset_for_combat() -> void:
     Log.info("Active tokens flushed.")
 ```
 
-- [ ] Open `scripts/combat/EnemySpawner.gd`. Add a log line at the end of `initialize()` so both spawners are consistent:
+- [x] Open `scripts/combat/EnemySpawner.gd`. Add a log line at the end of `initialize()` so both spawners are consistent:
 
 ```gdscript
 func initialize(composition: CombatConfig) -> void:
@@ -85,7 +85,7 @@ func initialize(composition: CombatConfig) -> void:
     Log.info("EnemySpawner initialized")  # add this line at the end
 ```
 
-- [ ] Run the game (F5). Walk until an encounter triggers. In the Output panel you should see:
+- [x] Run the game (F5). Walk until an encounter triggers. In the Output panel you should see:
   - `PlayerSpawner cleared` then `PlayerSpawner initialized`
   - `EnemySpawner cleared` then `EnemySpawner initialized`
   - No errors about missing children or null references
@@ -94,7 +94,7 @@ func initialize(composition: CombatConfig) -> void:
 
   **Note on subsequent encounters:** On the second encounter onwards, `PlayerSpawner cleared` will appear **twice** — once from `cleanup()` at end of combat, and again from the internal `clear()` inside `initialize()`. That's intentional — `initialize()` always clears first so it's safe to call even if cleanup wasn't called. The double log is normal, not a bug.
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/PlayerSpawner.gd scenes/combat/components/player_spawner.tscn scripts/combat/CombatCharacter.gd
 git commit -m "Make PlayerSpawner ephemeral: spawn/clear per encounter, mirrors EnemySpawner"
@@ -110,11 +110,11 @@ git commit -m "Make PlayerSpawner ephemeral: spawn/clear per encounter, mirrors 
 
 **Files:** Modify `scripts/combat/CombatScene.gd`, modify `scripts/core/game_manager.gd`, modify `scenes/combat/combat_scene.tscn`
 
-- [ ] **Editor first:** Open `scenes/combat/combat_scene.tscn` in the Godot editor. Add a `Camera3D` node as a direct child of the root `CombatScene` node, named `Camera3D`. Set `Projection` to `Orthographic` and `Size` to `3.0`. Leave position and rotation at defaults for now — Task 3 sets the final values. Save the scene.
+- [x] **Editor first:** Open `scenes/combat/combat_scene.tscn` in the Godot editor. Add a `Camera3D` node as a direct child of the root `CombatScene` node, named `Camera3D`. Set `Projection` to `Orthographic` and `Size` to `3.0`. Leave position and rotation at defaults for now — Task 3 sets the final values. Save the scene.
 
   **Do this before touching any script.** The script you're about to write references `$Camera3D` via `@onready` — if that node doesn't exist in the scene when the game runs, Godot throws a null reference error.
 
-- [ ] Open `scripts/combat/CombatScene.gd`. Rewrite it:
+- [x] Open `scripts/combat/CombatScene.gd`. Rewrite it:
 
 ```gdscript
 class_name CombatScene
@@ -152,14 +152,14 @@ func _clear_environment() -> void:
 
 Note: `player_spawner.initialize()` already calls `clear()` internally, so the old `reset_characters()` call is gone. `cleanup()` is the new method GameManager will call at end of combat.
 
-- [ ] Open `scripts/core/game_manager.gd`. Add a variable to store the overworld camera. Place it next to the existing `var current_overworld: Node = null` line — keep related state together:
+- [x] Open `scripts/core/game_manager.gd`. Add a variable to store the overworld camera. Place it next to the existing `var current_overworld: Node = null` line — keep related state together:
 
 ```gdscript
 var current_overworld: Node = null    # already exists
 var _overworld_camera: Camera3D = null  # add this line right below it
 ```
 
-- [ ] In `_on_encounter_triggered()`, save the current camera before switching. Add this line **before** `combat_scene.process_mode = Node.PROCESS_MODE_INHERIT`:
+- [x] In `_on_encounter_triggered()`, save the current camera before switching. Add this line **before** `combat_scene.process_mode = Node.PROCESS_MODE_INHERIT`:
 
 ```gdscript
 _overworld_camera = get_viewport().get_camera_3d()
@@ -167,7 +167,7 @@ _overworld_camera = get_viewport().get_camera_3d()
 
 `get_viewport().get_camera_3d()` returns whichever camera is currently active. At the moment combat triggers, that's the overworld camera — so we save it here.
 
-- [ ] In `end_combat()`, call cleanup and restore the camera. Rewrite `end_combat()`:
+- [x] In `end_combat()`, call cleanup and restore the camera. Rewrite `end_combat()`:
 
 ```gdscript
 func end_combat() -> void:
@@ -182,11 +182,11 @@ func end_combat() -> void:
     state = Enums.GameState.OVERWORLD
 ```
 
-- [ ] Run the game (F5). Trigger an encounter. The screen should no longer go to a black void — you'll be looking through the combat camera, which currently frames the origin. It'll look empty (no floor yet, slots at origin), but **no black screen** means the camera switch worked.
+- [x] Run the game (F5). Trigger an encounter. The screen should no longer go to a black void — you'll be looking through the combat camera, which currently frames the origin. It'll look empty (no floor yet, slots at origin), but **no black screen** means the camera switch worked.
 
   Check the Output panel for `CombatScene initialized` and no errors.
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scripts/combat/CombatScene.gd scripts/core/game_manager.gd scenes/combat/combat_scene.tscn
 git commit -m "Add Camera3D to CombatScene, wire make_current() on combat start and restore on end"
@@ -206,7 +206,7 @@ You'll tune these visually in the editor — these are starting points, not exac
 
 **Files:** Modify `scenes/combat/combat_scene.tscn` (editor work — no script changes)
 
-- [ ] Open `scenes/combat/combat_scene.tscn` in the Godot editor. Select the `PlayerSpawner` node and expand it. You'll see `Slot1`, `Slot2`, `Slot3` as children (the bare Node3Ds from Task 1).
+- [x] Open `scenes/combat/combat_scene.tscn` in the Godot editor. Select the `PlayerSpawner` node and expand it. You'll see `Slot1`, `Slot2`, `Slot3` as children (the bare Node3Ds from Task 1).
 
   Position the three player slots. Suggested starting values — adjust visually:
   - `Slot1`: position `(-1.5, 0, 2.0)` — center-left, closest to camera
@@ -215,7 +215,7 @@ You'll tune these visually in the editor — these are starting points, not exac
 
   The goal is a loose triangle that reads as "a party standing together."
 
-- [ ] Now select `EnemySpawner` and position its six slots. Suggested starting values:
+- [x] Now select `EnemySpawner` and position its six slots. Suggested starting values:
   - `Slot1`: position `(1.0, 0, -1.0)`
   - `Slot2`: position `(2.5, 0, -0.5)`
   - `Slot3`: position `(3.5, 0, -2.0)`
@@ -225,7 +225,7 @@ You'll tune these visually in the editor — these are starting points, not exac
 
   Six positions spread across the upper-right. Not a perfect grid — a loose cluster feels more natural.
 
-- [ ] Now add the `CameraTargets` node. In the scene tree, add a plain `Node` as a direct child of the root, named `CameraTargets`. Inside it, add three `Node3D` children:
+- [x] Now add the `CameraTargets` node. In the scene tree, add a plain `Node` as a direct child of the root, named `CameraTargets`. Inside it, add three `Node3D` children:
   - `PlayerSide` — position near the center of the player cluster, roughly `(-2.0, 1.0, 2.5)`
   - `Center` — midpoint between both groups, roughly `(1.0, 1.0, 0.0)`
   - `EnemySide` — near the center of the enemy cluster, roughly `(2.5, 1.0, -2.0)`
@@ -234,24 +234,24 @@ You'll tune these visually in the editor — these are starting points, not exac
 
   These nodes do nothing right now. They're landmarks the future camera controller will aim at.
 
-- [ ] Add a placeholder floor. In the scene tree, add a `CSGBox3D` node as a direct child of root, named `FloorPlaceholder`. In the Inspector:
+- [x] Add a placeholder floor. In the scene tree, add a `CSGBox3D` node as a direct child of root, named `FloorPlaceholder`. In the Inspector:
   - Size: `(12.0, 0.2, 12.0)` — wide flat box covering the whole arena
   - Position: `(1.0, -0.1, 0.0)` — centered roughly between both parties, slightly below Y=0
 
   This won't look pretty — it just confirms the camera is aimed correctly and gives something to see.
 
-- [ ] Position the `Camera3D`. With the slots and floor placed, move the camera to frame the whole battlefield. As a starting point: position `(-1.0, 8.0, 6.0)`, rotation `(-35, -20, 0)` (degrees). This is a rough isometric angle — adjust in the editor until all 9 slots are visible with comfortable padding.
+- [x] Position the `Camera3D`. With the slots and floor placed, move the camera to frame the whole battlefield. As a starting point: position `(-1.0, 8.0, 6.0)`, rotation `(-35, -20, 0)` (degrees). This is a rough isometric angle — adjust in the editor until all 9 slots are visible with comfortable padding.
 
   **Tip:** In the Godot editor, with the Camera3D selected, click "Preview" in the top-left of the viewport to see exactly what the camera sees. Drag it around until the layout looks right.
 
-- [ ] Run the game (F5). Trigger an encounter. You should now see:
+- [x] Run the game (F5). Trigger an encounter. You should now see:
   - The placeholder floor visible
   - At least one enemy character appearing at a slot position (if your test CombatConfig has an enemy)
   - Player slots empty (PartyManager has no data) — expected
   - The camera framing the arena
   - `CombatScene initialized` in the log
 
-- [ ] Commit:
+- [x] Commit:
 ```bash
 git add scenes/combat/combat_scene.tscn
 git commit -m "Author combat stage: slot positions, Camera3D framing, CameraTargets, placeholder floor"
@@ -263,7 +263,7 @@ git commit -m "Author combat stage: slot positions, Camera3D framing, CameraTarg
 
 **What to verify:**
 
-- [ ] Run the game (F5) with `Globals.dev_mode = true` (skip menu). Walk the character. After the StepCounter threshold:
+- [x] Run the game (F5) with `Globals.dev_mode = true` (skip menu). Walk the character. After the StepCounter threshold:
   - `StepCounter threshold reached` appears
   - `EncounterPool picked: ...` appears
   - `Encounter triggered, transitioning to combat` appears
@@ -273,15 +273,15 @@ git commit -m "Author combat stage: slot positions, Camera3D framing, CameraTarg
   - `EnemySpawner cleared` and enemy init lines appear (if test CombatConfig has enemies)
   - `CombatScene initialized` appears
 
-- [ ] Verify slot positions look right. If slots are bunched or off-screen, go back to the editor and adjust position values. Press F5 again and retrigger combat to check.
+- [x] Verify slot positions look right. If slots are bunched or off-screen, go back to the editor and adjust position values. Press F5 again and retrigger combat to check.
 
-- [ ] Test `end_combat()`. In `game_manager.gd`, temporarily add a debug key to trigger it — or call it from the F1 debug trigger if you wired that. Confirm:
+- [x] Test `end_combat()`. In `game_manager.gd`, temporarily add a debug key to trigger it — or call it from the F1 debug trigger if you wired that. Confirm:
   - Screen fades out
   - `CombatScene cleaned up` appears in log
   - Overworld camera resumes — you're back in the overworld
   - Walking again after returning still works (StepCounter still fires)
 
-- [ ] Final commit if anything was tweaked:
+- [x] Final commit if anything was tweaked:
 ```bash
 git add .
 git commit -m "Combat scene template: verified end-to-end camera switch and slot layout"

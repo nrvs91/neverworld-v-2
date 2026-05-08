@@ -198,11 +198,11 @@ GameManager (Node, script: GameManager.gd)
 
 **`current_overworld`** — this is still needed. The overworld scene self-registers in its `_enter_tree`. GM uses it to freeze/unfreeze. The registration pattern from the original plan (`map_test.gd`) still works.
 
-- [ ] Create `scripts/core/GameManager.gd`
-- [ ] Create/modify `scenes/core/game_manager.tscn` — ScreenFader + CombatScene + CurrentScene holder
-- [ ] Add `debug_trigger_combat` input action (F1) in Project Settings if not already done
-- [ ] Test with `skip_to_overworld = true`: game should go straight to overworld, no menu
-- [ ] Test with `skip_to_overworld = false`: game should show MainMenu, New Game button should transition to overworld
+- [x] Create `scripts/core/GameManager.gd`
+- [x] Create/modify `scenes/core/game_manager.tscn` — ScreenFader + CombatScene + CurrentScene holder
+- [x] Add `debug_trigger_combat` input action (F1) in Project Settings if not already done
+- [x] Test with `skip_to_overworld = true`: game should go straight to overworld, no menu
+- [x] Test with `skip_to_overworld = false`: game should show MainMenu, New Game button should transition to overworld
 
 ---
 
@@ -210,22 +210,22 @@ GameManager (Node, script: GameManager.gd)
 
 **What:** GameManager is the main scene AND an autoload. It's always in the tree from frame 1.
 
-- [ ] Register `GameManager` in `Project → Project Settings → Autoload`:
+- [x] Register `GameManager` in `Project → Project Settings → Autoload`:
   - Path: `res://scenes/core/game_manager.tscn`, name: `GameManager`
   - **No `class_name`** — same rule as event buses, autoload name already puts it in global scope
   
-- [ ] Set `game_manager.tscn` as the **main scene** in `Project → Project Settings → Application → Run → Main Scene`
+- [x] Set `game_manager.tscn` as the **main scene** in `Project → Project Settings → Application → Run → Main Scene`
   - This replaces `Map_Test.tscn` as the main scene
   - `Map_Test.tscn` is now loaded by GameManager when transitioning to overworld
 
-- [ ] Autoload order matters:
+- [x] Autoload order matters:
   1. Globals
   2. ExplorationEvents
   3. CombatEvents
   4. PartyManager
   5. GameManager (last, so everything else exists when its `_ready` fires)
 
-- [ ] Verify no errors on launch. All autoloads log ready.
+- [x] Verify no errors on launch. All autoloads log ready.
 
 ---
 

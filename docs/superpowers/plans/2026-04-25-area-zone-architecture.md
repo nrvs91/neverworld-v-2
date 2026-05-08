@@ -26,9 +26,9 @@
 | 3 | Exploration container | 3 | ✅ DONE | New ExplorationSetup subtree mirroring CombatSetup |
 | 4 | Zone template + test zone | 3 | ✅ DONE | zone_template.tscn + rowahl_plains.tscn loading via GameManager export |
 | 5 | Player pawn lifecycle | 3 | ✅ DONE | Pawn lives under GameManager, lazily instantiated, frozen during combat |
-| 6 | Camera rebinding | 2 | ⏳ NEXT | RemoteTransform3D follow-camera, rebound per zone load |
-| 7 | TRANSITIONING state + zone-to-zone transitions | 4 | ⬜ TODO | Second test zone, ZoneExit triggers, working zone-to-zone with state guards |
-| 8 | Area resource | 2 | ⬜ TODO | First test Area .tres, GameManager loads entry zone from Area |
+| 6 | Camera rebinding | — | ❌ WON'T DO | Static isometric camera per zone is sufficient; auto-switch on zone load via baked-in `current = true`. Cutscene camera is a separate concern. |
+| 7 | TRANSITION state + zone-to-zone transitions | 4 | ✅ DONE | ZoneExit triggers, working zone-to-zone with state guards |
+| 8 | Area resource | 2 | ✅ DONE | Area .tres, GameManager loads entry zone from Area |
 
 ---
 
@@ -41,14 +41,17 @@ These are intentional divergences made during implementation. The plan below ref
 | Rename EncounterManager → `Combat` | Renamed to `CombatSetup` | `Combat` was too bare as a class_name — `CombatSetup` is unambiguous |
 | Rename `Exploration` container | Named `ExplorationSetup` | Symmetry with `CombatSetup` |
 | `ExplorationBGM extends Node` with internal `AudioStreamPlayer` | `ExplorationBGM extends AudioStreamPlayer` | Simpler — no wrapper needed, `play()`/`stop()` built in |
-| `ExplorationEnvironment` has `instantiate_environment()`/`clear()` | `ExplorationEnvironment` is a pure data holder (`@export var scene: PackedScene` only) | The container doesn't need those methods yet; GameManager drives loading |
-| `Exploration` has `enter()`/`exit()` | `ExplorationSetup` has `pause_for_combat()`/`resume_after_combat()` only | Full enter/exit lifecycle deferred until zone-to-zone transitions (Phase 7) |
+| `ExplorationEnvironment` has `instantiate_environment()`/`clear()` | `ExplorationEnvironment` has `enter()`/`exit()`/`hide_geometry()`/`show_geometry()` | Gained lifecycle methods when ExplorationSetup needed to drive it. No longer a pure data holder — owns geometry instantiation and visibility. |
+| `Exploration` has `enter()`/`exit()` | `ExplorationSetup` has `enter()`/`exit()` plus `pause_for_combat()`/`resume_after_combat()` | Full lifecycle implemented, not deferred. Called by GameManager on zone load/unload and combat transitions. |
 | Scripts in `scripts/exploration/` | Scripts in `scripts/zones/` | Better reflects gameplay context |
 | Scenes in `scenes/exploration/` | Scenes in `scenes/zones/setup/` | Same reason |
-| Restructure `main.tscn` into Zone template in-place | Created `zone_template.tscn` + `rowahl_plains.tscn` fresh; `main.tscn` kept as sandbox | Cleaner to build correct from scratch than restructure a legacy scene |
-| `overworld_character.tscn` modified in place, components added | `overworld_character.tscn`/`.gd` deleted; `player_overworld.tscn`/`PlayerOverworld.gd` created | Composition insight: each actor type is its own scene; no shared god-template |
-| `GameManager` loads initial zone via hardcoded `main.tscn` string | `GameManager` has `@export var starting_zone: PackedScene` | Removes hardcoded path; Area resource wires in during Phase 8 |
-| Pawn freeze wired in Task 13 (separate step) | Pawn freeze wired during Phase 5 together with pawn lifecycle | Natural to do at the same time |
+| Restructure `main.tscn` into Zone template in-place | Created `zone_template.tscn` + `rowahl_plains.tscn` fresh; `main.tscn` deleted | Cleaner to build correct from scratch; `boot.tscn` now serves as the test/debug entry point |
+| `overworld_character.tscn` modified in place, components added | `overworld_character.tscn`/`.gd` deleted; `player_exploration.tscn`/`PlayerExploration.gd` created | Composition insight: each actor type is its own scene; "exploration" replaces "overworld" throughout |
+| `GameManager` loads initial zone via hardcoded `main.tscn` string | `GameManager` has `@export var starting_area: Area` | Area resource loads entry zone from `.tres` — Phase 8 pattern adopted early |
+| GameState: `OVERWORLD`, `TRANSITIONING` | GameState: `EXPLORATION`, `TRANSITION` | Shorter names, `EXPLORATION` describes the behavior rather than an SNES-era world-map concept |
+| `ZoneExit` exports `target_zone: PackedScene`, uses `body_entered` | `ZoneExit` uses `@export_file var target_zone_path: String` + runtime `load()`, uses `area_entered` | String path avoids UID resolution issues; `area_entered` matches the player's Area3D detection |
+| `test_area.tres`, `test_zone_b.tscn` | `Rowahl Plains.tres`, `rowahl_plains.tscn`, `rowahl_plains_clearing.tscn` | Real game world naming from the start |
+| `ExplorationEnvironment` + `ExplorationSetup` have no `@tool` | Both have `@tool` annotations | Required for geometry to appear in the editor; `ExplorationSetup._ready()` detects editor and calls `enter()` for preview |
 
 ---
 
@@ -1003,6 +1006,8 @@ git commit -m "Verify player group membership survives runtime instantiation"
 
 ## Phase 6 — Camera Rebinding
 
+> **Decision (2026-05-08): WON'T DO.** The static isometric camera per zone is sufficient. Each zone's Camera3D has `current = true` baked into the `.tscn`; Godot auto-switches on zone load. Combat camera save/restore (via `_exploration_camera`) handles the one case where two cameras compete. RemoteTransform3D follow-camera is deferred to the cutscene system if needed.
+
 Add a `RemoteTransform3D` child to the player pawn. Have GameManager rebind its `remote_path` to the current zone's Camera3D after each zone load. Combat camera switching stays as-is.
 
 ### Task 15 — Add `RemoteTransform3D` to overworld_character.tscn
@@ -1095,7 +1100,7 @@ Add the `TRANSITIONING` state. Author a second test zone. Create the `ZoneExit` 
 **Files:**
 - Modify: `autoloads/Enums.gd` (or wherever `GameState` is defined)
 
-- [ ] **Step 1: Locate the GameState enum**
+- [x] **Step 1: Locate the GameState enum**
 
 ```bash
 grep -rn "enum GameState" /home/bart/Projects/neverworld-v-2/
@@ -1103,7 +1108,7 @@ grep -rn "enum GameState" /home/bart/Projects/neverworld-v-2/
 
 It's likely in `autoloads/Enums.gd` or a similar location.
 
-- [ ] **Step 2: Add TRANSITIONING**
+- [x] **Step 2: Add TRANSITIONING**
 
 Update the enum:
 
@@ -1116,11 +1121,11 @@ enum GameState {
 }
 ```
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. Should run identically — nothing checks for or sets TRANSITIONING yet.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add autoloads/Enums.gd
@@ -1136,7 +1141,7 @@ git commit -m "Add TRANSITIONING state to GameState enum"
 **Files:**
 - Modify: `scripts/core/game_manager.gd`
 
-- [ ] **Step 1: Update `_on_encounter_triggered` with TRANSITIONING bookends and BGM pause**
+- [x] **Step 1: Update `_on_encounter_triggered` with TRANSITIONING bookends and BGM pause**
 
 Replace its current body (which Task 3 wrote) with:
 
@@ -1162,7 +1167,7 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
     state = Enums.GameState.COMBAT
 ```
 
-- [ ] **Step 2: Update `end_combat` with TRANSITIONING bookends and BGM resume**
+- [x] **Step 2: Update `end_combat` with TRANSITIONING bookends and BGM resume**
 
 ```gdscript
 func end_combat() -> void:
@@ -1186,11 +1191,11 @@ func end_combat() -> void:
     state = Enums.GameState.OVERWORLD
 ```
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. Trigger combat, end combat. Behaviour should be identical to before, with TRANSITIONING state in between visible only via the state machine. Try mashing the encounter trigger during a fade — it should log a warning "Encounter ignored — game state is TRANSITIONING" and not start a second fade.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/core/game_manager.gd
@@ -1208,7 +1213,7 @@ git commit -m "Bookend transitions with TRANSITIONING state, guard handlers agai
 - Create: `scripts/exploration/ZoneExit.gd`
 - Create: `scenes/exploration/zone_exit.tscn`
 
-- [ ] **Step 1: Add the signal**
+- [x] **Step 1: Add the signal**
 
 In `autoloads/ExplorationEvents.gd`, add:
 
@@ -1216,7 +1221,7 @@ In `autoloads/ExplorationEvents.gd`, add:
 signal zone_exit_requested(target_zone: PackedScene, target_spawn_point: StringName)
 ```
 
-- [ ] **Step 2: Create the ZoneExit script**
+- [x] **Step 2: Create the ZoneExit script**
 
 Create `scripts/exploration/ZoneExit.gd`:
 
@@ -1244,15 +1249,15 @@ func _on_body_entered(body: Node) -> void:
     ExplorationEvents.zone_exit_requested.emit(target_zone, target_spawn_point)
 ```
 
-- [ ] **Step 3: Create the ZoneExit scene**
+- [x] **Step 3: Create the ZoneExit scene**
 
 Create `scenes/exploration/zone_exit.tscn`. Root: `Area3D` named `ZoneExit`, attach the script. Add a child `CollisionShape3D`. Configure the shape (e.g., `BoxShape3D` with `size = (1, 2, 1)` for a small standable zone). Save.
 
-- [ ] **Step 4: Run the game**
+- [x] **Step 4: Run the game**
 
 F5. The new files don't change runtime behaviour yet — no ZoneExit instances are placed. Verify no parse errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add autoloads/ExplorationEvents.gd scripts/exploration/ZoneExit.gd scenes/exploration/zone_exit.tscn
@@ -1269,11 +1274,11 @@ git commit -m "Add ZoneExit trigger and zone_exit_requested signal"
 - Create: `scenes/exploration/zones/test_zone_b.tscn`
 - Create: `scenes/exploration/zones/test_zone_b_environment.tscn` (geometry)
 
-- [ ] **Step 1: Create the geometry scene**
+- [x] **Step 1: Create the geometry scene**
 
 Create `scenes/exploration/zones/test_zone_b_environment.tscn`. Root: `Node3D` named `TestZoneBEnvironment`. Add a `MeshInstance3D` with a `PlaneMesh` (size 10x10) and a different colour material than main.tscn (e.g., blue) so it's visually distinct. Save.
 
-- [ ] **Step 2: Create the zone scene**
+- [x] **Step 2: Create the zone scene**
 
 Create `scenes/exploration/zones/test_zone_b.tscn`. Root: `Node` named `TestZoneB`. Build the Zone template:
 
@@ -1300,7 +1305,7 @@ Position the `ZoneExit_to_main` collision somewhere visible/walkable in the zone
 
 Save.
 
-- [ ] **Step 3: Add the inverse ZoneExit to main.tscn**
+- [x] **Step 3: Add the inverse ZoneExit to main.tscn**
 
 Open `main.tscn`. Under (or as) `Triggers/`, add an instance of `zone_exit.tscn` named `ZoneExit_to_test_zone_b`. Set its `target_zone` to `test_zone_b.tscn` and `target_spawn_point` to `&"from_main"`. Position its collision somewhere walkable.
 
@@ -1308,7 +1313,7 @@ Add the corresponding spawn point: under `SpawnPoints/`, add a `Marker3D` named 
 
 Save.
 
-- [ ] **Step 4: Run the game**
+- [x] **Step 4: Run the game**
 
 F5. Walk into the `ZoneExit_to_test_zone_b` trigger. Output panel should show:
 
@@ -1316,7 +1321,7 @@ F5. Walk into the `ZoneExit_to_test_zone_b` trigger. Output panel should show:
 
 Nothing else happens because GameManager doesn't handle the signal yet — that's Task 21.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scenes/exploration/zones/test_zone_b.tscn scenes/exploration/zones/test_zone_b_environment.tscn main.tscn
@@ -1332,7 +1337,7 @@ git commit -m "Author test_zone_b with ZoneExits in both directions for transiti
 **Files:**
 - Modify: `scripts/core/game_manager.gd`
 
-- [ ] **Step 1: Refactor `_load_overworld` to accept a spawn point**
+- [x] **Step 1: Refactor `_load_overworld` to accept a spawn point**
 
 Change its signature and use the spawn point inside:
 
@@ -1377,7 +1382,7 @@ func _load_zone(zone_scene: PackedScene, spawn_point: StringName = &"default") -
 
 Delete the old `_load_overworld` function. The new function is named `_load_zone` and accepts a `PackedScene` directly (not a path string) plus a spawn point name.
 
-- [ ] **Step 2: Update `start_new_game` to use the new function**
+- [x] **Step 2: Update `start_new_game` to use the new function**
 
 ```gdscript
 const InitialZone: PackedScene = preload("res://main.tscn")
@@ -1396,7 +1401,7 @@ func start_new_game() -> void:
 
 `InitialZone` is a temporary preload — once Phase 8 introduces the Area resource, this becomes a property of the starting Area instead.
 
-- [ ] **Step 3: Add the zone_exit_requested handler**
+- [x] **Step 3: Add the zone_exit_requested handler**
 
 In `_ready()` of GameManager, add:
 
@@ -1419,7 +1424,7 @@ func _on_zone_exit_requested(target_zone: PackedScene, target_spawn_point: Strin
     state = Enums.GameState.OVERWORLD
 ```
 
-- [ ] **Step 4: Run the game**
+- [x] **Step 4: Run the game**
 
 F5. Walk into the `ZoneExit_to_test_zone_b` trigger. Expected:
 
@@ -1435,7 +1440,7 @@ Walk into the return trigger in test_zone_b. The pawn should transition back to 
 
 If the camera doesn't follow in test_zone_b, the rebind code is finding `System/Camera3D` correctly and should work. Verify the camera node is at that path.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/core/game_manager.gd
@@ -1455,7 +1460,7 @@ Add the Area resource class. Author a single test Area .tres. Adjust `start_new_
 **Files:**
 - Create: `scripts/exploration/Area.gd`
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 Create `scripts/exploration/Area.gd`:
 
@@ -1471,7 +1476,7 @@ extends Resource
 
 The `zones` array (zone graph) is deferred to the world map spec — for now, the area just needs to know which zone to load when entered.
 
-- [ ] **Step 2: Create the test Area resource**
+- [x] **Step 2: Create the test Area resource**
 
 In Godot editor, in the FileSystem panel, navigate to (or create) `resources/areas/`. Right-click → New Resource. Pick the `Area` resource type. Save as `test_area.tres`.
 
@@ -1486,11 +1491,11 @@ In the Inspector, set:
 
 Save.
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. The new resource exists but isn't used yet. Verify no parse errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/exploration/Area.gd resources/areas/test_area.tres
@@ -1506,7 +1511,7 @@ git commit -m "Add Area resource class and test_area.tres"
 **Files:**
 - Modify: `scripts/core/game_manager.gd`
 
-- [ ] **Step 1: Replace the InitialZone constant with an InitialArea**
+- [x] **Step 1: Replace the InitialZone constant with an InitialArea**
 
 Remove:
 
@@ -1520,7 +1525,7 @@ Add:
 const InitialArea: Area = preload("res://resources/areas/test_area.tres")
 ```
 
-- [ ] **Step 2: Update `start_new_game` to use the Area**
+- [x] **Step 2: Update `start_new_game` to use the Area**
 
 ```gdscript
 func start_new_game() -> void:
@@ -1535,7 +1540,7 @@ func start_new_game() -> void:
     Log.info("New Game started!")
 ```
 
-- [ ] **Step 3: Run the game**
+- [x] **Step 3: Run the game**
 
 F5. Should see:
 
@@ -1545,7 +1550,7 @@ F5. Should see:
 
 If the resource fails to preload, double-check the path and that the .tres file references the Area script via UID (open it with Godot and re-save if needed).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/core/game_manager.gd

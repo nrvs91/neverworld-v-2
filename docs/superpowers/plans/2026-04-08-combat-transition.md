@@ -1,5 +1,12 @@
 # Combat Scene Transition & Data Flow — Implementation Plan
 
+> **Status (2026-05-08):** This plan's core systems (Resources, Event buses, StepCounter, EncounterPool, VitalsComponent, CombatCharacter, spawners) were implemented as specified. **Tasks 12–17 are superseded** by:
+> - `2026-04-13-game-flow-bootstrap.md` — GameManager FSM, Main Menu, autoload registration
+> - `2026-04-21-combat-scene-template.md` — CombatScene camera/spawner refactor
+> - `2026-04-25-area-zone-architecture.md` — Full zone architecture replacing EncounterManager→CombatSetup, on-demand CombatScene instantiation, zone loading
+>
+> The checkboxes in this file reflect implementation status at the time the later plans took over. Refer to those plans for the current state.
+
 > **Note:** This plan is written for you to implement yourself. Each task explains what to build, why it exists, and what it should look like — you write the code. When something is unclear or you get stuck, ask and we'll work through it together. That's the whole point.
 
 > **No automated tests in this project.** Verification steps mean: open Godot, run the scene (F5), check the Output panel for `Log.*` messages and errors.

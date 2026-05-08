@@ -7,7 +7,7 @@
 
 [sub_resource type="Environment" id="Environment_pnqbc"]
 background_mode = 1
-background_color = Color(0.881864, 0.45411357, 0.881864, 1)
+background_color = Color(0.05, 0.05, 0.1, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.9779369, 0.97793704, 0.9779369, 1)
 ambient_light_sky_contribution = 0.0
@@ -15,18 +15,22 @@ ambient_light_sky_contribution = 0.0
 [node name="Rowahl Plains Clearing" type="Node" unique_id=1134829635]
 
 [node name="System" type="Node" parent="." unique_id=1713105492]
+process_mode = 3
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="System" unique_id=1893818430]
 environment = SubResource("Environment_pnqbc")
 
 [node name="ExplorationSetup" parent="." unique_id=331584603 instance=ExtResource("1_kvliq")]
 
+[node name="ExplorationEnvironment" parent="ExplorationSetup" index="1" unique_id=1731598771]
+scene = ExtResource("3_kvliq")
+
 [node name="CombatSetup" parent="." unique_id=1675216195 instance=ExtResource("2_gqabq")]
 
 [node name="SpawnPoints" type="Node" parent="." unique_id=1833450442]
 
 [node name="default" type="Marker3D" parent="SpawnPoints" unique_id=1146954943]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.25, 0)
 gizmo_extents = 0.34
 
 [node name="NPCs" type="Node" parent="." unique_id=366449179]
@@ -41,4 +45,4 @@ target_zone_path = "res://scenes/zones/rowahl_plains.tscn"
 
 [node name="Puzzles" type="Node" parent="." unique_id=1582270558]
 
-[node name="test_environment_2" parent="." unique_id=2146536945 instance=ExtResource("3_kvliq")]
+[editable path="ExplorationSetup"]

@@ -95,6 +95,79 @@ overworld_character.tscn
 - For NPCs, `PlayerInputComponent` is swapped for `NPCBehaviorComponent` — other components don't notice
 - Camera is fixed — input is rotated 45° in `MovementComponent` to match isometric orientation
 
+## Exploration / Zones
+
+Zones are scenes built from `zone_template.tscn` — a plain `Node` tree with placeholder containers. Creating a new zone means duplicating the template and populating the exports.
+
+### Zone Scene Anatomy
+
+```
+Zone (Node)
+├── System (Node, process_mode=3)          ← never pauses, even during combat
+│   └── WorldEnvironment                   ← per-zone lighting, sky, ambient
+├── ExplorationSetup (instance)            ← orchestrates exploration lifecycle
+│   ├── ExplorationBGM (AudioStreamPlayer) ← zone music, stream set per-zone
+│   └── ExplorationEnvironment (Node)      ← loads 3D geometry on enter()
+│         scene: PackedScene               ← set per-zone to the .glb/.fbx geometry
+├── CombatSetup (instance)                 ← orchestrates combat trigger flow
+│   ├── StepCounter
+│   ├── EncounterPool
+│   ├── CombatEnvironment                  ← battle background, scene set per-zone
+│   └── CombatBGM
+├── SpawnPoints (Node)
+│   └── default (Marker3D)                 ← at least one required per zone
+├── NPCs (Node)                            ← container
+├── Items (Node)                           ← container
+├── Triggers (Node)
+│   └── ZoneExit (Area3D)                  ← fires zone_exit_requested on enter
+└── Puzzles (Node)                         ← container
+```
+
+### Dual `@tool` Requirement
+
+Both `ExplorationSetup` and `ExplorationEnvironment` carry the `@tool` annotation. This is required for geometry to appear in the editor — neither annotation can be omitted.
+
+- **`ExplorationSetup`** — `_ready()` detects `Engine.is_editor_hint()` and calls `exploration_environment.enter()` to load preview geometry. At runtime, `_ready()` skips this path; GameManager calls `enter()` later.
+- **`ExplorationEnvironment`** — needs `@tool` so it is not treated as a placeholder instance. If only `ExplorationSetup` has `@tool`, Godot throws "Attempt to call a method on a placeholder instance" because the child's script is not compiled for the editor.
+
+### Zone Lifecycle
+
+```
+GameManager._load_zone()
+  ├── zone.instantiate() → add to CurrentScene
+  ├── setup = instance.get_node("ExplorationSetup")
+  ├── setup.enter()
+  │     ├── exploration_environment.enter()   ← instantiates geometry from scene export
+  │     └── exploration_bgm.play()
+  └── spawn pawn at SpawnPoints/<spawn_point>
+
+GameManager._unload_zone()
+  └── setup.exit()
+        ├── exploration_environment.exit()    ← queue_free() geometry
+        └── exploration_bgm.stop()
+```
+
+During combat transitions: `pause_for_combat()` hides geometry (`.visible = false`) without freeing it. `resume_after_combat()` shows it again. The `System` node's `process_mode = 3` ensures `WorldEnvironment` keeps rendering even while the rest of the zone is paused.
+
+### Authoring a New Zone
+
+1. Duplicate `zone_template.tscn` and rename.
+2. Set `WorldEnvironment` properties (background color, ambient light) per-zone.
+3. Set `ExplorationEnvironment.scene` to the 3D geometry for this zone.
+4. Set `ExplorationBGM.stream` to the zone's music.
+5. Add spawn points as `Marker3D` children of `SpawnPoints` — at least a `default`.
+6. Add `ZoneExit` triggers under `Triggers` with `target_zone_path` pointing to the destination.
+7. Optionally configure `CombatSetup` (encounter pool, combat background, combat BGM).
+8. Ensure `[editable path="ExplorationSetup"]` and `[editable path="CombatSetup"]` are present for property override support.
+
+Zone geometry is never baked as a direct child — it always lives inside `ExplorationEnvironment.scene`. This keeps the same zone scene usable in both exploration and combat (geometry is hidden during battles).
+
+### Running a Zone Without Combat
+
+If a zone should not trigger random encounters, omit all children of `CombatSetup` (StepCounter, EncounterPool, CombatEnvironment, CombatBGM). The `CombatSetup` instance is inert with no children to orchestrate.
+
+---
+
 ## Combat Characters
 
 Overworld and combat are separate representations of the same character data. They share components where it makes sense but are distinct scenes with distinct purposes.

@@ -2,8 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://ccc01hbmakpr1" path="res://scenes/zones/setup/exploration_setup.tscn" id="1_80lvc"]
 [ext_resource type="PackedScene" uid="uid://bncdin51bj5yj" path="res://scenes/zones/setup/combat_setup.tscn" id="2_m2wtn"]
+[ext_resource type="PackedScene" uid="uid://dw4jfiinqlyv0" path="res://assets/test_environment_1.glb" id="2_uk8yj"]
 [ext_resource type="Script" uid="uid://bfpdwl1kiumbn" path="res://scripts/combat/EncounterPoolEntry.gd" id="3_7polv"]
-[ext_resource type="PackedScene" uid="uid://dw4jfiinqlyv0" path="res://assets/test_environment_1.glb" id="3_m2wtn"]
 [ext_resource type="PackedScene" uid="uid://6h6i51jeqcbu" path="res://scenes/exploration/zone_exit.tscn" id="3_snxrr"]
 [ext_resource type="PackedScene" uid="uid://ckm8xr5ulv3of" path="res://scenes/combat/enviroments/combat_test1.fbx" id="4_nd0o2"]
 [ext_resource type="Resource" uid="uid://dd2x1oemljy4y" path="res://resources/combat config/combat_pools/test_enviroment_1.tres" id="4_uk8yj"]
@@ -11,7 +11,6 @@
 [sub_resource type="Environment" id="Environment_pnqbc"]
 background_mode = 1
 background_color = Color(0.05, 0.05, 0.1, 1)
-background_energy_multiplier = 1.31
 ambient_light_source = 3
 ambient_light_color = Color(0.9779369, 0.97793704, 0.9779369, 1)
 ambient_light_sky_contribution = 0.0
@@ -33,7 +32,7 @@ environment = SubResource("Environment_pnqbc")
 [node name="ExplorationSetup" parent="." unique_id=331584603 instance=ExtResource("1_80lvc")]
 
 [node name="ExplorationEnvironment" parent="ExplorationSetup" index="1" unique_id=1731598771]
-scene = ExtResource("3_m2wtn")
+scene = ExtResource("2_uk8yj")
 
 [node name="CombatSetup" parent="." unique_id=1675216195 instance=ExtResource("2_m2wtn")]
 
@@ -46,7 +45,7 @@ entries = Array[ExtResource("3_7polv")]([ExtResource("4_uk8yj")])
 [node name="SpawnPoints" type="Node" parent="." unique_id=1833450442]
 
 [node name="default" type="Marker3D" parent="SpawnPoints" unique_id=1146954943]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0.25, 0)
 gizmo_extents = 0.34
 
 [node name="NPCs" type="Node" parent="." unique_id=366449179]
