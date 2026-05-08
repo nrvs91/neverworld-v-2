@@ -54,6 +54,9 @@ func _load_zone(zone: PackedScene, spawn_point: StringName = &"default") -> void
 	var instance: Node = zone.instantiate()
 	current_scene.add_child(instance)
 	current_exploration = instance
+	var setup: ExplorationSetup = instance.get_node_or_null("ExplorationSetup")
+	if setup:
+		setup.enter()
 	if _pawn == null:
 		_pawn = PLAYER_SCENE.instantiate()
 		add_child(_pawn)
@@ -69,6 +72,9 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
 		return
 	Log.info("encounter triggered")
 	state = Enums.GameState.TRANSITION
+	var setup: ExplorationSetup = current_exploration.get_node_or_null("ExplorationSetup")
+	if setup:
+		setup.pause_for_combat()
 	current_exploration.process_mode = Node.PROCESS_MODE_DISABLED
 	_pawn.process_mode = Node.PROCESS_MODE_DISABLED
 	_exploration_camera = get_viewport().get_camera_3d()
@@ -92,6 +98,9 @@ func end_combat() -> void:
 		_exploration_camera.make_current()
 	current_exploration.process_mode = Node.PROCESS_MODE_INHERIT
 	_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+	var setup: ExplorationSetup = current_exploration.get_node_or_null("ExplorationSetup")
+	if setup:
+		setup.resume_after_combat()
 	await screen_fader.fade_in()
 	state = Enums.GameState.EXPLORATION
 

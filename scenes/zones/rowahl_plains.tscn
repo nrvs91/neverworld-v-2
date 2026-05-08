@@ -29,6 +29,9 @@ environment = SubResource("Environment_pnqbc")
 
 [node name="ExplorationSetup" parent="." unique_id=331584603 instance=ExtResource("1_80lvc")]
 
+[node name="ExplorationEnvironment" parent="ExplorationSetup" index="1" unique_id=1731598771]
+scene = ExtResource("3_m2wtn")
+
 [node name="CombatSetup" parent="." unique_id=1675216195 instance=ExtResource("2_m2wtn")]
 
 [node name="EncounterPool" parent="CombatSetup" index="2" unique_id=444306006]
@@ -51,8 +54,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 0)
 target_zone_path = "uid://bycspkshkiamj"
 
 [node name="Puzzles" type="Node" parent="." unique_id=1582270558]
-
-[node name="test_environment_1" parent="." unique_id=291813257 instance=ExtResource("3_m2wtn")]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1107922429]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 11, 0, 2)
