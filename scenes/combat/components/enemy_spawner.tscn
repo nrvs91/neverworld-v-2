@@ -6,13 +6,19 @@
 script = ExtResource("1_c7jr5")
 
 [node name="Slot1" type="Node3D" parent="." unique_id=890595647]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1)
 
 [node name="Slot2" type="Node3D" parent="." unique_id=738042403]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
 
 [node name="Slot3" type="Node3D" parent="." unique_id=1915819194]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -1)
 
 [node name="Slot4" type="Node3D" parent="." unique_id=1002240731]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0.5)
 
 [node name="Slot5" type="Node3D" parent="." unique_id=1011409719]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -0.5)
 
 [node name="Slot6" type="Node3D" parent="." unique_id=1537939853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)

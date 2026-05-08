@@ -1,5 +1,5 @@
 class_name CombatVisuals
-extends Node
+extends Node3D
 
 @onready var sprite: AnimatedSprite3D = $AnimatedSprite3D #possible name change here
 

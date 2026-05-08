@@ -77,6 +77,7 @@ func _on_encounter_triggered(composition: CombatConfig, environment: PackedScene
 		setup.pause_for_combat()
 	current_exploration.process_mode = Node.PROCESS_MODE_DISABLED
 	_pawn.process_mode = Node.PROCESS_MODE_DISABLED
+	_pawn.visible = false
 	_exploration_camera = get_viewport().get_camera_3d()
 	await screen_fader.fade_out()
 	state = Enums.GameState.COMBAT
@@ -98,6 +99,7 @@ func end_combat() -> void:
 		_exploration_camera.make_current()
 	current_exploration.process_mode = Node.PROCESS_MODE_INHERIT
 	_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+	_pawn.visible = true
 	var setup: ExplorationSetup = current_exploration.get_node_or_null("ExplorationSetup")
 	if setup:
 		setup.resume_after_combat()

@@ -11,6 +11,7 @@
 [sub_resource type="Environment" id="Environment_pnqbc"]
 background_mode = 1
 background_color = Color(0.05, 0.05, 0.1, 1)
+background_energy_multiplier = 1.31
 ambient_light_source = 3
 ambient_light_color = Color(0.9779369, 0.97793704, 0.9779369, 1)
 ambient_light_sky_contribution = 0.0
@@ -24,6 +25,7 @@ material = SubResource("StandardMaterial3D_snxrr")
 [node name="Rowahl Plains" type="Node" unique_id=1134829635]
 
 [node name="System" type="Node" parent="." unique_id=1713105492]
+process_mode = 3
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="System" unique_id=1893818430]
 environment = SubResource("Environment_pnqbc")

@@ -4,22 +4,79 @@
 [ext_resource type="PackedScene" uid="uid://brfxpemqq6odb" path="res://scenes/combat/components/player_spawner.tscn" id="4_n81vl"]
 [ext_resource type="PackedScene" uid="uid://b0ryywb45q8y3" path="res://scenes/combat/components/enemy_spawner.tscn" id="5_w220i"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fyyo7"]
+albedo_color = Color(0.44044712, 0.2400937, 0, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_fyyo7"]
+material = SubResource("StandardMaterial3D_fyyo7")
+size = Vector2(5, 5)
+
 [node name="CombatScene" type="Node" unique_id=149856879]
 script = ExtResource("1_jecyb")
 
 [node name="PlayerSpawner" parent="." unique_id=1188138308 instance=ExtResource("4_n81vl")]
 
+[node name="Slot1" parent="PlayerSpawner" index="0" unique_id=1436921648]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, 1)
+
+[node name="Marker3D" type="Marker3D" parent="PlayerSpawner/Slot1" index="0" unique_id=1423637684]
+gizmo_extents = 2.7
+
+[node name="Slot2" parent="PlayerSpawner" index="1" unique_id=344212923]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, 0)
+
+[node name="Marker3D" type="Marker3D" parent="PlayerSpawner/Slot2" index="0" unique_id=707573096]
+
+[node name="Slot3" parent="PlayerSpawner" index="2" unique_id=1869200601]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, -1)
+
+[node name="Marker3D" type="Marker3D" parent="PlayerSpawner/Slot3" index="0" unique_id=908816707]
+
 [node name="EnemySpawner" parent="." unique_id=687542022 instance=ExtResource("5_w220i")]
+
+[node name="Slot1" parent="EnemySpawner" index="0" unique_id=890595647]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.873, 0.25, 1)
+
+[node name="Marker3D" type="Marker3D" parent="EnemySpawner/Slot1" index="0" unique_id=795388788]
+
+[node name="Slot2" parent="EnemySpawner" index="1" unique_id=738042403]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.873, 0.25, 0)
+
+[node name="Marker3D" type="Marker3D" parent="EnemySpawner/Slot2" index="0" unique_id=261165644]
+
+[node name="Slot3" parent="EnemySpawner" index="2" unique_id=1915819194]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.873, 0.25, -1)
+
+[node name="Marker3D" type="Marker3D" parent="EnemySpawner/Slot3" index="0" unique_id=1742571095]
+
+[node name="Slot4" parent="EnemySpawner" index="3" unique_id=1002240731]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.368, 0.25, 1.001)
+
+[node name="Marker3D" type="Marker3D" parent="EnemySpawner/Slot4" index="0" unique_id=565524637]
+
+[node name="Slot5" parent="EnemySpawner" index="4" unique_id=1011409719]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.368, 0.25, -0.004)
+
+[node name="Marker3D" type="Marker3D" parent="EnemySpawner/Slot5" index="0" unique_id=1329191442]
+
+[node name="Slot6" parent="EnemySpawner" index="5" unique_id=1537939853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.37, 0.25, -0.993)
+
+[node name="Marker3D" type="Marker3D" parent="EnemySpawner/Slot6" index="0" unique_id=383896166]
 
 [node name="EnvironmentMount" type="Node3D" parent="." unique_id=1573305683]
 
 [node name="BGMPlayer" type="AudioStreamPlayer" parent="." unique_id=1097180899]
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=11096846]
-transform = Transform3D(0.70710677, 0.3535534, -0.6123724, 0, 0.8660254, 0.50000006, 0.70710677, -0.3535534, 0.6123724, 0, 6, 8)
+transform = Transform3D(0.7071068, 0.4055798, -0.579228, 0, 0.81915206, 0.57357645, 0.7071068, -0.4055798, 0.579228, -2, 2.25, 2)
 projection = 1
-size = 6.0
+size = 4.84
 near = 0.001
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=136906647]
+visible = false
+mesh = SubResource("PlaneMesh_fyyo7")
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]
