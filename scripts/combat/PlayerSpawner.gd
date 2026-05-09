@@ -25,5 +25,7 @@ func clear() -> void:
 func get_character(slot_index: int) -> CombatCharacter:
 	if slot_index >= get_child_count():
 		return null
-	var character = get_child(slot_index).get_child(0)
-	return character as CombatCharacter
+	for child in get_child(slot_index).get_children():
+		if child is CombatCharacter:
+			return child
+	return null
