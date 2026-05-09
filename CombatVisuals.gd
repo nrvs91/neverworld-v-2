@@ -3,7 +3,7 @@ extends Node3D
 
 @onready var sprite: AnimatedSprite3D = $AnimatedSprite3D #possible name change here
 
-var _base_state: StringName = &"Idle" #whats & in this context?
+var _base_state: StringName = &"Idle"
 var _action_playing: bool = false
 
 func setup(sprite_frames: SpriteFrames) -> void:

@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://dk5r7ftfimkna"]
 
 [ext_resource type="Script" uid="uid://cumyi103il3iq" path="res://scripts/combat/CombatScene.gd" id="1_jecyb"]
+[ext_resource type="FontFile" uid="uid://brqqqrcila6yp" path="res://assets/fonts/HandymandiFree.ttf" id="4_3cl4e"]
+[ext_resource type="Script" uid="uid://d12vuqhaof8pi" path="res://scenes/combat/CharacterCard.gd" id="4_kltxb"]
 [ext_resource type="PackedScene" uid="uid://brfxpemqq6odb" path="res://scenes/combat/components/player_spawner.tscn" id="4_n81vl"]
 [ext_resource type="PackedScene" uid="uid://b0ryywb45q8y3" path="res://scenes/combat/components/enemy_spawner.tscn" id="5_w220i"]
 
@@ -75,8 +77,39 @@ size = 3.6
 near = 0.001
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=136906647]
-visible = false
 mesh = SubResource("PlaneMesh_fyyo7")
+
+[node name="CombatUI" type="CanvasLayer" parent="." unique_id=1309859405]
+
+[node name="CharacterCard" type="VBoxContainer" parent="CombatUI" unique_id=2139723196]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_kltxb")
+
+[node name="CharacterName" type="Label" parent="CombatUI/CharacterCard" unique_id=1429881691]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.00069389754, 0.00069389766, 0.0006938976, 0.8745098)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_3cl4e")
+text = "Skugge"
+
+[node name="CharacterHP" type="Label" parent="CombatUI/CharacterCard" unique_id=2088782006]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.00069389754, 0.00069389766, 0.0006938976, 0.8745098)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_3cl4e")
+
+[node name="CharacterMP" type="Label" parent="CombatUI/CharacterCard" unique_id=141260934]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.00069389754, 0.00069389766, 0.0006938976, 0.8745098)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_3cl4e")
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]

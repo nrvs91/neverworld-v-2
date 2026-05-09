@@ -21,3 +21,9 @@ func clear() -> void:
 		for child in slot.get_children():
 			child.queue_free()
 	Log.info("cleared")
+
+func get_character(slot_index: int) -> CombatCharacter:
+	if slot_index >= get_child_count():
+		return null
+	var character = get_child(slot_index).get_child(0)
+	return character as CombatCharacter

@@ -7,11 +7,14 @@ extends Node3D
 @onready var visuals: CombatVisuals = $CombatVisuals
 @onready var sfx: CombatSFXComponent = $CombatSFXComponent
 
+var character_name: String = ""
+
 func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	var computed := StatCalculator.compute_player(data, save_data)
 	vitals.setup(computed[CharacterStats.Stat.MaxHP], computed[CharacterStats.Stat.MaxMP])
 	stats.setup(computed)
 	visuals.setup(data.character_sprite)
+	character_name = data.character_name
 	Log.info("character ready", data.character_name)
 
 func initialize_enemy(data: EnemyData) -> void:
@@ -19,4 +22,5 @@ func initialize_enemy(data: EnemyData) -> void:
 	vitals.setup(computed[CharacterStats.Stat.MaxHP], computed[CharacterStats.Stat.MaxMP])
 	stats.setup(computed)
 	visuals.setup(data.character_sprite)
+	character_name = data.character_name
 	Log.info("character ready", data.character_name)

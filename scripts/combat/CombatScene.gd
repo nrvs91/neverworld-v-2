@@ -6,6 +6,7 @@ extends Node
 @onready var environment_mount: Node3D = $EnvironmentMount
 @onready var bgm_player: AudioStreamPlayer = $BGMPlayer
 @onready var combat_camera: Camera3D = $Camera3D
+@onready var character_card: CharacterCard = $CombatUI/CharacterCard
 
 func _clear_environment() -> void:
 	for child in environment_mount.get_children():                                         
@@ -15,6 +16,13 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 	combat_camera.make_current()
 	_clear_environment()
 	player_spawner.initialize()
+	var character := player_spawner.get_character(0)
+	Log.info("CombatScene card null?", character_card == null)
+	Log.info("CombatScene char null?", character == null)
+	if character and character_card:
+		character_card.display(character)
+	else:
+		Log.warn("CombatScene display skipped", "missing card or character")
 	enemy_spawner.initialize(composition)
 	if environment:
 		environment_mount.add_child(environment.instantiate())
