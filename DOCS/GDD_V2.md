@@ -260,10 +260,10 @@ Combat is driven by **two FSMs running in parallel** — one for logic, one for 
 | State | Responsibility |
 |---|---|
 | `CombatStart` | Call `EnterBattle` on all actors, emit `CombatStarted` |
-| `TurnStart` | Tick CT for all non-downed actors, find highest-priority ready actor, emit `TurnStarted` |
-| `ActionSelect` | Party: await `ActionConfirmed` from player input. Enemy: run gambit evaluator |
-| `ActionExecution` | Resolve skill — hit/miss, crit, all effect steps via `CombatCalculator`, emit damage/miss/crit events |
-| `ReactionScan` | Drain `ReactionQueue` in priority order; each reaction re-enters `ActionExecution` |
+| `TurnStart` | Tick CT for all non-downed actors, find highest-priority ready actor. Active actor gains AP (+1, modified by tokens/gear). Active actor's `OnTurnStart` tokens tick: DoT damage, HoT healing, duration countdown, expired tokens removed. Emit `TurnStarted`. |
+| `ActionSelect` | Emit `please_select_action`. Await `action_selected(skill, target)` signal. The FSM is actor-agnostic — `PlayerInputComponent` fires the signal for player actors, `AIBehaviorComponent` fires it for enemies. The FSM does not branch on actor type. |
+| `ActionExecution` | Resolve skill — hit/miss, crit, all effect steps via `CombatCalculator`. Emits granular events to the bus (`self_damaged`, `hit_landed`, etc.), then steps back. Never handles reactions directly. |
+| `ReactionScan` | Two-tier resolution. Tier 1 (direct — `onSelfDamaged`): actor reacts to being the target. Tier 2 (contextual — `onAllyDamaged`, `onAllyHit`): actor reacts to events involving others. PULSE ordering within each tier. One reaction per actor per action window. Window closes after Tier 2 — no re-scan. Reactions do NOT re-enter `ActionExecution`. |
 | `TurnEnd` | Consume CT, emit `TurnEnded`, check win/loss condition |
 | `CombatEnd` | Emit `CombatEnded`, hand off to post-combat flow (XP, loot, exit) |
 
@@ -272,7 +272,8 @@ Combat is driven by **two FSMs running in parallel** — one for logic, one for 
 | State | Responsibility |
 |---|---|
 | `CombatStart` | Fade in, present opening, spawn actor visuals |
-| `TurnStart` | Highlight active actor, slide in command menu |
+| `TurnStart` | Highlight active actor (namecard offset bump). Branch on actor type: player-controlled → transition to `ActionSelect`. Enemy → transition to `EnemyActing`. |
+| `EnemyActing` | Enemy turns only. Show active enemy namecard highlight, dim player UI. Wait for execution to complete, emit `PresentationReady`. |
 | `ActionSelect` | Show command menu, skill list, tooltips |
 | `Targeting` | Cursors on valid targets, input cycling — covers skills and items |
 | `TacticsInspect` | Cursors on all actors, inspect panel on confirm |
