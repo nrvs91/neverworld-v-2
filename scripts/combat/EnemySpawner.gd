@@ -20,3 +20,11 @@ func initialize(composition: CombatConfig):
 		slots[i].add_child(character)
 		character.initialize_enemy(enemy_data)
 	Log.debug("ready")
+
+func get_all_characters() -> Array:
+	var result := []
+	for slot in get_children():
+		for child in slot.get_children():
+			if child is CombatCharacter:
+				result.append(child)
+	return result

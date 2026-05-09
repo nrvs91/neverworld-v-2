@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://brfxpemqq6odb" path="res://scenes/combat/components/player_spawner.tscn" id="4_n81vl"]
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="5_kltxb"]
 [ext_resource type="PackedScene" uid="uid://b0ryywb45q8y3" path="res://scenes/combat/components/enemy_spawner.tscn" id="5_w220i"]
+[ext_resource type="Script" uid="uid://dx02occ76ggrc" path="res://scripts/combat/CombatFSM.gd" id="6_abc12"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fyyo7"]
 albedo_color = Color(0.44044712, 0.2400937, 0, 1)
@@ -110,6 +111,9 @@ layout_mode = 2
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("5_kltxb")
 theme_override_font_sizes/font_size = 8
+
+[node name="CombatFSM" type="Node" parent="." unique_id=999999999]
+script = ExtResource("6_abc12")
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]

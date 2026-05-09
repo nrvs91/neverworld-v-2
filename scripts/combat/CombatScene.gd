@@ -7,6 +7,7 @@ extends Node
 @onready var bgm_player: AudioStreamPlayer = $BGMPlayer
 @onready var combat_camera: Camera3D = $Camera3D
 @onready var character_card: CharacterCard = $CombatUI/CharacterCard
+@onready var logic_fsm: CombatFSM = $CombatFSM
 
 func _clear_environment() -> void:
 	for child in environment_mount.get_children():                                         
@@ -25,4 +26,7 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 	if bgm:
 		bgm_player.stream = bgm
 		bgm_player.play()
-	Log.debug("ready")
+	await get_tree().process_frame
+	var all_actors: Array = player_spawner.get_all_characters() + enemy_spawner.get_all_characters()
+	Log.info("CombatScene — actors ready:", all_actors.size())
+	logic_fsm.start(all_actors)

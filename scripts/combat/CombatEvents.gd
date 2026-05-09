@@ -8,3 +8,13 @@ extends Node
 # Any of the last two may be null (e.g. for the debug F1 hotkey).
 signal encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
 signal scripted_encounter_triggered(composition: CombatConfig, environment: PackedScene, bgm: AudioStream)
+
+# Logic FSM signals — emitted by LogicFSM, consumed by UI FSM and other listeners
+signal combat_started
+signal turn_started(actor: CombatCharacter)
+signal please_select_action(actor: CombatCharacter)
+signal action_selected(skill: Resource, target: CombatCharacter)
+signal action_executed(actor: CombatCharacter, target: CombatCharacter, damage: int)
+signal actor_downed(actor: CombatCharacter)
+signal turn_ended(actor: CombatCharacter)
+signal combat_ended(player_won: bool)

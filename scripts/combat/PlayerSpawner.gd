@@ -29,3 +29,11 @@ func get_character(slot_index: int) -> CombatCharacter:
 		if child is CombatCharacter:
 			return child
 	return null
+
+func get_all_characters() -> Array:
+	var result := []
+	for slot in get_children():
+		for child in slot.get_children():
+			if child is CombatCharacter:
+				result.append(child)
+	return result

@@ -35,10 +35,6 @@ window/stretch/mode="canvas_items"
 
 project/assembly_name="NEVERWORLD_V2"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
-
 [global_group]
 
 player=""

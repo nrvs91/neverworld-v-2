@@ -8,8 +8,10 @@ extends Node3D
 @onready var sfx: CombatSFXComponent = $CombatSFXComponent
 
 var character_name: String = ""
+var is_player_controlled: bool = false
 
 func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
+	is_player_controlled = true
 	var computed := StatCalculator.compute_player(data, save_data)
 	vitals.setup(computed[CharacterStats.Stat.MaxHP], computed[CharacterStats.Stat.MaxMP])
 	stats.setup(computed)
@@ -18,6 +20,7 @@ func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	Log.info("character ready", data.character_name)
 
 func initialize_enemy(data: EnemyData) -> void:
+	is_player_controlled = false
 	var computed := StatCalculator.compute_enemy(data)
 	vitals.setup(computed[CharacterStats.Stat.MaxHP], computed[CharacterStats.Stat.MaxMP])
 	stats.setup(computed)

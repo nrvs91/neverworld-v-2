@@ -1,9 +1,12 @@
 class_name VitalsComponent
 extends Node
 
+const AP_CAP: int = 10
+
 var cur_hp: int = 0
 var cur_mp: int = 0
 var cur_ap: int = 0
+var cur_ct: float = 0.0
 
 var _max_hp: int = 0
 var _max_mp: int = 0
@@ -19,8 +22,20 @@ func setup(max_hp: int, max_mp: int) -> void:
 	cur_hp = max_hp
 	cur_mp = max_mp
 	cur_ap = 3
+	cur_ct = 0.0
 	Log.debug("VitalsComponent setup")
 
 func reset() -> void:
 	cur_ap = 3
 	Log.debug("VitalsComponent reset")
+
+func is_downed() -> bool:
+	return cur_hp <= 0
+
+func gain_ap(amount: int) -> void:
+	cur_ap = min(cur_ap + amount, AP_CAP)
+
+func take_damage(amount: int) -> void:
+	cur_hp = max(0, cur_hp - amount)
+	if cur_hp == 0:
+		Log.info("HP reached zero")

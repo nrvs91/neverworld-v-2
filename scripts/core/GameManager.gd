@@ -19,6 +19,7 @@ const PLAYER_SCENE: PackedScene = preload("res://scenes/characters/player_explor
 func _ready() -> void:
 	ExplorationEvents.zone_exit_requested.connect(_on_zone_exit_requested)
 	CombatEvents.encounter_triggered.connect(_on_encounter_triggered)
+	CombatEvents.combat_ended.connect(_on_combat_ended)
 	if Globals.dev_mode == true:
 		start_new_game()
 	else:
@@ -105,6 +106,16 @@ func end_combat() -> void:
 		setup.resume_after_combat()
 	await screen_fader.fade_in()
 	state = Enums.GameState.EXPLORATION
+
+func _on_combat_ended(player_won: bool) -> void:
+	if state != Enums.GameState.COMBAT:
+		Log.warn("combat_ended received outside COMBAT state")
+		return
+	if player_won:
+		Log.info("player won")
+	else:
+		Log.info("party wiped")
+	end_combat()
 
 func _on_zone_exit_requested(target_zone: PackedScene, target_spawn_point: StringName) -> void:
 	if state != Enums.GameState.EXPLORATION:
