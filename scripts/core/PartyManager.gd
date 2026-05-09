@@ -7,7 +7,7 @@ var save_data: GlobalSaveData = null
 var _registry: Dictionary = {}
 
 func _ready() -> void:
-	Log.info("ready")
+	Log.debug("ready")
 	_load_registry()
 	#_load_save()
 
@@ -15,6 +15,7 @@ func _load_registry() -> void:
 	# Hardcoded for now — add an entry here each time you create a PlayerData .tres.
 	# Example once Skugge's .tres exists:
 	_registry["skugge"] = preload("res://resources/characters/player/Skugge.tres")
+	_registry["vargi"] = preload("res://resources/characters/player/Vargi.tres")
 	pass
 
 func _load_save() -> void:
@@ -24,9 +25,11 @@ func _load_save() -> void:
 func start_new_game() -> void:
 	save_data = GlobalSaveData.new()
 	# Skugge is always the starting character.
-	# Add her PlayerData .tres to _registry first, then uncomment:
+	# Add his PlayerData .tres to _registry first, then uncomment:
 	recruit("skugge")
 	save_data.party_slots[0] = "skugge"
+	recruit("vargi")
+	save_data.party_slots[1] = "vargi"
 	Log.info("new game started")
 
 # Adds a character to the roster using their PlayerData as the starting template.

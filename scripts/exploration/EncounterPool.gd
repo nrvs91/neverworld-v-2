@@ -16,7 +16,7 @@ func pick() -> CombatConfig:
 	for entry in entries:
 		roll -= entry.weight
 		if roll < 0:
-			Log.info("encounter picked", entry.composition.resource_path)
+			Log.debug("encounter picked", entry.composition.resource_path)
 			return entry.composition
 	#fallback
 	return entries[-1].composition

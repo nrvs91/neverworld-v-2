@@ -9,7 +9,7 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		exploration_environment.enter()
 		return
-	Log.info("ready")
+	Log.debug("ready")
 
 func enter() -> void:
 	exploration_environment.enter()

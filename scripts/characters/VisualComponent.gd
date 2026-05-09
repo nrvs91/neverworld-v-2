@@ -21,7 +21,7 @@ var _last_direction := Vector2.DOWN
 var _is_running := false
 
 func _ready() -> void:
-	Log.info("ready")
+	Log.debug("ready")
 	controller.direction_changed.connect(_on_direction_changed)
 	controller.run_toggled.connect(_on_run_toggled)
 

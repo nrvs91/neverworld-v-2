@@ -7,7 +7,7 @@ extends Node
 @onready var combat_bgm: CombatBGM = $CombatBGM
 
 func _ready() -> void:
-	Log.info("ready")
+	Log.debug("ready")
 	step_counter.threshold_reached.connect(_on_threshold_reached)
 
 func _on_threshold_reached() -> void:

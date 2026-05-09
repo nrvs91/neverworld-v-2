@@ -7,7 +7,7 @@ func clear() -> void:
 	for slot in get_children():
 		for child in slot.get_children():
 			child.queue_free()
-	Log.info("cleared")
+	Log.debug("cleared")
 
 func initialize(composition: CombatConfig):
 	clear()
@@ -19,4 +19,4 @@ func initialize(composition: CombatConfig):
 		var character = CombatCharacterScene.instantiate()
 		slots[i].add_child(character)
 		character.initialize_enemy(enemy_data)
-	Log.info("ready")
+	Log.debug("ready")

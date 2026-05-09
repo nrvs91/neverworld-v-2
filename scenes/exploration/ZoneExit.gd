@@ -5,7 +5,7 @@ class_name ZoneExit extends Area3D
 
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
-	Log.info("ready")
+	Log.debug("ready")
 
 func _on_area_entered(area: Area3D) -> void:
 	if not area.is_in_group("player"):

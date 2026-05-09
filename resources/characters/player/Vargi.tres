@@ -1,0 +1,87 @@
+[gd_resource type="Resource" script_class="PlayerData" format=3 uid="uid://bhfkvbwqen41e"]
+
+[ext_resource type="Texture2D" uid="uid://cgxjar6uh1voy" path="res://assets/characters/portraits/Vargi.png" id="1_5x8ce"]
+[ext_resource type="Script" uid="uid://32dk04tuy26a" path="res://scripts/characters/PlayerData.gd" id="1_apk7k"]
+[ext_resource type="Script" uid="uid://bahmut0v80cl8" path="res://scripts/characters/stats/GrowthEntry.gd" id="2_2gp22"]
+[ext_resource type="SpriteFrames" uid="uid://d0nmsna2x0unf" path="res://resources/characters/player/VargiAnimations.tres" id="2_2vvjg"]
+[ext_resource type="Script" uid="uid://ctf4nx0yni78o" path="res://scripts/characters/GrowthTable.gd" id="3_2vvjg"]
+
+[sub_resource type="Resource" id="Resource_bsq40"]
+script = ExtResource("2_2gp22")
+MaxHP = 5
+AtkPhys = 2
+Hit = 1
+DefPhys = 1
+DefMag = 1
+Pulse = 1
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_pkiar"]
+script = ExtResource("2_2gp22")
+MaxHP = 2
+MaxMP = 1
+AtkPhys = 1
+Hit = 2
+DefMag = 2
+Dodge = 1
+Pulse = 1
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_8xjh8"]
+script = ExtResource("2_2gp22")
+MaxHP = 3
+MaxMP = 2
+AtkPhys = 2
+AtkMag = 1
+Hit = 1
+DefPhys = 1
+DefMag = 2
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_8gn7m"]
+script = ExtResource("2_2gp22")
+MaxHP = 4
+MaxMP = 3
+AtkPhys = 2
+Hit = 2
+DefPhys = 2
+DefMag = 2
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_16o4a"]
+script = ExtResource("2_2gp22")
+MaxHP = 5
+MaxMP = 5
+AtkPhys = 3
+AtkMag = 1
+Hit = 2
+DefPhys = 3
+DefMag = 4
+Dodge = 2
+Pulse = 2
+metadata/_custom_type_script = "uid://bahmut0v80cl8"
+
+[sub_resource type="Resource" id="Resource_g8yax"]
+script = ExtResource("3_2vvjg")
+levels = Array[ExtResource("2_2gp22")]([SubResource("Resource_bsq40"), SubResource("Resource_pkiar"), SubResource("Resource_8xjh8"), SubResource("Resource_8gn7m"), SubResource("Resource_16o4a")])
+metadata/_custom_type_script = "uid://ctf4nx0yni78o"
+
+[resource]
+script = ExtResource("1_apk7k")
+character_portrait = ExtResource("1_5x8ce")
+growth_table = SubResource("Resource_g8yax")
+allowed_gear = Array[int]([4, 128, 256, 1024, 4096, 8192, 16384, 32768, 65536, 131072])
+MaxHP = 30
+MaxMP = 6
+MaxAP = 10
+AtkPhys = 16
+AtkMag = 8
+Hit = 10
+DefPhys = 8
+DefMag = 4
+Dodge = 8
+Pulse = 10
+character_name = "Vargi"
+character_ID = "vargi"
+character_sprite = ExtResource("2_2vvjg")
+metadata/_custom_type_script = "uid://32dk04tuy26a"

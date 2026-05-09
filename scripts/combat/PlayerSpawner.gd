@@ -14,13 +14,13 @@ func initialize() -> void:
 		var character = CombatCharacterScene.instantiate()
 		slot.add_child(character)
 		character.initialize_player(slot_data["player_data"], slot_data["save_data"])
-	Log.info("ready")
+	Log.debug("ready")
 
 func clear() -> void:
 	for slot in get_children():
 		for child in slot.get_children():
 			child.queue_free()
-	Log.info("cleared")
+	Log.debug("cleared")
 
 func get_character(slot_index: int) -> CombatCharacter:
 	if slot_index >= get_child_count():

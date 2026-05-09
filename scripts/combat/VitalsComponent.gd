@@ -19,8 +19,8 @@ func setup(max_hp: int, max_mp: int) -> void:
 	cur_hp = max_hp
 	cur_mp = max_mp
 	cur_ap = 3
-	Log.info("VitalsComponent setup")
+	Log.debug("VitalsComponent setup")
 
 func reset() -> void:
 	cur_ap = 3
-	Log.info("VitalsComponent reset")
+	Log.debug("VitalsComponent reset")

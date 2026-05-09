@@ -15,7 +15,7 @@ static var instance
 func _ready() -> void:
 	instance = self
 	
-	Log.info("ready")
+	Log.debug("ready")
 	Log.info("Project version:", version_number)
 	Log.info("Dev Mode:", dev_mode)
 	if dev_mode == true:

@@ -111,5 +111,13 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_3cl4e")
 
+[node name="CharacterPLS" type="Label" parent="CombatUI/CharacterCard" unique_id=1513071151]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.00069389754, 0.00069389766, 0.0006938976, 0.8745098)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_3cl4e")
+
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]

@@ -17,16 +17,12 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 	_clear_environment()
 	player_spawner.initialize()
 	var character := player_spawner.get_character(0)
-	Log.info("CombatScene card null?", character_card == null)
-	Log.info("CombatScene char null?", character == null)
 	if character and character_card:
 		character_card.display(character)
-	else:
-		Log.warn("CombatScene display skipped", "missing card or character")
 	enemy_spawner.initialize(composition)
 	if environment:
 		environment_mount.add_child(environment.instantiate())
 	if bgm:
 		bgm_player.stream = bgm
 		bgm_player.play()
-	Log.info("ready")
+	Log.debug("ready")
