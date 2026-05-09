@@ -282,6 +282,26 @@ Combat is driven by **two FSMs running in parallel** — one for logic, one for 
 | `TurnEnd` | Bar updates, downed presentation |
 | `CombatEnd` | Victory/defeat screen, XP flow |
 
+### Design Notes
+
+**Why the FSM doesn't branch on actor type**
+
+During `ActionSelect`, the FSM emits `please_select_action` and waits for `action_selected(skill, target)`. It never asks whether the active actor is a player or an enemy. The actor's own component handles that: `PlayerInputComponent` surfaces the menu and waits for input, `AIBehaviorComponent` runs its decision and fires immediately. The FSM only knows that a decision has been made.
+
+Any FSM that branches on actor type effectively has two versions of every state. Adding a new actor type — a summoned ally, a charmed enemy, a guest NPC — means touching the FSM. The component model absorbs that variation without the FSM noticing.
+
+**Why ActionExecution never touches reactions**
+
+`ActionExecution` resolves the primary action and emits granular events to the bus — `hit_landed`, `self_damaged`, `ally_healed` — then steps back. It has no knowledge of what tokens exist or whether any of them care about what just happened.
+
+If execution handled reactions inline, two concerns that change for different reasons would be coupled. Adding a new reaction type would mean modifying execution. A bug in reaction ordering would trace back into execution. The event bus is the contract. Execution honors it by emitting faithfully. `ReactionScan` consumes it. Neither knows the other's internals.
+
+**Why ReactionScan has two tiers and a closed window**
+
+Reactions split into two tiers because they don't share the same trigger event. Tier 1 (direct) reactions — COUNTER — respond to `self_damaged`, a primary event from the action itself. Tier 2 (contextual) reactions — VIGIL, FOLLOW UP — respond to events that may include Tier 1 output (e.g. the counter-attack that damaged an ally). Collapsing both into a single PULSE-ordered pool produces ordering that depends on signal connection sequence, not design intent. Separating by trigger tier gives deterministic, legible resolution.
+
+The window closes after Tier 2. Tier 1 output is visible to Tier 2 — but Tier 2 output reopens nothing. One window, one pass. The complexity budget for the reaction system comes from *composition within a window* — multiple simple tokens interacting in one scan — not from chains between windows.
+
 ---
 
 ## COMBAT — TURN STRUCTURE
