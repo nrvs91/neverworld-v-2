@@ -51,6 +51,8 @@ func _enter_turn_start() -> void:
 	_transition(State.ACTION_SELECT)
 
 func _enter_action_select() -> void:
+	# NOTE: suspends via await — _transition() is not re-entrant while this state is active.
+	# Replace with `await CombatEvents.action_selected` when UI FSM is built.
 	CombatEvents.please_select_action.emit(_active_actor)
 	await get_tree().create_timer(0.4).timeout
 	
@@ -64,6 +66,7 @@ func _enter_action_select() -> void:
 	Log.info("target ->", _pending_target.character_name)
 	CombatEvents.action_selected.emit(null, _pending_target)
 	_transition(State.ACTION_EXECUTION)
+
 func _enter_action_execution() -> void:
 	var damage: int = CombatCalculator.base_attack(_active_actor, _pending_target)
 	_pending_target.vitals.take_damage(damage)
@@ -79,11 +82,13 @@ func _enter_action_execution() -> void:
 	if _check_combat_end():
 		return
 	_transition(State.REACTION_SCAN)
+
 func _enter_reaction_scan() -> void:
 	# STUB: reactions not yet implemented
 	if _check_combat_end():
 		return
 	_transition(State.TURN_END)
+
 func _enter_turn_end() -> void:
 	TurnTracker.consume_ct(_active_actor)
 	CombatEvents.turn_ended.emit(_active_actor)
@@ -91,6 +96,7 @@ func _enter_turn_end() -> void:
 	if _check_combat_end():
 		return
 	_transition(State.TURN_START)
+
 func _enter_combat_end() -> void:
 	var any_player_alive: bool = false
 	
@@ -101,6 +107,7 @@ func _enter_combat_end() -> void:
 	
 	Log.info("CombatEnd — player_won:", any_player_alive)
 	CombatEvents.combat_ended.emit(any_player_alive)
+
 func _check_combat_end() -> bool:
 	var any_enemy_alive: bool = false
 	var any_player_alive: bool = false
@@ -123,6 +130,7 @@ func _check_combat_end() -> bool:
 		return true
 	
 	return false
+
 func _first_living_opponent(actor: CombatCharacter) -> CombatCharacter:
 	for a: CombatCharacter in _actors:
 		if a.vitals.is_downed():
