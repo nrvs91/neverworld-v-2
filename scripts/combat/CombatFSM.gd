@@ -73,8 +73,13 @@ func _enter_action_execution() -> void:
 	Log.info("ActionExecution", _active_actor.character_name)
 	Log.info("hits", _pending_target.character_name)
 	Log.info("for", damage)
+	# Fires and moves on — does not wait for CombatUIFSM to finish playing visuals.
+	# When skills get real animations, replace this with a please_play_action(actor, skill, target)
+	# signal and await a presentation_finished signal back. CombatUIFSM would enter an ANIMATING
+	# state, play the sequence, then emit presentation_finished to unblock the logic FSM.
+	# That's Option A — keeps logic and presentation decoupled via a signal handshake.
 	CombatEvents.action_executed.emit(_active_actor, _pending_target, damage)
-	
+
 	if _pending_target.vitals.is_downed():
 		Log.info("actor downed", _pending_target.character_name)
 		CombatEvents.actor_downed.emit(_pending_target)
