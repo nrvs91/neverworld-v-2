@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://cpx27qwtvhthi"]
+
+[ext_resource type="Script" uid="uid://cs73sexlgw28j" path="res://scripts/combat/ui/EnemyCardBar.gd" id="1_of1sm"]
+
+[node name="EnemyCardBar" type="HBoxContainer" unique_id=2099294061]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 8.0
+alignment = 1
+script = ExtResource("1_of1sm")
