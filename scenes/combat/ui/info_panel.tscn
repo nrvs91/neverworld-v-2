@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://nr8pjv11cttl"]
+
+[ext_resource type="Script" uid="uid://ddh1ei6nw6b08" path="res://scripts/combat/ui/InfoPanel.gd" id="1_iskml"]
+
+[node name="InfoPanel" type="PanelContainer" unique_id=347536255]
+visible = false
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -32.0
+script = ExtResource("1_iskml")
+
+[node name="InfoLabel" type="Label" parent="." unique_id=1260899454]
+layout_mode = 2
+horizontal_alignment = 1
