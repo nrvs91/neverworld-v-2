@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://dd8q4s0qtb57f"]
+
+[ext_resource type="Script" uid="uid://smxh806m8m45" path="res://scripts/combat/ui/PlayerCardBar.gd" id="1_3obp3"]
+
+[node name="PlayerCardBar" type="HBoxContainer" unique_id=2133489224]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_bottom = -8.0
+grow_vertical = 0
+alignment = 1
+script = ExtResource("1_3obp3")
