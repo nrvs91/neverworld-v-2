@@ -64,7 +64,7 @@ func _enter_action_select() -> void:
 	
 	Log.info("ActionSelect", _active_actor.character_name)
 	Log.info("target ->", _pending_target.character_name)
-	CombatEvents.action_selected.emit(null, _pending_target)
+	CombatEvents.action_selected.emit(_pending_target)
 	_transition(State.ACTION_EXECUTION)
 
 func _enter_action_execution() -> void:
