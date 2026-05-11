@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://dlmnvwdy4ymxy"]
+
+[ext_resource type="Script" uid="uid://c3vw4xxkvexiq" path="res://scripts/combat/ui/ActionMenu.gd" id="1_bgvpn"]
+
+[node name="ActionMenu" type="VBoxContainer" unique_id=1040193410]
+custom_minimum_size = Vector2(120, 0)
+script = ExtResource("1_bgvpn")
+
+[node name="Categories" type="HBoxContainer" parent="." unique_id=1945095690]
+layout_mode = 2
+
+[node name="BtnACT" type="Button" parent="Categories" unique_id=317892633]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "ACT"
+
+[node name="BtnITEM" type="Button" parent="Categories" unique_id=1205373995]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "ITEM"
+
+[node name="BtnWAIT" type="Button" parent="Categories" unique_id=1875499015]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "WAIT"
+
+[node name="BtnRUN" type="Button" parent="Categories" unique_id=732091231]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "RUN"
+
+[node name="SkillList" type="VBoxContainer" parent="." unique_id=956773412]
+layout_mode = 2
+
+[node name="Skill0" type="Button" parent="SkillList" unique_id=1137602191]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "ATTACK"
+
+[node name="Skill1" type="Button" parent="SkillList" unique_id=949129880]
+layout_mode = 2
+focus_mode = 0
+disabled = true
+toggle_mode = true
+text = "--"
+
+[node name="Skill2" type="Button" parent="SkillList" unique_id=1801747512]
+layout_mode = 2
+focus_mode = 0
+disabled = true
+toggle_mode = true
+text = "--"
+
+[node name="Skill3" type="Button" parent="SkillList" unique_id=2064412662]
+layout_mode = 2
+focus_mode = 0
+disabled = true
+toggle_mode = true
+text = "--"
