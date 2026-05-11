@@ -51,20 +51,27 @@ func _enter_turn_start() -> void:
 	_transition(State.ACTION_SELECT)
 
 func _enter_action_select() -> void:
-	# NOTE: suspends via await — _transition() is not re-entrant while this state is active.
-	# Replace with `await CombatEvents.action_selected` when UI FSM is built.
 	CombatEvents.please_select_action.emit(_active_actor)
-	await get_tree().create_timer(0.4).timeout
-	
-	_pending_target = _first_living_opponent(_active_actor)
+
+	if not _active_actor.is_player_controlled:
+		# Enemy turn — auto-pick target (placeholder until enemy AI is built)
+		_pending_target = _first_living_opponent(_active_actor)
+		if _pending_target == null:
+			Log.info("ActionSelect — enemy has no valid target, skipping to TurnEnd")
+			_transition(State.TURN_END)
+			return
+		Log.info("ActionSelect — enemy auto-target:", _pending_target.character_name)
+		_transition(State.ACTION_EXECUTION)
+		return
+
+	# Player turn — suspend here until CombatUIFSM emits action_selected
+	var target: CombatCharacter = await CombatEvents.action_selected
+	_pending_target = target
 	if _pending_target == null:
-		Log.warn("ActionSelect — no living opponent found, skipping to TurnEnd")
+		Log.info("ActionSelect — no target (WAIT), skipping to TurnEnd")
 		_transition(State.TURN_END)
 		return
-	
-	Log.info("ActionSelect", _active_actor.character_name)
-	Log.info("target ->", _pending_target.character_name)
-	CombatEvents.action_selected.emit(_pending_target)
+	Log.info("ActionSelect — target:", _pending_target.character_name)
 	_transition(State.ACTION_EXECUTION)
 
 func _enter_action_execution() -> void:

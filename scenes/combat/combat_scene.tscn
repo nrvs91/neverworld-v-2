@@ -1,11 +1,16 @@
 [gd_scene format=3 uid="uid://dk5r7ftfimkna"]
 
 [ext_resource type="Script" uid="uid://cumyi103il3iq" path="res://scripts/combat/CombatScene.gd" id="1_jecyb"]
-[ext_resource type="Script" uid="uid://d12vuqhaof8pi" path="res://scenes/combat/CharacterCard.gd" id="4_kltxb"]
+[ext_resource type="Script" uid="uid://b0aodnfvicqv5" path="res://scripts/combat/PlayerSpawner.gd" id="3_pbkuh"]
 [ext_resource type="PackedScene" uid="uid://brfxpemqq6odb" path="res://scenes/combat/components/player_spawner.tscn" id="4_n81vl"]
-[ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="5_kltxb"]
+[ext_resource type="Script" uid="uid://q3uxscggn5or" path="res://scripts/combat/EnemySpawner.gd" id="5_n81vl"]
 [ext_resource type="PackedScene" uid="uid://b0ryywb45q8y3" path="res://scenes/combat/components/enemy_spawner.tscn" id="5_w220i"]
 [ext_resource type="Script" uid="uid://dx02occ76ggrc" path="res://scripts/combat/CombatFSM.gd" id="6_abc12"]
+[ext_resource type="PackedScene" uid="uid://cpx27qwtvhthi" path="res://scenes/combat/ui/enemy_card_bar.tscn" id="7_ecbar"]
+[ext_resource type="PackedScene" uid="uid://dd8q4s0qtb57f" path="res://scenes/combat/ui/player_card_bar.tscn" id="8_pcbar"]
+[ext_resource type="PackedScene" uid="uid://nr8pjv11cttl" path="res://scenes/combat/ui/info_panel.tscn" id="9_infop"]
+[ext_resource type="PackedScene" uid="uid://dm7mes58ahsmm" path="res://scenes/combat/targeting_cursor.tscn" id="10_tcrs"]
+[ext_resource type="Script" uid="uid://4xu4ue3arhty" path="res://scripts/combat/ui/CombatUIFSM.gd" id="11_uifs"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fyyo7"]
 albedo_color = Color(0.44044712, 0.2400937, 0, 1)
@@ -18,6 +23,7 @@ size = Vector2(5, 5)
 script = ExtResource("1_jecyb")
 
 [node name="PlayerSpawner" parent="." unique_id=1188138308 instance=ExtResource("4_n81vl")]
+script = ExtResource("3_pbkuh")
 
 [node name="Slot1" parent="PlayerSpawner" index="0" unique_id=1436921648]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, 1)
@@ -36,6 +42,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, -1)
 [node name="Marker3D" type="Marker3D" parent="PlayerSpawner/Slot3" index="0" unique_id=908816707]
 
 [node name="EnemySpawner" parent="." unique_id=687542022 instance=ExtResource("5_w220i")]
+script = ExtResource("5_n81vl")
 
 [node name="Slot1" parent="EnemySpawner" index="0" unique_id=890595647]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.873, 0.25, 1)
@@ -82,38 +89,19 @@ mesh = SubResource("PlaneMesh_fyyo7")
 
 [node name="CombatUI" type="CanvasLayer" parent="." unique_id=1309859405]
 
-[node name="CharacterCard" type="VBoxContainer" parent="CombatUI" unique_id=2139723196]
-offset_right = 40.0
-offset_bottom = 40.0
-script = ExtResource("4_kltxb")
+[node name="EnemyCardBar" parent="CombatUI" instance=ExtResource("7_ecbar")]
 
-[node name="CharacterName" type="Label" parent="CombatUI/CharacterCard" unique_id=1429881691]
-layout_mode = 2
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("5_kltxb")
-theme_override_font_sizes/font_size = 8
-text = "Skugge"
+[node name="PlayerCardBar" parent="CombatUI" instance=ExtResource("8_pcbar")]
 
-[node name="CharacterHP" type="Label" parent="CombatUI/CharacterCard" unique_id=2088782006]
-layout_mode = 2
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("5_kltxb")
-theme_override_font_sizes/font_size = 8
+[node name="InfoPanel" parent="CombatUI" instance=ExtResource("9_infop")]
 
-[node name="CharacterMP" type="Label" parent="CombatUI/CharacterCard" unique_id=141260934]
-layout_mode = 2
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("5_kltxb")
-theme_override_font_sizes/font_size = 8
-
-[node name="CharacterPLS" type="Label" parent="CombatUI/CharacterCard" unique_id=1513071151]
-layout_mode = 2
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("5_kltxb")
-theme_override_font_sizes/font_size = 8
+[node name="TargetingCursor" parent="." instance=ExtResource("10_tcrs")]
 
 [node name="CombatFSM" type="Node" parent="." unique_id=999999999]
 script = ExtResource("6_abc12")
+
+[node name="CombatUIFSM" type="Node" parent="."]
+script = ExtResource("11_uifs")
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]
