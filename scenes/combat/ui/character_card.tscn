@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://dlq6sedju4ujw"]
+
+[ext_resource type="Script" uid="uid://drhk4anv2ccdk" path="res://scripts/combat/ui/CharacterCard.gd" id="1_dj1vm"]
+
+[node name="CharacterCard" type="Control" unique_id=821400982]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_dj1vm")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1084517473]
+layout_mode = 0
+
+[node name="NameLabel" type="Label" parent="VBox" unique_id=1992281587]
+layout_mode = 2
+text = "Name"
+horizontal_alignment = 1
+
+[node name="Portrait" type="ColorRect" parent="VBox" unique_id=782405824]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="Bars" type="VBoxContainer" parent="VBox" unique_id=1013073810]
+layout_mode = 2
+
+[node name="HPBar" type="ProgressBar" parent="VBox/Bars" unique_id=1329506385]
+layout_mode = 2
+value = 100.0
+
+[node name="MPBar" type="ProgressBar" parent="VBox/Bars" unique_id=824366271]
+layout_mode = 2
+value = 100.0
+
+[node name="APBar" type="ProgressBar" parent="VBox/Bars" unique_id=217834535]
+layout_mode = 2
+max_value = 10.0
+value = 3.0
+
+[node name="TokenContainer" type="HBoxContainer" parent="VBox" unique_id=1117720940]
+visible = false
+layout_mode = 2
