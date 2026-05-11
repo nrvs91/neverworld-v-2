@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dm7mes58ahsmm"]
+
+[ext_resource type="Script" uid="uid://b78hguks3sr0h" path="res://scripts/combat/ui/TargetingCursor.gd" id="1_s25ya"]
+
+[node name="TargetingCursor" type="Node3D" unique_id=1407918405]
+visible = false
+script = ExtResource("1_s25ya")
+
+[node name="Marker" type="MeshInstance3D" parent="." unique_id=95360973]
