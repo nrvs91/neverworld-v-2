@@ -4,7 +4,9 @@
 
 **Goal:** Build the combat UI layer — character cards for players and enemies, an action menu with stub skill selection, a targeting cursor, world-space damage numbers, and an info strip — then wire the `CombatUIFSM` that drives them all, replacing the 0.4s auto-select stub in `CombatFSM` with real player input.
 
-**Architecture:** `CombatUIFSM` is a Node child of `CombatScene`, sitting alongside `CombatFSM`. It listens to `CombatEvents` and drives all UI. Character cards live in the existing `CombatUI` CanvasLayer (2D overlay). Damage numbers and the targeting cursor live in 3D world space alongside the characters. `CombatFSM._enter_action_select()` is updated from a 0.4s timer to `await CombatEvents.action_selected` — the `CombatUIFSM` drives the player through action and target selection, then fires that signal to resume the logic FSM.
+**Architecture:** `CombatUIFSM` is a Node child of `CombatScene`, sitting alongside `CombatFSM`. It listens to `CombatEvents` and drives all UI. Character cards live in the existing `CombatUI` CanvasLayer (2D overlay). Damage numbers and the targeting cursor live in 3D world space alongside the characters.
+
+`CombatFSM._enter_action_select()` now branches: **enemy turns** auto-pick a target via the old `_first_living_opponent()` logic (placeholder until enemy AI is built), and **player turns** suspend via `await CombatEvents.action_selected` while `CombatUIFSM` drives the player through menu → targeting → confirmation. The UI FSM emits `action_selected` to resume the logic FSM.
 
 **Input scheme:**
 - `combat_prev` / `combat_next` (A / D) — cycle menu categories
@@ -36,10 +38,37 @@
 | `scripts/combat/ui/DamageNumber.gd` | create | World-space float-up + fade; emits `animation_finished` when done |
 | `scenes/combat/ui/damage_number.tscn` | create | Node3D with Label3D (billboard, no depth test) |
 | `scripts/combat/ui/CombatUIFSM.gd` | create | 5-state UI FSM; all input handling; wires CombatEvents to subsystems |
+| `scripts/combat/CombatEvents.gd` | modify | Simplify `action_selected` from `(skill, target)` to `(target)` only |
 | `scenes/combat/CharacterCard.gd` | delete | Placeholder — replaced entirely |
-| `scripts/combat/CombatFSM.gd` | modify | `_enter_action_select()`: replace 0.4s timer + auto-pick with `await CombatEvents.action_selected` |
+| `scripts/combat/CombatFSM.gd` | modify | `_enter_action_select()`: branch on `is_player_controlled` — enemies auto-pick, players await `CombatEvents.action_selected` |
 | `scripts/combat/CombatScene.gd` | modify | Remove old card reference; add `ui_fsm` onready; call `ui_fsm.start(all_actors)` |
 | `scenes/combat/combat_scene.tscn` | modify | Remove old CharacterCard node from CombatUI; add EnemyCardBar, PlayerCardBar, InfoPanel; add TargetingCursor (Node3D) and CombatUIFSM as scene-root children |
+
+---
+
+## Task 0 — Simplify `action_selected` Signal
+
+**Files:**
+- Modify: `scripts/combat/CombatEvents.gd`
+
+The current signal has two arguments: `signal action_selected(skill: Resource, target: CombatCharacter)`. GDScript `await` on a signal returns **only the first argument**, so the original plan's `result[1]` would crash on `null`.
+
+Simplify to a single `target` argument. When skills are added later, expand the payload as a single resource/dictionary object — never multiple signal args.
+
+- [ ] **Step 1: Change the signal signature**
+
+In `scripts/combat/CombatEvents.gd`, replace line 16:
+
+```gdscript
+signal action_selected(target: CombatCharacter)
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add scripts/combat/CombatEvents.gd
+git commit -m "Simplify action_selected signal to single target arg for await compatibility"
+```
 
 ---
 
@@ -78,18 +107,37 @@ git commit -m "Add combat input actions to Input Map"
 - Create: `scripts/combat/ui/CharacterCard.gd`
 - Create: `scenes/combat/ui/character_card.tscn`
 
-**Node tree for `character_card.tscn`:**
+### Required Node Architecture
+
+The code references these nodes by path. **Names and types must match exactly.**
+
 ```
-CharacterCard (VBoxContainer)   ← script: CharacterCard.gd
-                                   custom_minimum_size = Vector2(80, 0)
-  NameLabel (Label)              ← h_size_flags = FILL, align = CENTER
-  Portrait (ColorRect)           ← custom_minimum_size = Vector2(64, 64), color = grey
-  Bars (VBoxContainer)
-    HPBar (ProgressBar)          ← fill color green  (#4caf50), h_size_flags = FILL
-    MPBar (ProgressBar)          ← fill color blue   (#2196f3), h_size_flags = FILL
-    APBar (ProgressBar)          ← fill color purple (#9c27b0), h_size_flags = FILL
-  TokenContainer (HBoxContainer) ← visible = false (placeholder for token icons)
+CharacterCard (Control)         ← script: CharacterCard.gd
+  VBox (VBoxContainer)
+    NameLabel (Label)
+    Portrait (ColorRect)
+    Bars (VBoxContainer)
+      HPBar (ProgressBar)
+      MPBar (ProgressBar)
+      APBar (ProgressBar)
+    TokenContainer (HBoxContainer)
 ```
+
+Code node paths:
+- `$VBox/NameLabel` → `Label`
+- `$VBox/Bars/HPBar` → `ProgressBar`
+- `$VBox/Bars/MPBar` → `ProgressBar`
+- `$VBox/Bars/APBar` → `ProgressBar`
+
+`TokenContainer` is not referenced by code yet — it's a placeholder for the token system. Keep it in the tree, set `visible = false`.
+
+### Styling Notes (Your Call)
+
+- `custom_minimum_size` on root: ~`Vector2(80, 0)` as a starting point
+- Portrait: ~64×64, grey placeholder until art is ready
+- HP bar fill: green, MP: blue, AP: purple
+- Name label: centered text
+- These are rough defaults — adjust to taste, just don't break the node tree above.
 
 - [ ] **Step 1: Create the scene**
 
@@ -101,15 +149,15 @@ Create `scripts/combat/ui/CharacterCard.gd`:
 
 ```gdscript
 class_name CharacterCard
-extends VBoxContainer
+extends Control
 
 const NUDGE_AMOUNT: float = 12.0
 const NUDGE_DURATION: float = 0.12
 
-@onready var name_label: Label = $NameLabel
-@onready var hp_bar: ProgressBar = $Bars/HPBar
-@onready var mp_bar: ProgressBar = $Bars/MPBar
-@onready var ap_bar: ProgressBar = $Bars/APBar
+@onready var name_label: Label = $VBox/NameLabel
+@onready var hp_bar: ProgressBar = $VBox/Bars/HPBar
+@onready var mp_bar: ProgressBar = $VBox/Bars/MPBar
+@onready var ap_bar: ProgressBar = $VBox/Bars/APBar
 
 var _actor: CombatCharacter = null
 
@@ -134,8 +182,9 @@ func set_inactive() -> void:
 func nudge(enabled: bool) -> void:
 	var target_y: float = NUDGE_AMOUNT if enabled else 0.0
 	var tween := create_tween()
-	tween.tween_property(self, "position:y", target_y, NUDGE_DURATION)
+	tween.tween_property(self, "offset_top", -target_y, NUDGE_DURATION)
 ```
+> **Why `offset_top` instead of `position:y`?** Container nodes overwrite `position` on every layout pass. `offset_top` is respected by the layout engine as part of the child's anchor calculation, so it survives reflows (e.g. when an ActionMenu shows/hides in a sibling slot, or when a card is removed from the HBox).
 
 - [ ] **Step 3: Commit**
 
@@ -152,15 +201,20 @@ git commit -m "Add CharacterCard scene with HP/MP/AP bars and nudge tween"
 - Create: `scripts/combat/ui/EnemyCardBar.gd`
 - Create: `scenes/combat/ui/enemy_card_bar.tscn`
 
-**Node tree for `enemy_card_bar.tscn`:**
+### Required Node Architecture
+
 ```
 EnemyCardBar (HBoxContainer)  ← script: EnemyCardBar.gd
-                                 alignment = ALIGNMENT_CENTER
-                                 anchor preset: Top Center
-                                 anchor_left = 0.5, anchor_right = 0.5
-                                 anchor_top = 0.0, anchor_bottom = 0.0
-                                 offset_top = 8
 ```
+
+That's it. The bar spawns `CharacterCard` instances dynamically at runtime via `setup(enemies)`. No child nodes needed in the scene file.
+
+### Styling Notes (Your Call)
+
+- Anchor preset: Top Center (`anchor_left = 0.5, anchor_right = 0.5, anchor_top = 0.0, anchor_bottom = 0.0`)
+- `offset_top = 8` to pull it down from the very top edge
+- `alignment = ALIGNMENT_CENTER` so cards cluster in the middle
+- Adjust spacing, padding, and container theme to taste
 
 - [ ] **Step 1: Create the scene**
 
@@ -222,21 +276,40 @@ git commit -m "Add EnemyCardBar — spawns and manages enemy character cards"
 
 For this plan, ACT and WAIT are functional. ITEM and RUN are visible but do nothing when confirmed. ACT shows one "ATTACK" skill stub (slot 0) and three disabled "--" slots (slots 1–3). WAIT has no items — confirming on the WAIT tab immediately emits the signal.
 
-**Node tree for `action_menu.tscn`:**
+### Required Node Architecture
+
+The code references these nodes by path. **Names and types must match exactly.**
+
 ```
 ActionMenu (VBoxContainer)    ← script: ActionMenu.gd
-                                custom_minimum_size = Vector2(120, 0)
   Categories (HBoxContainer)
-    BtnACT  (Button)           ← text = "ACT"
-    BtnITEM (Button)           ← text = "ITEM"
-    BtnWAIT (Button)           ← text = "WAIT"
-    BtnRUN  (Button)           ← text = "RUN"
+    BtnACT  (Button)
+    BtnITEM (Button)
+    BtnWAIT (Button)
+    BtnRUN  (Button)
   SkillList (VBoxContainer)
-    Skill0  (Button)           ← text = "ATTACK"
-    Skill1  (Button)           ← text = "--", disabled = true
-    Skill2  (Button)           ← text = "--", disabled = true
-    Skill3  (Button)           ← text = "--", disabled = true
+    Skill0  (Button)
+    Skill1  (Button)   ← disabled = true
+    Skill2  (Button)   ← disabled = true
+    Skill3  (Button)   ← disabled = true
 ```
+
+Code node paths:
+- `$SkillList` → `VBoxContainer` (the code calls `get_children()` on this to find skill buttons)
+- `$Categories` → `HBoxContainer` (the code calls `get_children()` on this to find category buttons)
+
+Button text defaults:
+- Category buttons: "ACT", "ITEM", "WAIT", "RUN"
+- Skill buttons: "ATTACK", "--", "--", "--"
+
+Category buttons should have `toggle_mode = true` and `focus_mode = FOCUS_NONE` (the code manages selection state manually via `button_pressed`).
+
+### Styling Notes (Your Call)
+
+- `custom_minimum_size` on root: ~`Vector2(120, 0)` as a starting point
+- Button sizes, fonts, colors, hover states — all your call
+- SkillList visibility is toggled by the script (hidden on non-ACT tabs)
+- Adjust spacing, padding, and container theme to taste
 
 - [ ] **Step 1: Create the scene**
 
@@ -330,22 +403,27 @@ git commit -m "Add ActionMenu with ACT/WAIT functional tabs and stub skill list"
 
 ## Task 5 — PlayerCardBar
 
-Each player slot is a VBoxContainer holding a CharacterCard (top) and a hidden ActionMenu (bottom). The HBoxContainer is bottom-anchored and grows upward — when a slot's ActionMenu becomes visible, that slot gets taller and the card appears to bump up.
+Each player slot is a `VBoxContainer` holding a `CharacterCard` (top) and an `ActionMenu` (bottom, hidden by default). The `HBoxContainer` is bottom-anchored and grows upward — when a slot's `ActionMenu` becomes visible, that slot gets taller and the card appears to bump up.
 
 **Files:**
 - Create: `scripts/combat/ui/PlayerCardBar.gd`
 - Create: `scenes/combat/ui/player_card_bar.tscn`
 
-**Node tree for `player_card_bar.tscn`:**
+### Required Node Architecture
+
 ```
 PlayerCardBar (HBoxContainer)  ← script: PlayerCardBar.gd
-                                  alignment = ALIGNMENT_CENTER
-                                  anchor preset: Bottom Center
-                                  anchor_left = 0.5, anchor_right = 0.5
-                                  anchor_top = 1.0, anchor_bottom = 1.0
-                                  grow_vertical = GROW_DIRECTION_BEGIN
-                                  offset_bottom = -8
 ```
+
+That's it. The bar spawns slots dynamically at runtime via `setup(players)`. Each slot is a `VBoxContainer` created in code, containing a `CharacterCard` instance and an `ActionMenu` instance. No child nodes needed in the scene file.
+
+### Styling Notes (Your Call)
+
+- Anchor preset: Bottom Center (`anchor_left = 0.5, anchor_right = 0.5, anchor_top = 1.0, anchor_bottom = 1.0`)
+- `grow_vertical = GROW_DIRECTION_BEGIN` so it grows upward from the bottom
+- `offset_bottom = -8` to pull it up from the very bottom edge
+- `alignment = ALIGNMENT_CENTER` so cards cluster in the middle
+- Adjust spacing, padding, and container theme to taste
 
 - [ ] **Step 1: Create the scene**
 
@@ -435,19 +513,32 @@ git commit -m "Add PlayerCardBar with per-slot cards and action menus"
 
 ## Task 6 — TargetingCursor
 
-The cursor is a Node3D in world space. It positions itself above the currently hovered actor. It emits `hover_changed` on start, cycling, confirm, and cancel so the UI FSM can nudge cards without the cursor knowing about them.
+The cursor is a `Node3D` in world space. It positions itself above the currently hovered actor. It emits `hover_changed` on start, cycling, confirm, and cancel so the UI FSM can nudge cards without the cursor knowing about them.
 
 **Files:**
 - Create: `scripts/combat/ui/TargetingCursor.gd`
 - Create: `scenes/combat/targeting_cursor.tscn`
 
-**Node tree for `targeting_cursor.tscn`:**
+### Required Node Architecture
+
 ```
 TargetingCursor (Node3D)  ← script: TargetingCursor.gd, visible = false
-  Marker (MeshInstance3D) ← mesh: PrismMesh (small, e.g. 0.2 × 0.2 × 0.2)
-                             material: StandardMaterial3D, albedo = yellow (#ffeb3b)
-                             rotation_degrees.x = 180  (tip points down)
+  Marker (MeshInstance3D)
 ```
+
+Code references:
+- Root node's `visible` property is toggled by `start()` / `stop()`
+- `Marker` is purely visual — the script doesn't reference it directly, but it must exist for the cursor to be visible in 3D space
+
+The cursor positions itself via `global_position = target.global_position + Vector3(0.0, CURSOR_HEIGHT, 0.0)`.
+
+### Styling Notes (Your Call)
+
+- Marker mesh: small shape (e.g. `PrismMesh` 0.2×0.2×0.2, or any indicator you prefer)
+- Material: yellow `StandardMaterial3D` is a placeholder — use whatever reads as a targeting indicator
+- `rotation_degrees.x = 180` on the mesh if using a cone/prism so the tip points down
+- `CURSOR_HEIGHT` in the script defaults to `0.6` — adjust if your characters are taller/shorter
+- Feel free to use a sprite, animated mesh, particle, or whatever fits the game's look
 
 - [ ] **Step 1: Create the scene**
 
@@ -540,23 +631,43 @@ git commit -m "Add TargetingCursor — world-space actor targeting with hover/co
 - Create: `scripts/combat/ui/DamageNumber.gd`
 - Create: `scenes/combat/ui/damage_number.tscn`
 
-**Node tree for `info_panel.tscn`:**
+### InfoPanel — Required Node Architecture
+
 ```
 InfoPanel (PanelContainer)  ← script: InfoPanel.gd, visible = false
-                               anchor_left = 0, anchor_right = 1
-                               anchor_top = 1, anchor_bottom = 1
-                               offset_top = -32, offset_bottom = 0
-  InfoLabel (Label)          ← h_size_flags = FILL, align = CENTER
+  InfoLabel (Label)
 ```
 
-**Node tree for `damage_number.tscn`:**
+Code node path:
+- `$InfoLabel` → `Label` (the script sets `.text` on this)
+
+Root visibility is toggled by `show_text()` / `hide_panel()`.
+
+### InfoPanel — Styling Notes (Your Call)
+
+- Anchor: full-width bottom strip (`anchor_left = 0, anchor_right = 1, anchor_top = 1, anchor_bottom = 1`)
+- `offset_top = -32` to give it height from the bottom edge
+- Label: centered text, adjust font/size/color to taste
+- PanelContainer theme, margins, background — all your call
+
+### DamageNumber — Required Node Architecture
+
 ```
 DamageNumber (Node3D)     ← script: DamageNumber.gd
-  NumberLabel (Label3D)   ← billboard = BILLBOARD_ENABLED
-                             no_depth_test = true
-                             font_size = 48
-                             modulate = Color(1, 0.9, 0.2, 1)   (yellow)
+  NumberLabel (Label3D)
 ```
+
+Code node path:
+- `$NumberLabel` → `Label3D` (the script sets `.text` and tweens `.modulate:a`)
+
+The node positions itself via `global_position` passed into `show_at()`.
+
+### DamageNumber — Styling Notes (Your Call)
+
+- `Label3D` settings: `billboard = BILLBOARD_ENABLED`, `no_depth_test = true`
+- Font size, color, outline, shadow — all your call (yellow `modulate` is set in the scene as a default)
+- Tween duration (`0.8s`) and float distance (`0.6`) in the script are starting points — adjust if the animation feels too fast/slow
+- Feel free to use a `Sprite3D`, `MeshInstance3D` with a text texture, or any other 3D visual approach
 
 - [ ] **Step 1: Create InfoPanel**
 
@@ -633,6 +744,8 @@ The UI FSM has 5 states. `@onready` paths assume it is a direct child of the sce
 - `PLAYER_TARGETING` — player picked a skill: targeting cursor is active
 - `COMBAT_OVER` — combat has ended
 
+> **Signal note:** `CombatEvents.action_selected` is currently simplified to a single `target` argument. When skills are added later, expand this payload — but keep it a single object (e.g. a small `ActionSelection` resource or dictionary) rather than multiple signal args, so `await` stays clean.
+
 - [ ] **Step 1: Write the script**
 
 Create `scripts/combat/ui/CombatUIFSM.gd`:
@@ -653,8 +766,13 @@ const DamageNumberScene = preload("res://scenes/combat/ui/damage_number.tscn")
 var _state: State = State.IDLE
 var _actors: Array = []
 var _active_actor: CombatCharacter = null
+var _started: bool = false
 
 func start(actors: Array) -> void:
+	if _started:
+		Log.warn("CombatUIFSM.start() called twice — ignoring")
+		return
+	_started = true
 	_actors = actors
 	var players := actors.filter(func(a: CombatCharacter) -> bool: return a.is_player_controlled)
 	var enemies := actors.filter(func(a: CombatCharacter) -> bool: return not a.is_player_controlled)
@@ -709,18 +827,21 @@ func _on_turn_started(actor: CombatCharacter) -> void:
 
 func _on_please_select_action(actor: CombatCharacter) -> void:
 	_active_actor = actor
-	_transition(State.PLAYER_MENU)
+	if actor.is_player_controlled:
+		_transition(State.PLAYER_MENU)
+	else:
+		_transition(State.WATCHING)
 
 func _on_action_chosen(category: String, _item_index: int) -> void:
 	if category == "WAIT":
-		CombatEvents.action_selected.emit(null, null)
+		CombatEvents.action_selected.emit(null)
 		_transition(State.WATCHING)
 		return
 	if category == "ACT":
 		_transition(State.PLAYER_TARGETING)
 
 func _on_target_confirmed(target: CombatCharacter) -> void:
-	CombatEvents.action_selected.emit(null, target)
+	CombatEvents.action_selected.emit(target)
 	_transition(State.WATCHING)
 
 func _on_target_cancelled() -> void:
@@ -771,24 +892,33 @@ func _handle_menu_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("combat_prev"):
 		menu.prev_category()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_next"):
 		menu.next_category()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_up"):
 		menu.prev_item()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_down"):
 		menu.next_item()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_confirm"):
 		menu.confirm()
+		get_viewport().set_input_as_handled()
 
 func _handle_targeting_input(event: InputEvent) -> void:
 	if event.is_action_pressed("combat_next") or event.is_action_pressed("combat_down"):
 		cursor.next()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_prev") or event.is_action_pressed("combat_up"):
 		cursor.prev()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_confirm"):
 		cursor.confirm()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("combat_cancel"):
 		cursor.cancel()
+		get_viewport().set_input_as_handled()
 ```
 
 - [ ] **Step 2: Commit**
@@ -814,11 +944,22 @@ In `scripts/combat/CombatFSM.gd`, replace `_enter_action_select()` with:
 
 ```gdscript
 func _enter_action_select() -> void:
-	# NOTE: suspends via await — not re-entrant while active.
-	# CombatUIFSM drives player selection and emits action_selected to resume this.
 	CombatEvents.please_select_action.emit(_active_actor)
-	var result = await CombatEvents.action_selected
-	_pending_target = result[1] as CombatCharacter
+
+	if not _active_actor.is_player_controlled:
+		# Enemy turn — auto-pick target (placeholder until enemy AI is built)
+		_pending_target = _first_living_opponent(_active_actor)
+		if _pending_target == null:
+			Log.info("ActionSelect — enemy has no valid target, skipping to TurnEnd")
+			_transition(State.TURN_END)
+			return
+		Log.info("ActionSelect — enemy auto-target:", _pending_target.character_name)
+		_transition(State.ACTION_EXECUTION)
+		return
+
+	# Player turn — suspend and wait for CombatUIFSM to emit action_selected
+	var target: CombatCharacter = await CombatEvents.action_selected
+	_pending_target = target
 	if _pending_target == null:
 		Log.info("ActionSelect — no target (WAIT), skipping to TurnEnd")
 		_transition(State.TURN_END)
@@ -901,7 +1042,8 @@ Run the game and trigger an encounter. Verify in sequence:
 6. Press D/A to cycle enemies; targeted card nudges down, previous un-nudges
 7. Press Enter to confirm target; damage number appears above enemy and floats up; then HP bar decrements
 8. On enemy death: card is removed from top bar; HBox reflows
-9. Combat cycles until one side is wiped; CombatEnd fires, UI enters COMBAT_OVER
+9. **Enemy turn verification:** after a player turn ends, the next enemy turn should auto-resolve (no input required) — damage number appears above the targeted player, their HP bar decrements
+10. Combat cycles until one side is wiped; CombatEnd fires, UI enters COMBAT_OVER
 
 - [ ] **Step 6: Commit**
 
@@ -922,3 +1064,29 @@ git commit -m "Wire CombatUIFSM — player input drives combat loop, replace aut
 - Defeat screen (quit / reload — add to `COMBAT_OVER` state when ready)
 - AoE targeting (multiple cards nudge simultaneously)
 - Ally targeting for healing / buff skills (pass `target_allies: bool` to `cursor.start()`)
+
+---
+
+## Review Conclusions (2026-05-10)
+
+**Status:** Approved with corrections applied inline above.
+
+1. **Enemy auto-pick is a placeholder.** `_first_living_opponent()` remains the default enemy behaviour until a dedicated Enemy AI system is designed. The branch in `CombatFSM._enter_action_select()` makes this boundary explicit.
+
+2. **Signal elasticity.** `action_selected` is simplified to a single `target` argument for now. When skills arrive, expand the payload as a single resource/dictionary object — never multiple signal args — so `await` stays clean and type-safe.
+
+3. **CombatEvents.gd modification added as Task 0.** The signal change was missing from the file map. It's now a dedicated first task since all downstream code depends on the new signature.
+
+4. **Old CharacterCard discarded.** The existing `scenes/combat/CharacterCard.gd` and its scene node are removed entirely. The new `CharacterCard` is rebuilt from scratch as a `Control`-rooted scene with a nested `VBoxContainer`, solving the container-layout-vs-tween conflict.
+
+5. **Nudge uses `offset_top` instead of `position:y`.** Containers overwrite `position` on every layout pass. `offset_top` is respected by the layout engine, so nudges survive sibling reflows (menu show/hide, card removal).
+
+6. **Double-start guard.** `CombatUIFSM.start()` includes a `_started` boolean guard. `CombatScene.initialize()` is currently only called once per scene instance, but the guard costs nothing and prevents a hard crash if that ever changes.
+
+7. **`_first_living_opponent()` stays alive.** It now serves only the enemy auto-pick path. No cleanup needed until enemy AI replaces it.
+
+8. **Integration test covers enemy turns.** Step 9 explicitly verifies that enemy turns auto-resolve without player input, preventing the hard-lock bug that would have occurred with the original plan.
+
+9. **Input events are marked as handled.** `_handle_menu_input` and `_handle_targeting_input` call `get_viewport().set_input_as_handled()` after processing. Prevents ghost inputs if other listeners are added later.
+
+10. **Architecture validated.** Two side-by-side FSMs, event bus in the middle, composed scenes, no god-manager. The plan follows project conventions.
