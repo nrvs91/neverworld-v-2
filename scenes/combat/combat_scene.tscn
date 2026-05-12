@@ -1,9 +1,7 @@
 [gd_scene format=3 uid="uid://dk5r7ftfimkna"]
 
 [ext_resource type="Script" uid="uid://cumyi103il3iq" path="res://scripts/combat/CombatScene.gd" id="1_jecyb"]
-[ext_resource type="Script" uid="uid://b0aodnfvicqv5" path="res://scripts/combat/PlayerSpawner.gd" id="3_pbkuh"]
 [ext_resource type="PackedScene" uid="uid://brfxpemqq6odb" path="res://scenes/combat/components/player_spawner.tscn" id="4_n81vl"]
-[ext_resource type="Script" uid="uid://q3uxscggn5or" path="res://scripts/combat/EnemySpawner.gd" id="5_n81vl"]
 [ext_resource type="PackedScene" uid="uid://b0ryywb45q8y3" path="res://scenes/combat/components/enemy_spawner.tscn" id="5_w220i"]
 [ext_resource type="Script" uid="uid://dx02occ76ggrc" path="res://scripts/combat/CombatFSM.gd" id="6_abc12"]
 [ext_resource type="PackedScene" uid="uid://cpx27qwtvhthi" path="res://scenes/combat/ui/enemy_card_bar.tscn" id="7_ecbar"]
@@ -23,7 +21,6 @@ size = Vector2(5, 5)
 script = ExtResource("1_jecyb")
 
 [node name="PlayerSpawner" parent="." unique_id=1188138308 instance=ExtResource("4_n81vl")]
-script = ExtResource("3_pbkuh")
 
 [node name="Slot1" parent="PlayerSpawner" index="0" unique_id=1436921648]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, 1)
@@ -42,7 +39,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.966, 0.25, -1)
 [node name="Marker3D" type="Marker3D" parent="PlayerSpawner/Slot3" index="0" unique_id=908816707]
 
 [node name="EnemySpawner" parent="." unique_id=687542022 instance=ExtResource("5_w220i")]
-script = ExtResource("5_n81vl")
 
 [node name="Slot1" parent="EnemySpawner" index="0" unique_id=890595647]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.873, 0.25, 1)
@@ -89,18 +85,21 @@ mesh = SubResource("PlaneMesh_fyyo7")
 
 [node name="CombatUI" type="CanvasLayer" parent="." unique_id=1309859405]
 
-[node name="EnemyCardBar" parent="CombatUI" instance=ExtResource("7_ecbar")]
+[node name="EnemyCardBar" parent="CombatUI" unique_id=1370711345 instance=ExtResource("7_ecbar")]
+anchors_preset = 5
 
-[node name="PlayerCardBar" parent="CombatUI" instance=ExtResource("8_pcbar")]
+[node name="PlayerCardBar" parent="CombatUI" unique_id=1095653807 instance=ExtResource("8_pcbar")]
+anchors_preset = 7
 
-[node name="InfoPanel" parent="CombatUI" instance=ExtResource("9_infop")]
+[node name="InfoPanel" parent="CombatUI" unique_id=184479836 instance=ExtResource("9_infop")]
+anchors_preset = 12
 
-[node name="TargetingCursor" parent="." instance=ExtResource("10_tcrs")]
+[node name="TargetingCursor" parent="." unique_id=218799812 instance=ExtResource("10_tcrs")]
 
 [node name="CombatFSM" type="Node" parent="." unique_id=999999999]
 script = ExtResource("6_abc12")
 
-[node name="CombatUIFSM" type="Node" parent="."]
+[node name="CombatUIFSM" type="Node" parent="." unique_id=509966287]
 script = ExtResource("11_uifs")
 
 [editable path="PlayerSpawner"]

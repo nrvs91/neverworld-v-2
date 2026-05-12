@@ -13,7 +13,7 @@ func setup(sprite_frames: SpriteFrames) -> void:
 	else:
 		var fallback := sprite_frames.get_animation_names()[0]
 		sprite.play(fallback)
-		Log.warn("CombatVisuals: no Idle animation, playing", fallback)
+		Log.warn("CombatVi suals: no Idle animation, playing", fallback)
 	Log.info("CombatVisuals setup")
 
 func set_base_state(state: StringName) -> void:

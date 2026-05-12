@@ -1,6 +1,11 @@
 [gd_scene format=3 uid="uid://dlq6sedju4ujw"]
 
 [ext_resource type="Script" uid="uid://drhk4anv2ccdk" path="res://scripts/combat/ui/CharacterCard.gd" id="1_dj1vm"]
+[ext_resource type="Texture2D" uid="uid://ctsikl58cy4hy" path="res://assets/under_bar.png" id="2_wte3k"]
+[ext_resource type="Texture2D" uid="uid://donrkuaum1wf" path="res://assets/UI/frame_bar.png" id="2_xd4xj"]
+[ext_resource type="Texture2D" uid="uid://bgpe8hqawi0ew" path="res://assets/UI/progress_bar.png" id="4_s64os"]
+[ext_resource type="Texture2D" uid="uid://cvs2qv7bwd2bn" path="res://assets/progress_bar.png" id="5_0m0iu"]
+[ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="5_s64os"]
 
 [node name="CharacterCard" type="Control" unique_id=821400982]
 custom_minimum_size = Vector2(80, 0)
@@ -10,33 +15,99 @@ script = ExtResource("1_dj1vm")
 
 [node name="VBox" type="VBoxContainer" parent="." unique_id=1084517473]
 layout_mode = 0
-
-[node name="NameLabel" type="Label" parent="VBox" unique_id=1992281587]
-layout_mode = 2
-text = "Name"
-horizontal_alignment = 1
-
-[node name="Portrait" type="ColorRect" parent="VBox" unique_id=782405824]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-color = Color(0.3, 0.3, 0.3, 1)
-
-[node name="Bars" type="VBoxContainer" parent="VBox" unique_id=1013073810]
-layout_mode = 2
-
-[node name="HPBar" type="ProgressBar" parent="VBox/Bars" unique_id=1329506385]
-layout_mode = 2
-value = 100.0
-
-[node name="MPBar" type="ProgressBar" parent="VBox/Bars" unique_id=824366271]
-layout_mode = 2
-value = 100.0
-
-[node name="APBar" type="ProgressBar" parent="VBox/Bars" unique_id=217834535]
-layout_mode = 2
-max_value = 10.0
-value = 3.0
+theme_override_constants/separation = 1
 
 [node name="TokenContainer" type="HBoxContainer" parent="VBox" unique_id=1117720940]
-visible = false
 layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBox" unique_id=1165859655]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="HPBar" type="TextureProgressBar" parent="VBox/HBoxContainer" unique_id=1096780930]
+layout_mode = 2
+size_flags_horizontal = 3
+nine_patch_stretch = true
+stretch_margin_left = 1
+stretch_margin_top = 9
+stretch_margin_right = 1
+texture_under = ExtResource("2_wte3k")
+texture_over = ExtResource("2_xd4xj")
+texture_progress = ExtResource("4_s64os")
+tint_under = Color(0.25882354, 0.627451, 0.48235294, 1)
+tint_progress = Color(0.25882354, 0.627451, 0.48235294, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBox/HBoxContainer/HPBar" unique_id=338906017]
+layout_mode = 0
+offset_top = -4.0
+offset_right = 22.0
+offset_bottom = 5.0
+
+[node name="HPLabel" type="Label" parent="VBox/HBoxContainer/HPBar/HBoxContainer" unique_id=1632901536]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("5_s64os")
+theme_override_font_sizes/font_size = 8
+text = "HP"
+
+[node name="HPValue" type="Label" parent="VBox/HBoxContainer/HPBar/HBoxContainer" unique_id=2026525826]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("5_s64os")
+theme_override_font_sizes/font_size = 8
+text = "HP"
+
+[node name="MPBar" type="TextureProgressBar" parent="VBox/HBoxContainer" unique_id=1935972173]
+layout_mode = 2
+size_flags_horizontal = 3
+nine_patch_stretch = true
+stretch_margin_left = 1
+stretch_margin_top = 9
+stretch_margin_right = 1
+texture_under = ExtResource("2_wte3k")
+texture_over = ExtResource("2_xd4xj")
+texture_progress = ExtResource("4_s64os")
+tint_under = Color(0.5647059, 0.81960785, 0.81960785, 1)
+tint_over = Color(0.29219002, 0.29219005, 0.29219002, 1)
+tint_progress = Color(0.5647059, 0.81960785, 0.81960785, 1)
+
+[node name="Portrait" type="Control" parent="VBox" unique_id=703564308]
+custom_minimum_size = Vector2(64, 32)
+layout_mode = 2
+
+[node name="Frame" type="NinePatchRect" parent="VBox/Portrait" unique_id=538194720]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_xd4xj")
+patch_margin_left = 1
+patch_margin_top = 1
+patch_margin_right = 1
+patch_margin_bottom = 1
+
+[node name="portrait" type="TextureRect" parent="VBox/Portrait" unique_id=667049477]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="APBar" type="TextureProgressBar" parent="VBox" unique_id=1575124934]
+layout_mode = 2
+max_value = 10.0
+value = 10.0
+nine_patch_stretch = true
+stretch_margin_left = 1
+stretch_margin_top = 9
+stretch_margin_right = 1
+texture_under = ExtResource("2_wte3k")
+texture_over = ExtResource("2_xd4xj")
+texture_progress = ExtResource("5_0m0iu")
+tint_under = Color(0.89411765, 0.8, 0.4117647, 1)
+tint_progress = Color(0.89552355, 0.7983455, 0.41089797, 1)
