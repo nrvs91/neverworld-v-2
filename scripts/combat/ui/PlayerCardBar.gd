@@ -3,34 +3,27 @@ extends HBoxContainer
 
 signal action_chosen(category: String, item_index: int)
 
-const CharacterCardScene = preload("res://scenes/combat/ui/character_card.tscn")
-const ActionMenuScene = preload("res://scenes/combat/ui/action_menu.tscn")
-
 var _cards: Dictionary = {}
 var _menus: Dictionary = {}
 var _active_actor: CombatCharacter = null
 
 func setup(players: Array) -> void:
-	for child in get_children():
-		child.queue_free()
-	_cards.clear()
-	_menus.clear()
-	for actor in players:
-		var slot := VBoxContainer.new()
-		slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		add_child(slot)
-
-		var card := CharacterCardScene.instantiate() as CharacterCard
-		slot.add_child(card)
-		card.setup(actor)
-		_cards[actor] = card
-
-		var menu := ActionMenuScene.instantiate() as ActionMenu
-		slot.add_child(menu)
-		menu.visible = false
-		menu.action_chosen.connect(_on_menu_action_chosen)
-		_menus[actor] = menu
-	Log.info("PlayerCardBar — slots spawned:", _cards.size())
+	var slots := get_children()
+	for i in slots.size():
+		var slot: Node = slots[i]
+		if i < players.size():
+			var actor: CombatCharacter = players[i]
+			var card := slot.get_node("CharacterCard") as PlayerCard
+			var menu := slot.get_node("ActionMenu") as ActionMenu
+			card.setup(actor)
+			menu.visible = false
+			menu.action_chosen.connect(_on_menu_action_chosen)
+			_cards[actor] = card
+			_menus[actor] = menu
+			slot.visible = true
+		else:
+			slot.visible = false
+	Log.info("PlayerCardBar — slots wired:", _cards.size())
 
 func set_active(actor: CombatCharacter) -> void:
 	if _active_actor and _menus.has(_active_actor):

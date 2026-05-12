@@ -86,13 +86,35 @@ mesh = SubResource("PlaneMesh_fyyo7")
 [node name="CombatUI" type="CanvasLayer" parent="." unique_id=1309859405]
 
 [node name="EnemyCardBar" parent="CombatUI" unique_id=1370711345 instance=ExtResource("7_ecbar")]
-anchors_preset = 5
+offset_top = 12.0
+offset_bottom = 12.0
 
 [node name="PlayerCardBar" parent="CombatUI" unique_id=1095653807 instance=ExtResource("8_pcbar")]
-anchors_preset = 7
+anchors_preset = 8
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = 10.0
+offset_right = 100.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ActionMenu" parent="CombatUI/PlayerCardBar/Slot1" parent_id_path=PackedInt32Array(1095653807, 1163194006) index="1" unique_id=576077339]
+visible = false
+
+[node name="ActionMenu" parent="CombatUI/PlayerCardBar/Slot2" parent_id_path=PackedInt32Array(1095653807, 4594418) index="1" unique_id=2002371175]
+visible = false
+
+[node name="ActionMenu" parent="CombatUI/PlayerCardBar/Slot3" parent_id_path=PackedInt32Array(1095653807, 1072011546) index="1" unique_id=1142891025]
+visible = false
 
 [node name="InfoPanel" parent="CombatUI" unique_id=184479836 instance=ExtResource("9_infop")]
-anchors_preset = 12
+visible = true
+offset_top = -23.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 0
 
 [node name="TargetingCursor" parent="." unique_id=218799812 instance=ExtResource("10_tcrs")]
 
@@ -104,3 +126,5 @@ script = ExtResource("11_uifs")
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]
+[editable path="CombatUI/EnemyCardBar"]
+[editable path="CombatUI/PlayerCardBar"]

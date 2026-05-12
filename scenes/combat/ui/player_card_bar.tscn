@@ -1,8 +1,11 @@
 [gd_scene format=3 uid="uid://dd8q4s0qtb57f"]
 
 [ext_resource type="Script" uid="uid://smxh806m8m45" path="res://scripts/combat/ui/PlayerCardBar.gd" id="1_3obp3"]
+[ext_resource type="PackedScene" uid="uid://dlq6sedju4ujw" path="res://scenes/combat/ui/player_card.tscn" id="2_ccard"]
+[ext_resource type="PackedScene" uid="uid://dlmnvwdy4ymxy" path="res://scenes/combat/ui/action_menu.tscn" id="3_amenu"]
 
 [node name="PlayerCardBar" type="HBoxContainer" unique_id=2133489224]
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -11,3 +14,30 @@ offset_bottom = -8.0
 grow_vertical = 0
 alignment = 1
 script = ExtResource("1_3obp3")
+
+[node name="Slot1" type="VBoxContainer" parent="." unique_id=1163194006]
+layout_mode = 2
+
+[node name="CharacterCard" parent="Slot1" unique_id=1318547515 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="ActionMenu" parent="Slot1" unique_id=576077339 instance=ExtResource("3_amenu")]
+layout_mode = 2
+
+[node name="Slot2" type="VBoxContainer" parent="." unique_id=4594418]
+layout_mode = 2
+
+[node name="CharacterCard" parent="Slot2" unique_id=827057437 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="ActionMenu" parent="Slot2" unique_id=2002371175 instance=ExtResource("3_amenu")]
+layout_mode = 2
+
+[node name="Slot3" type="VBoxContainer" parent="." unique_id=1072011546]
+layout_mode = 2
+
+[node name="CharacterCard" parent="Slot3" unique_id=436756557 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="ActionMenu" parent="Slot3" unique_id=1142891025 instance=ExtResource("3_amenu")]
+layout_mode = 2

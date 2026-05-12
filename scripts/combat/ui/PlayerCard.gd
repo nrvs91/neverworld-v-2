@@ -1,22 +1,26 @@
-class_name CharacterCard
+class_name PlayerCard
 extends Control
 
 const NUDGE_AMOUNT: float = 12.0
 const NUDGE_DURATION: float = 0.12
 
-@onready var name_label: Label = $VBox/NameLabel
-@onready var hp_bar: ProgressBar = $VBox/Bars/HPBar
-@onready var mp_bar: ProgressBar = $VBox/Bars/MPBar
-@onready var ap_bar: ProgressBar = $VBox/Bars/APBar
+@onready var hp_bar: TextureProgressBar = $VBox/TopBar/HPBar
+@onready var mp_bar: TextureProgressBar = $VBox/TopBar/MPBar
+@onready var ap_bar: TextureProgressBar = $VBox/APBar
+@onready var hp_value: Label = $VBox/TopBar/HPBar/HP/HPValue
+@onready var mp_value: Label = $VBox/TopBar/MPBar/MP/MPValue
+@onready var ap_value: Label = $VBox/APBar/AP/APValue
+@onready var portrait_rect: TextureRect = $VBox/Portrait/Portrait
 
 var _actor: CombatCharacter = null
 
 func setup(actor: CombatCharacter) -> void:
 	_actor = actor
-	name_label.text = actor.character_name
 	hp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxHP)
 	mp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxMP)
 	ap_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxAP)
+	# portrait_rect.texture = actor.portrait_texture
+	# Uncomment once portrait_texture is added to CombatCharacter
 	refresh_vitals()
 
 func refresh_vitals() -> void:
@@ -25,6 +29,9 @@ func refresh_vitals() -> void:
 	hp_bar.value = _actor.vitals.cur_hp
 	mp_bar.value = _actor.vitals.cur_mp
 	ap_bar.value = _actor.vitals.cur_ap
+	hp_value.text = str(_actor.vitals.cur_hp)
+	mp_value.text = str(_actor.vitals.cur_mp)
+	ap_value.text = str(_actor.vitals.cur_ap)
 
 func set_inactive() -> void:
 	modulate.a = 0.5

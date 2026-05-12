@@ -1,25 +1,25 @@
 class_name EnemyCardBar
 extends HBoxContainer
 
-const CharacterCardScene = preload("res://scenes/combat/ui/character_card.tscn")
-
 var _cards: Dictionary = {}
 
 func setup(enemies: Array) -> void:
-	for child in get_children():
-		child.queue_free()
-	_cards.clear()
-	for actor in enemies:
-		var card := CharacterCardScene.instantiate() as CharacterCard
-		add_child(card)
-		card.setup(actor)
-		_cards[actor] = card
-	Log.info("EnemyCardBar — cards spawned:", _cards.size())
+	var slots := get_children()
+	for i in slots.size():
+		var card := slots[i] as EnemyCard
+		if i < enemies.size():
+			var actor: CombatCharacter = enemies[i]
+			card.setup(actor)
+			card.visible = true
+			_cards[actor] = card
+		else:
+			card.visible = false
+	Log.info("EnemyCardBar — cards wired:", _cards.size())
 
 func remove_actor(actor: CombatCharacter) -> void:
 	if not _cards.has(actor):
 		return
-	_cards[actor].queue_free()
+	_cards[actor].visible = false
 	_cards.erase(actor)
 	Log.info("EnemyCardBar — removed", actor.character_name)
 

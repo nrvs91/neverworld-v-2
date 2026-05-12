@@ -1,10 +1,32 @@
 [gd_scene format=3 uid="uid://cpx27qwtvhthi"]
 
 [ext_resource type="Script" uid="uid://cs73sexlgw28j" path="res://scripts/combat/ui/EnemyCardBar.gd" id="1_of1sm"]
+[ext_resource type="PackedScene" uid="uid://cmqopek61tm0" path="res://scenes/combat/ui/enemy_card.tscn" id="2_ccard"]
 
 [node name="EnemyCardBar" type="HBoxContainer" unique_id=2099294061]
+anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_top = 8.0
+offset_left = -154.0
+offset_right = 154.0
+grow_horizontal = 2
 alignment = 1
 script = ExtResource("1_of1sm")
+
+[node name="Slot1" parent="." unique_id=821400982 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="Slot2" parent="." unique_id=159613253 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="Slot3" parent="." unique_id=1605038498 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="Slot4" parent="." unique_id=659216902 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="Slot5" parent="." unique_id=1227886257 instance=ExtResource("2_ccard")]
+layout_mode = 2
+
+[node name="Slot6" parent="." unique_id=1710550367 instance=ExtResource("2_ccard")]
+layout_mode = 2
