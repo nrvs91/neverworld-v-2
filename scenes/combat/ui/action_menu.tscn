@@ -1,64 +1,79 @@
 [gd_scene format=3 uid="uid://dlmnvwdy4ymxy"]
 
 [ext_resource type="Script" uid="uid://c3vw4xxkvexiq" path="res://scripts/combat/ui/ActionMenu.gd" id="1_bgvpn"]
+[ext_resource type="Texture2D" uid="uid://donrkuaum1wf" path="res://assets/UI/frame_bar.png" id="2_65ufl"]
+[ext_resource type="PackedScene" uid="uid://lb1n4t4wme0b" path="res://scenes/UI/skill_button.tscn" id="2_ey7c2"]
+[ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_jd4an"]
+[ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="4_db24s"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_db24s"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jd4an"]
+shader = ExtResource("2_jd4an")
+shader_parameter/color_dark = Color(0.1, 0.1, 0.15, 0.6)
+shader_parameter/color_light = Color(0.90588236, 0.9137255, 0.9254902, 1)
+shader_parameter/step_count = 12
+shader_parameter/is_selected = false
 
 [node name="ActionMenu" type="VBoxContainer" unique_id=1040193410]
-custom_minimum_size = Vector2(120, 0)
+custom_minimum_size = Vector2(64, 0)
+theme_override_constants/separation = 2
 script = ExtResource("1_bgvpn")
 
-[node name="Categories" type="HBoxContainer" parent="." unique_id=1945095690]
+[node name="Frame" type="NinePatchRect" parent="." unique_id=1663835107]
+material = SubResource("ShaderMaterial_db24s")
 layout_mode = 2
+texture = ExtResource("2_65ufl")
+patch_margin_left = 2
+patch_margin_top = 6
+patch_margin_right = 2
+patch_margin_bottom = 6
 
-[node name="BtnACT" type="Button" parent="Categories" unique_id=317892633]
-layout_mode = 2
-focus_mode = 0
-toggle_mode = true
+[node name="ColorRect" type="ColorRect" parent="Frame" unique_id=876472717]
+show_behind_parent = true
+material = SubResource("ShaderMaterial_jd4an")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuName" type="Label" parent="Frame" unique_id=1211325164]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -11.5
+offset_top = -2.5
+offset_right = 11.5
+offset_bottom = 2.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("4_db24s")
+theme_override_font_sizes/font_size = 8
 text = "ACT"
-
-[node name="BtnITEM" type="Button" parent="Categories" unique_id=1205373995]
-layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-text = "ITEM"
-
-[node name="BtnWAIT" type="Button" parent="Categories" unique_id=1875499015]
-layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-text = "WAIT"
-
-[node name="BtnRUN" type="Button" parent="Categories" unique_id=732091231]
-layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-text = "RUN"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="SkillList" type="VBoxContainer" parent="." unique_id=956773412]
 layout_mode = 2
+theme_override_constants/separation = 1
 
-[node name="Skill0" type="Button" parent="SkillList" unique_id=1137602191]
+[node name="SkillButton" parent="SkillList" unique_id=1591875827 instance=ExtResource("2_ey7c2")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-text = "ATTACK"
 
-[node name="Skill1" type="Button" parent="SkillList" unique_id=949129880]
+[node name="SkillButton2" parent="SkillList" unique_id=57917873 instance=ExtResource("2_ey7c2")]
 layout_mode = 2
-focus_mode = 0
-disabled = true
-toggle_mode = true
-text = "--"
 
-[node name="Skill2" type="Button" parent="SkillList" unique_id=1801747512]
+[node name="SkillButton3" parent="SkillList" unique_id=1565217785 instance=ExtResource("2_ey7c2")]
 layout_mode = 2
-focus_mode = 0
-disabled = true
-toggle_mode = true
-text = "--"
 
-[node name="Skill3" type="Button" parent="SkillList" unique_id=2064412662]
+[node name="SkillButton4" parent="SkillList" unique_id=1299156669 instance=ExtResource("2_ey7c2")]
 layout_mode = 2
-focus_mode = 0
-disabled = true
-toggle_mode = true
-text = "--"
