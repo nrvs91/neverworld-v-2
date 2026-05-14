@@ -7,7 +7,6 @@ const DamageNumberScene = preload("res://scenes/combat/ui/damage_number.tscn")
 
 @onready var enemy_bar: EnemyCardBar = $"../CombatUI/EnemyCardBar"
 @onready var player_bar: PlayerCardBar = $"../CombatUI/PlayerCardBar"
-@onready var info_panel: InfoPanel = $"../CombatUI/InfoPanel"
 @onready var cursor: TargetingCursor = $"../TargetingCursor"
 
 var _state: State = State.IDLE
@@ -50,23 +49,23 @@ func _transition(next: State) -> void:
 func _enter_watching() -> void:
 	player_bar.reset_active()
 	cursor.stop()
-	info_panel.hide_panel()
+	# info_panel: hide
 
 func _enter_player_menu() -> void:
 	cursor.stop()
 	player_bar.set_active(_active_actor)
-	info_panel.show_text("A/D: switch menu   W/S: navigate   Enter: confirm")
+	# info_panel: "A/D: switch menu   W/S: navigate   Enter: confirm"
 
 func _enter_player_targeting() -> void:
 	var targets := _actors.filter(func(a: CombatCharacter) -> bool:
 		return not a.is_player_controlled and not a.vitals.is_downed()
 	)
 	cursor.start(targets)
-	info_panel.show_text("D/A: cycle target   Enter: confirm   Esc: cancel")
+	# info_panel: "D/A: cycle target   Enter: confirm   Esc: cancel"
 
 func _enter_combat_over() -> void:
 	cursor.stop()
-	info_panel.hide_panel()
+	# info_panel: hide
 
 func _on_turn_started(actor: CombatCharacter) -> void:
 	_active_actor = actor

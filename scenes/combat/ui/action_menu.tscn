@@ -13,11 +13,11 @@
 shader = ExtResource("2_jd4an")
 shader_parameter/color_dark = Color(0.1, 0.1, 0.15, 0.6)
 shader_parameter/color_light = Color(0.90588236, 0.9137255, 0.9254902, 1)
-shader_parameter/step_count = 12
+shader_parameter/step_count = 18
 shader_parameter/is_selected = false
 
 [node name="ActionMenu" type="VBoxContainer" unique_id=1040193410]
-custom_minimum_size = Vector2(64, 0)
+custom_minimum_size = Vector2(48, 0)
 theme_override_constants/separation = 2
 script = ExtResource("1_bgvpn")
 
@@ -26,7 +26,7 @@ material = SubResource("ShaderMaterial_db24s")
 layout_mode = 2
 texture = ExtResource("2_65ufl")
 patch_margin_left = 2
-patch_margin_top = 6
+patch_margin_top = 3
 patch_margin_right = 2
 patch_margin_bottom = 6
 
@@ -42,15 +42,9 @@ grow_vertical = 2
 
 [node name="MenuName" type="Label" parent="Frame" unique_id=1211325164]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -11.5
-offset_top = -2.5
-offset_right = 11.5
-offset_bottom = 2.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
@@ -58,14 +52,14 @@ size_flags_vertical = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("4_db24s")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "ACT"
 horizontal_alignment = 1
-vertical_alignment = 1
+vertical_alignment = 2
 
 [node name="ContentArea" type="Control" parent="." unique_id=1413429831]
 clip_contents = true
-custom_minimum_size = Vector2(64, 35)
+custom_minimum_size = Vector2(48, 35)
 layout_mode = 2
 
 [node name="SkillMenu" type="VBoxContainer" parent="ContentArea" unique_id=956773412]
@@ -82,8 +76,8 @@ theme_override_constants/separation = 1
 
 [node name="WaitMenu" type="VBoxContainer" parent="ContentArea" unique_id=361972216]
 layout_mode = 0
-offset_right = 64.0
-offset_bottom = 35.0
+offset_right = 48.0
+offset_bottom = 8.0
 theme_override_constants/separation = 1
 
 [node name="WaitButton" parent="ContentArea/WaitMenu" unique_id=1490923150 instance=ExtResource("7_7m71r")]
@@ -91,8 +85,8 @@ layout_mode = 2
 
 [node name="RunMenu" type="VBoxContainer" parent="ContentArea" unique_id=1377867955]
 layout_mode = 0
-offset_right = 64.0
-offset_bottom = 35.0
+offset_right = 48.0
+offset_bottom = 8.0
 theme_override_constants/separation = 1
 
 [node name="RunButton" parent="ContentArea/RunMenu" unique_id=1591875827 instance=ExtResource("6_t1vib")]

@@ -10,13 +10,17 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_bottom = -8.0
+offset_left = -100.0
+offset_right = 100.0
+grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 script = ExtResource("1_3obp3")
 
 [node name="Slot1" type="VBoxContainer" parent="." unique_id=1163194006]
 layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 0
 
 [node name="CharacterCard" parent="Slot1" unique_id=1318547515 instance=ExtResource("2_ccard")]
 layout_mode = 2
@@ -26,18 +30,24 @@ layout_mode = 2
 
 [node name="Slot2" type="VBoxContainer" parent="." unique_id=4594418]
 layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 0
 
 [node name="CharacterCard" parent="Slot2" unique_id=827057437 instance=ExtResource("2_ccard")]
 layout_mode = 2
 
 [node name="ActionMenu" parent="Slot2" unique_id=2002371175 instance=ExtResource("3_amenu")]
+visible = false
 layout_mode = 2
 
 [node name="Slot3" type="VBoxContainer" parent="." unique_id=1072011546]
 layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 0
 
 [node name="CharacterCard" parent="Slot3" unique_id=436756557 instance=ExtResource("2_ccard")]
 layout_mode = 2
 
 [node name="ActionMenu" parent="Slot3" unique_id=1142891025 instance=ExtResource("3_amenu")]
+visible = false
 layout_mode = 2

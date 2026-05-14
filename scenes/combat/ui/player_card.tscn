@@ -7,16 +7,20 @@
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="5_slamy"]
 [ext_resource type="Texture2D" uid="uid://cvs2qv7bwd2bn" path="res://assets/progress_bar.png" id="6_hraua"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7lfqm"]
+
 [node name="PlayerCard" type="Control" unique_id=821400982]
-custom_minimum_size = Vector2(64, 0)
+custom_minimum_size = Vector2(48.4, 38)
 layout_mode = 3
 anchors_preset = 0
+offset_right = 48.4
+offset_bottom = 38.0
 script = ExtResource("1_cpw2j")
 
 [node name="VBox" type="VBoxContainer" parent="." unique_id=1084517473]
 layout_mode = 0
-offset_right = 64.0
-offset_bottom = 53.0
+offset_right = 48.0
+offset_bottom = 39.0
 theme_override_constants/separation = 1
 
 [node name="TokenContainer" type="HBoxContainer" parent="VBox" unique_id=1117720940]
@@ -27,6 +31,7 @@ layout_mode = 2
 theme_override_constants/separation = 1
 
 [node name="HPBar" type="TextureProgressBar" parent="VBox/TopBar" unique_id=1096780930]
+material = SubResource("ShaderMaterial_7lfqm")
 layout_mode = 2
 size_flags_horizontal = 3
 nine_patch_stretch = true
@@ -56,7 +61,7 @@ size_flags_horizontal = 3
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("5_slamy")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "HP"
 
 [node name="HPValue" type="Label" parent="VBox/TopBar/HPBar/HP" unique_id=2026525826]
@@ -64,10 +69,11 @@ layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("5_slamy")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "389"
 
 [node name="MPBar" type="TextureProgressBar" parent="VBox/TopBar" unique_id=1935972173]
+material = SubResource("ShaderMaterial_7lfqm")
 layout_mode = 2
 size_flags_horizontal = 3
 nine_patch_stretch = true
@@ -98,7 +104,7 @@ size_flags_horizontal = 3
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("5_slamy")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "MP"
 
 [node name="MPValue" type="Label" parent="VBox/TopBar/MPBar/MP" unique_id=897939457]
@@ -106,11 +112,11 @@ layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("5_slamy")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "128"
 
 [node name="Portrait" type="Control" parent="VBox" unique_id=703564308]
-custom_minimum_size = Vector2(64, 24)
+custom_minimum_size = Vector2(48, 18)
 layout_mode = 2
 
 [node name="Frame" type="NinePatchRect" parent="VBox/Portrait" unique_id=538194720]
@@ -135,6 +141,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="APBar" type="TextureProgressBar" parent="VBox" unique_id=1575124934]
+material = SubResource("ShaderMaterial_7lfqm")
 layout_mode = 2
 max_value = 10.0
 value = 10.0
@@ -165,7 +172,7 @@ size_flags_horizontal = 3
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("5_slamy")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "AP"
 
 [node name="APValue" type="Label" parent="VBox/APBar/AP" unique_id=2051084446]
@@ -174,6 +181,6 @@ size_flags_horizontal = 3
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("5_slamy")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "8"
 horizontal_alignment = 2
