@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://lb1n4t4wme0b" path="res://scenes/UI/skill_button.tscn" id="2_ey7c2"]
 [ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_jd4an"]
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="4_db24s"]
+[ext_resource type="PackedScene" uid="uid://cijmmjr015bqe" path="res://scenes/UI/item_button.tscn" id="6_t1vib"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_db24s"]
 
@@ -62,18 +63,25 @@ text = "ACT"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SkillList" type="VBoxContainer" parent="." unique_id=956773412]
+[node name="ContentArea" type="Control" parent="." unique_id=1413429831]
+clip_contents = true
+custom_minimum_size = Vector2(64, 35)
 layout_mode = 2
+
+[node name="SkillMenu" type="VBoxContainer" parent="ContentArea" unique_id=956773412]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 35.0
 theme_override_constants/separation = 1
 
-[node name="SkillButton" parent="SkillList" unique_id=1591875827 instance=ExtResource("2_ey7c2")]
+[node name="SkillButton" parent="ContentArea/SkillMenu" unique_id=1591875827 instance=ExtResource("2_ey7c2")]
 layout_mode = 2
 
-[node name="SkillButton2" parent="SkillList" unique_id=57917873 instance=ExtResource("2_ey7c2")]
-layout_mode = 2
+[node name="ItemMenu" type="VBoxContainer" parent="ContentArea" unique_id=417249814]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 35.0
+theme_override_constants/separation = 1
 
-[node name="SkillButton3" parent="SkillList" unique_id=1565217785 instance=ExtResource("2_ey7c2")]
-layout_mode = 2
-
-[node name="SkillButton4" parent="SkillList" unique_id=1299156669 instance=ExtResource("2_ey7c2")]
+[node name="ItemButton" parent="ContentArea/ItemMenu" unique_id=1517359397 instance=ExtResource("6_t1vib")]
 layout_mode = 2

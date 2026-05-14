@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://cijmmjr015bqe"]
+
+[ext_resource type="PackedScene" uid="uid://fs1i273norxu" path="res://scenes/UI/button_background.tscn" id="1_0oakf"]
+[ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_lfpsf"]
+[ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="3_hy7hd"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_10blr"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1wi7t"]
+shader = ExtResource("2_lfpsf")
+shader_parameter/color_dark = Color(0.1, 0.1, 0.15, 0.6)
+shader_parameter/color_light = Color(0.19966345, 0.49995556, 0.39151636, 1)
+shader_parameter/step_count = 6
+shader_parameter/is_selected = false
+
+[node name="ItemButton" type="Button" unique_id=1591875827]
+custom_minimum_size = Vector2(58, 8)
+offset_right = 8.0
+offset_bottom = 8.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_10blr")
+button_mask = 0
+
+[node name="ButtonBackground" parent="." unique_id=72015564 instance=ExtResource("1_0oakf")]
+show_behind_parent = true
+material = SubResource("ShaderMaterial_1wi7t")
+layout_mode = 1
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1316961586]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 1
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 1
+
+[node name="Layout" type="HBoxContainer" parent="MarginContainer" unique_id=1815033429]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 1
+
+[node name="Amount" type="Label" parent="MarginContainer/Layout" unique_id=526772155]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_hy7hd")
+theme_override_font_sizes/font_size = 4
+text = "x99"
+vertical_alignment = 1
+
+[node name="ItemName" type="Label" parent="MarginContainer/Layout" unique_id=602322307]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_hy7hd")
+theme_override_font_sizes/font_size = 4
+text = "Tergo Lupi"
+vertical_alignment = 1
+
+[node name="Cost_1" type="Label" parent="MarginContainer/Layout" unique_id=761043955]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_hy7hd")
+theme_override_font_sizes/font_size = 4
+text = "2AP"
+vertical_alignment = 1
