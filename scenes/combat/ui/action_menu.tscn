@@ -6,6 +6,8 @@
 [ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_jd4an"]
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="4_db24s"]
 [ext_resource type="PackedScene" uid="uid://cijmmjr015bqe" path="res://scenes/UI/item_button.tscn" id="6_t1vib"]
+[ext_resource type="PackedScene" uid="uid://ontrgrrbog26" path="res://wait_button.tscn" id="7_7m71r"]
+[ext_resource type="PackedScene" uid="uid://c5kvhoq4xspsx" path="res://escape_button.tscn" id="8_4vh2y"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_db24s"]
 
@@ -84,4 +86,22 @@ offset_bottom = 35.0
 theme_override_constants/separation = 1
 
 [node name="ItemButton" parent="ContentArea/ItemMenu" unique_id=1517359397 instance=ExtResource("6_t1vib")]
+layout_mode = 2
+
+[node name="WaitMenu" type="VBoxContainer" parent="ContentArea" unique_id=361972216]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 35.0
+theme_override_constants/separation = 1
+
+[node name="WaitButton" parent="ContentArea/WaitMenu" unique_id=1490923150 instance=ExtResource("7_7m71r")]
+layout_mode = 2
+
+[node name="EscapeMenu" type="VBoxContainer" parent="ContentArea" unique_id=1377867955]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 35.0
+theme_override_constants/separation = 1
+
+[node name="EscapeButton" parent="ContentArea/EscapeMenu" unique_id=835077617 instance=ExtResource("8_4vh2y")]
 layout_mode = 2

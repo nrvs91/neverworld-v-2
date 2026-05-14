@@ -1,5 +1,6 @@
 extends ColorRect
 
+
 func _ready():
 	var parent = get_parent()
 	

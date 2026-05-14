@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://lb1n4t4wme0b"]
 
-[ext_resource type="PackedScene" uid="uid://fs1i273norxu" path="res://scenes/UI/button_backgrund.tscn" id="1_vjx6i"]
+[ext_resource type="PackedScene" uid="uid://fs1i273norxu" path="res://scenes/UI/button_background.tscn" id="1_vjx6i"]
 [ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_g82dk"]
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="2_lsc2n"]
 
