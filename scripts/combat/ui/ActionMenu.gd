@@ -5,15 +5,39 @@ signal action_chosen(category: String, item_index: int)
 
 const CATEGORIES: Array[String] = ["ACT", "ITEM", "WAIT", "RUN"]
 
-@onready var skill_list: VBoxContainer = $SkillList
-@onready var _category_buttons: Array = []
+const SKILL_BUTTON := preload("res://scenes/UI/skill_button.tscn")
+const ITEM_BUTTON := preload("res://scenes/UI/item_button.tscn")
 
+@onready var _menu_name: Label = $Frame/MenuName
+@onready var _skill_menu: VBoxContainer = $ContentArea/SkillMenu
+@onready var _item_menu: VBoxContainer = $ContentArea/ItemMenu
+@onready var _wait_menu: VBoxContainer = $ContentArea/WaitMenu
+@onready var _run_menu: VBoxContainer = $ContentArea/RunMenu
+
+var _menus: Array[VBoxContainer]
 var _category_index: int = 0
 var _item_index: int = 0
 
 func _ready() -> void:
-	for btn in $Categories.get_children():
-		_category_buttons.append(btn)
+	_menus = [_skill_menu, _item_menu, _wait_menu, _run_menu]
+	_refresh_display()
+
+func populate(skills: Array, items: Array) -> void:
+	for child in _skill_menu.get_children():
+		child.queue_free()
+	for skill in skills:
+		var btn: Button = SKILL_BUTTON.instantiate()
+		# TODO: btn.setup(skill) once SkillResource format is defined
+		_skill_menu.add_child(btn)
+
+	for child in _item_menu.get_children():
+		child.queue_free()
+	for item in items:
+		var btn: Button = ITEM_BUTTON.instantiate()
+		# TODO: btn.setup(item) once ItemResource format is defined
+		_item_menu.add_child(btn)
+
+	_refresh_display()
 
 func reset() -> void:
 	_category_index = 0
@@ -31,40 +55,34 @@ func prev_category() -> void:
 	_refresh_display()
 
 func next_item() -> void:
-	var items := _active_skill_buttons()
+	var items := _active_items()
 	if items.is_empty():
 		return
 	_item_index = (_item_index + 1) % items.size()
 	_refresh_display()
 
 func prev_item() -> void:
-	var items := _active_skill_buttons()
+	var items := _active_items()
 	if items.is_empty():
 		return
 	_item_index = (_item_index - 1 + items.size()) % items.size()
 	_refresh_display()
 
 func confirm() -> void:
-	var category := CATEGORIES[_category_index]
-	if category == "ITEM" or category == "RUN":
-		Log.info("ActionMenu — stub, no action", category)
-		return
-	action_chosen.emit(category, _item_index)
-	Log.info("ActionMenu chosen", category, _item_index)
+	action_chosen.emit(CATEGORIES[_category_index], _item_index)
+	Log.info("ActionMenu chosen", CATEGORIES[_category_index], _item_index)
 
-func _active_skill_buttons() -> Array:
-	if CATEGORIES[_category_index] != "ACT":
+func _active_items() -> Array:
+	var category := CATEGORIES[_category_index]
+	if category != "ACT" and category != "ITEM":
 		return []
-	return skill_list.get_children().filter(func(b: Button) -> bool: return not b.disabled)
+	return _menus[_category_index].get_children()
 
 func _refresh_display() -> void:
-	var category := CATEGORIES[_category_index]
-	for i in _category_buttons.size():
-		_category_buttons[i].button_pressed = (i == _category_index)
-	var is_act := (category == "ACT")
-	skill_list.visible = is_act
-	if is_act:
-		var items := _active_skill_buttons()
-		for i in items.size():
-			items[i].button_pressed = (i == _item_index)
-	Log.debug("ActionMenu", category, _item_index)
+	_menu_name.text = CATEGORIES[_category_index]
+	for i in _menus.size():
+		_menus[i].visible = (i == _category_index)
+	var items := _active_items()
+	for i in items.size():
+		(items[i] as Button).button_pressed = (i == _item_index)
+	Log.debug("ActionMenu", CATEGORIES[_category_index], _item_index)
