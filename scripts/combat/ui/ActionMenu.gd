@@ -33,8 +33,8 @@ func populate(skills: Array, items: Array, vitals: VitalsComponent) -> void:
 		child.queue_free()
 	for mnemonic in skills:
 		var btn := SKILL_BUTTON.instantiate() as SkillButton
-		btn.setup(mnemonic, vitals)
 		_skill_menu.add_child(btn)
+		btn.setup(mnemonic, vitals)
 
 	for child in _item_menu.get_children():
 		_item_menu.remove_child(child)

@@ -1,7 +1,27 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://dbpt7xvhbhrpv"]
+[gd_resource type="Resource" script_class="EnemyData" format=3]
 
-[ext_resource type="Script" uid="uid://db0mir7kfmgdv" path="res://scripts/characters/EnemyData.gd" id="1_a075a"]
-[ext_resource type="Texture2D" uid="uid://mbeq4mtsdwrt" path="res://assets/characters/sprites/enemy/wolf.png" id="1_mngm6"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_3ydwg"]
+[ext_resource type="Script" path="res://scripts/characters/EnemyData.gd" id="1_a075a"]
+[ext_resource type="Texture2D" path="res://assets/characters/sprites/enemy/wolf.png" id="1_mngm6"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="2_eh51j"]
+[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="3_qjb6p"]
+[ext_resource type="Script" path="res://scripts/combat/skills/TargetingData.gd" id="4_pyasp"]
+
+[sub_resource type="Resource" id="Resource_jvskl"]
+script = ExtResource("2_eh51j")
+power = 15
+damage_type = 2
+inherit_from_weapon = false
+crit_chance = 3
+
+[sub_resource type="Resource" id="Resource_pxmql"]
+script = ExtResource("4_pyasp")
+
+[sub_resource type="Resource" id="Resource_xnm7l"]
+script = ExtResource("3_qjb6p")
+mnemonic_name = "Strike"
+targeting = SubResource("Resource_pxmql")
+effect_steps = Array[ExtResource("1_3ydwg")]([SubResource("Resource_jvskl")])
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_anrad"]
 atlas = ExtResource("1_mngm6")
@@ -61,6 +81,7 @@ animations = [{
 [resource]
 script = ExtResource("1_a075a")
 xp_value = 45
+basic_attack = SubResource("Resource_xnm7l")
 MaxHP = 90
 MaxMP = 0
 MaxAP = 8

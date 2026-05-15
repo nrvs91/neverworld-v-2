@@ -1,10 +1,14 @@
-[gd_resource type="Resource" script_class="PlayerData" format=3 uid="uid://bb6wg42xgytkn"]
+[gd_resource type="Resource" script_class="PlayerData" format=3]
 
-[ext_resource type="Script" uid="uid://bahmut0v80cl8" path="res://scripts/characters/stats/GrowthEntry.gd" id="1_2vacv"]
-[ext_resource type="Texture2D" uid="uid://cm7ipwxu5ifk8" path="res://assets/characters/portraits/Skugge.png" id="1_h48qx"]
-[ext_resource type="Script" uid="uid://32dk04tuy26a" path="res://scripts/characters/PlayerData.gd" id="1_n73al"]
-[ext_resource type="Script" uid="uid://ctf4nx0yni78o" path="res://scripts/characters/GrowthTable.gd" id="2_h48qx"]
-[ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_weqmv"]
+[ext_resource type="Script" path="res://scripts/characters/stats/GrowthEntry.gd" id="1_2vacv"]
+[ext_resource type="Texture2D" path="res://assets/characters/portraits/Skugge.png" id="1_h48qx"]
+[ext_resource type="Script" path="res://scripts/characters/PlayerData.gd" id="1_n73al"]
+[ext_resource type="Script" path="res://scripts/characters/GrowthTable.gd" id="2_h48qx"]
+[ext_resource type="SpriteFrames" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_weqmv"]
+[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="5_omsjp"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="6_4ppee"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="7_w04d5"]
+[ext_resource type="Script" path="res://scripts/combat/skills/TargetingData.gd" id="8_styd4"]
 
 [sub_resource type="Resource" id="Resource_weqmv"]
 script = ExtResource("1_2vacv")
@@ -67,11 +71,25 @@ script = ExtResource("2_h48qx")
 levels = Array[ExtResource("1_2vacv")]([SubResource("Resource_weqmv"), SubResource("Resource_opvup"), SubResource("Resource_rex71"), SubResource("Resource_gyu77"), SubResource("Resource_omsjp")])
 metadata/_custom_type_script = "uid://ctf4nx0yni78o"
 
+[sub_resource type="Resource" id="Resource_affwj"]
+script = ExtResource("7_w04d5")
+power = 30
+
+[sub_resource type="Resource" id="Resource_pxmql"]
+script = ExtResource("8_styd4")
+
+[sub_resource type="Resource" id="Resource_eq13c"]
+script = ExtResource("5_omsjp")
+mnemonic_name = "Uskrav"
+targeting = SubResource("Resource_pxmql")
+effect_steps = Array[ExtResource("6_4ppee")]([SubResource("Resource_affwj")])
+
 [resource]
 script = ExtResource("1_n73al")
 character_portrait = ExtResource("1_h48qx")
 growth_table = SubResource("Resource_4ppee")
 allowed_gear = Array[int]([2, 8, 128, 4096, 8192, 16384, 32768, 65536, 131072])
+mnemonics = Array[ExtResource("5_omsjp")]([SubResource("Resource_eq13c")])
 MaxHP = 26
 MaxMP = 12
 MaxAP = 10
