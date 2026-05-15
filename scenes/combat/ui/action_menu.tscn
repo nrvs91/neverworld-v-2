@@ -64,13 +64,13 @@ layout_mode = 2
 
 [node name="SkillMenu" type="VBoxContainer" parent="ContentArea" unique_id=956773412]
 layout_mode = 0
-offset_right = 64.0
+offset_right = 48.0
 offset_bottom = 35.0
 theme_override_constants/separation = 1
 
 [node name="ItemMenu" type="VBoxContainer" parent="ContentArea" unique_id=417249814]
 layout_mode = 0
-offset_right = 64.0
+offset_right = 48.0
 offset_bottom = 35.0
 theme_override_constants/separation = 1
 

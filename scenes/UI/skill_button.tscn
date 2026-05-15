@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://lb1n4t4wme0b"]
 
-[ext_resource type="Script" uid="uid://dxl4w8lqyjt0c" path="res://scripts/combat/ui/SkillButton.gd" id="1_1nycu"]
+[ext_resource type="Script" uid="uid://d12pymbud2x6x" path="res://scripts/combat/ui/SkillButton.gd" id="1_1nycu"]
 [ext_resource type="PackedScene" uid="uid://fs1i273norxu" path="res://scenes/UI/button_background.tscn" id="1_vjx6i"]
 [ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_g82dk"]
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="2_lsc2n"]
@@ -43,12 +43,11 @@ theme_override_constants/margin_bottom = 1
 
 [node name="Layout" type="HBoxContainer" parent="MarginContainer" unique_id=1815033429]
 layout_mode = 2
-size_flags_vertical = 8
 theme_override_constants/separation = 1
 
 [node name="SkillName" type="Label" parent="MarginContainer/Layout" unique_id=602322307]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 1
 size_flags_vertical = 1
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2

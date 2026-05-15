@@ -97,5 +97,9 @@ func _refresh_display() -> void:
 		_menus[i].visible = (i == _category_index)
 	var items := _active_items()
 	for i in items.size():
-		(items[i] as Button).button_pressed = (i == _item_index)
+		var btn := items[i] as Button
+		if btn is SkillButton:
+			btn.set_selected(i == _item_index)
+		if i == _item_index:
+			btn.grab_focus()
 	Log.debug("ActionMenu", CATEGORIES[_category_index], _item_index)

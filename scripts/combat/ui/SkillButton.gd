@@ -6,6 +6,7 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 @onready var _name_label: Label = $MarginContainer/Layout/SkillName
 @onready var _cost_ap: Label = $MarginContainer/Layout/Cost_1
 @onready var _cost_resource: Label = $MarginContainer/Layout/Cost_2
+@onready var _background = $ButtonBackground
 
 var mnemonic: MnemonicRes = null
 
@@ -32,3 +33,7 @@ func setup(m: MnemonicRes, vitals: VitalsComponent) -> void:
 		and (hp_cost == 0 or vitals.cur_hp > hp_cost) \
 		and (m.mp_cost == 0 or vitals.cur_mp >= m.mp_cost)
 	modulate.a = 1.0 if can_afford else 0.4
+
+func set_selected(selected: bool) -> void:
+	if _background and _background.material:
+		_background.material.set_shader_parameter("is_selected", selected)
