@@ -34,6 +34,7 @@ func start(actors: Array) -> void:
 	CombatEvents.turn_started.connect(_on_turn_started)
 	CombatEvents.please_select_action.connect(_on_please_select_action)
 	CombatEvents.action_executed.connect(_on_action_executed)
+	CombatEvents.combat_text_shown.connect(_on_combat_text_shown)
 	CombatEvents.actor_downed.connect(_on_actor_downed)
 	CombatEvents.combat_ended.connect(_on_combat_ended)
 	_transition(State.WATCHING)
@@ -123,6 +124,11 @@ func _on_action_executed(actor: CombatCharacter, target: CombatCharacter, damage
 	get_parent().add_child(dn)
 	dn.animation_finished.connect(_on_damage_number_done.bind(target))
 	dn.show_at(target.global_position + Vector3(0.0, 0.5, 0.0), damage)
+
+func _on_combat_text_shown(target: CombatCharacter, text: String) -> void:
+	var dn := DamageNumberScene.instantiate() as DamageNumber
+	get_parent().add_child(dn)
+	dn.show_text_at(target.global_position + Vector3(0.0, 0.5, 0.0), text)
 
 func _on_damage_number_done(target: CombatCharacter) -> void:
 	if target.is_player_controlled:

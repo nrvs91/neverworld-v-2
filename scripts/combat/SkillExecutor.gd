@@ -49,7 +49,7 @@ static func _resolve_damage(effect: SkillEffectDamage, attacker: CombatCharacter
 		var hit_stat: int = attacker.stats.stat(CharacterStats.Stat.Hit)
 		var dodge_stat: int = target.stats.stat(CharacterStats.Stat.Dodge)
 		if not CombatCalculator.hit_roll(hit_stat, dodge_stat, effect.chance_tier):
-			Log.info("SkillExecutor — missed", attacker.character_name)
+			Log.info("SkillExecutor — missed", "%s->%s" % [attacker.character_name, target.character_name])
 			return {hit = false, damage = 0, is_crit = false}
 
 	# Resolve the effective damage type:
@@ -72,9 +72,7 @@ static func _resolve_damage(effect: SkillEffectDamage, attacker: CombatCharacter
 		raw *= 2
 
 	# Resistance lookup uses effective_type, not effect.damage_type
-	var resist_state := ResistanceType.State.NONE
-	if target.resistance_profile != null:
-		resist_state = target.resistance_profile.get_state(effective_type)
+	var resist_state := target.resistance_profile.get_state(effective_type)
 	var final_damage: int = max(0, int(raw * CombatCalculator.resist_multiplier(resist_state)))
 
 	var summary := "%s->%s %d (crit:%s resist:%s)" % [attacker.character_name, target.character_name,

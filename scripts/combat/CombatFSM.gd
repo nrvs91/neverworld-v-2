@@ -102,7 +102,9 @@ func _enter_action_execution() -> void:
 		# Apply damage BEFORE emitting — listeners read post-damage vitals
 		if result.hit:
 			_pending_target.vitals.take_damage(result.damage)
-		CombatEvents.action_executed.emit(_active_actor, _pending_target, result.damage)
+			CombatEvents.action_executed.emit(_active_actor, _pending_target, result.damage)
+		else:
+			CombatEvents.combat_text_shown.emit(_pending_target, "MISS")
 
 	Log.info("ActionExecution", "%s->%s total:%d" % [_active_actor.character_name, _pending_target.character_name, context.total_damage])
 

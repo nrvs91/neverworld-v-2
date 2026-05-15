@@ -32,7 +32,7 @@ func initialize_enemy(data: EnemyData) -> void:
 	stats.setup(computed)
 	visuals.setup(data.character_sprite)
 	character_name = data.character_name
-	resistance_profile = data.resistance_profile
+	resistance_profile = data.resistance_profile if data.resistance_profile != null else ResistanceProfile.new()
 	if data.basic_attack:
 		mnemonics = [data.basic_attack]
 	Log.info("character ready", data.character_name)
