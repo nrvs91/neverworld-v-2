@@ -1,6 +1,8 @@
 class_name CombatUIFSM
 extends Node
 
+const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+
 enum State { IDLE, WATCHING, PLAYER_MENU, PLAYER_TARGETING, COMBAT_OVER }
 
 const DamageNumberScene = preload("res://scenes/combat/ui/damage_number.tscn")
@@ -13,6 +15,7 @@ var _state: State = State.IDLE
 var _actors: Array = []
 var _active_actor: CombatCharacter = null
 var _started: bool = false
+var _pending_mnemonic: MnemonicRes = null
 
 func start(actors: Array) -> void:
 	if _started:
@@ -54,6 +57,9 @@ func _enter_watching() -> void:
 func _enter_player_menu() -> void:
 	cursor.stop()
 	player_bar.set_active(_active_actor)
+	var menu := player_bar.get_active_menu()
+	if menu != null:
+		menu.populate(_active_actor.mnemonics, [], _active_actor.vitals)
 	# info_panel: "A/D: switch menu   W/S: navigate   Enter: confirm"
 
 func _enter_player_targeting() -> void:
@@ -84,6 +90,8 @@ func _on_action_chosen(category: String, _item_index: int) -> void:
 		_transition(State.WATCHING)
 		return
 	if category == "ACT":
+		var menu := player_bar.get_active_menu()
+		_pending_mnemonic = menu.get_selected_mnemonic() if menu != null else null
 		_transition(State.PLAYER_TARGETING)
 
 func _on_target_confirmed(target: CombatCharacter) -> void:
