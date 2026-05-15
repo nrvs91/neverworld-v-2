@@ -8,7 +8,7 @@ var cur_mp: int = 0
 var cur_ap: int = 0
 var cur_ct: float = 0.0
 
-var _max_hp: int = 0
+var max_hp: int = 0
 var _max_mp: int = 0
 
 ## FUTURE: signature grows to setup(max_hp, max_mp, cur_hp, cur_mp) once the persistence
@@ -16,10 +16,10 @@ var _max_mp: int = 0
 ##   (dungeon attrition pillar). Also needs CombatEnd to write cur_hp / cur_mp back to
 ##   CharacterSaveData — without that writeback, persistence is one-directional.
 
-func setup(max_hp: int, max_mp: int) -> void:
-	_max_hp = max_hp
+func setup(max_hp_val: int, max_mp: int) -> void:
+	max_hp = max_hp_val
 	_max_mp = max_mp
-	cur_hp = max_hp
+	cur_hp = max_hp_val
 	cur_mp = max_mp
 	cur_ap = 3
 	cur_ct = 0.0
@@ -39,3 +39,13 @@ func take_damage(amount: int) -> void:
 	cur_hp = max(0, cur_hp - amount)
 	if cur_hp == 0:
 		Log.info("HP reached zero")
+
+func spend_ap(amount: int) -> void:
+	cur_ap -= amount
+
+func spend_mp(amount: int) -> void:
+	cur_mp -= amount
+
+func spend_hp_percent(percent: float) -> void:
+	var cost: int = max(1, int(max_hp * percent))
+	cur_hp = max(0, cur_hp - cost)
