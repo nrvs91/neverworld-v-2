@@ -9,8 +9,14 @@ const CURSOR_HEIGHT: float = 0.6
 const PYRAMID_RADIUS: float = 0.15
 const PYRAMID_HEIGHT: float = 0.25
 
+const SPIN_SPEED: float = 1.2
+
 var _candidates: Array = []
 var _index: int = 0
+
+func _process(delta: float) -> void:
+	if visible:
+		rotation.y += SPIN_SPEED * delta
 
 func _ready() -> void:
 	var mat := StandardMaterial3D.new()
