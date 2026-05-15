@@ -95,9 +95,9 @@ func _on_action_chosen(category: String, _item_index: int) -> void:
 		_transition(State.PLAYER_TARGETING)
 
 func _on_target_confirmed(target: CombatCharacter) -> void:
+	_transition(State.WATCHING)
 	CombatEvents.action_selected.emit(_pending_mnemonic, target)
 	_pending_mnemonic = null
-	_transition(State.WATCHING)
 
 func _on_target_cancelled() -> void:
 	_transition(State.PLAYER_MENU)
