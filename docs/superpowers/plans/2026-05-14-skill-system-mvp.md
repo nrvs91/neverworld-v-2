@@ -40,7 +40,7 @@
 **Files:**
 - Create: `scripts/combat/skills/TargetingData.gd`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```gdscript
 class_name TargetingData
@@ -64,16 +64,11 @@ enum Filter {
 @export var filter: Filter = Filter.NONE
 ```
 
-- [ ] **Step 2: Verify in Godot**
+- [x] **Step 2: Verify in Godot**
 
 Right-click `scripts/combat/skills/` in the FileSystem dock → New Resource → `TargetingData`. Confirm `shape` and `filter` dropdowns appear with the correct enum values.
 
-- [ ] **Step 3: Commit**
-
-```bash
-git add scripts/combat/skills/TargetingData.gd
-git commit -m "feat: add TargetingData resource (shape + filter)"
-```
+- [x] **Step 3: Commit** (grouped into Phase 1 commit)
 
 ---
 
@@ -82,7 +77,7 @@ git commit -m "feat: add TargetingData resource (shape + filter)"
 **Files:**
 - Create: `scripts/combat/skills/effects/Skill_Effect_Base.gd`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```gdscript
 class_name Skill_Effect_Base
@@ -119,11 +114,11 @@ enum ChanceTier {
 `needs_previous_hit = true` means this step is skipped if the preceding step missed.
 `chance_tier` — see the contract above. Each effect subclass documents how it uses it.
 
-- [ ] **Step 2: Verify in Godot**
+- [x] **Step 2: Verify in Godot**
 
 Create a new `Skill_Effect_Base` resource. Confirm `chance_tier`, `needs_previous_hit`, and `true_strike` all appear in the Inspector.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/skills/effects/Skill_Effect_Base.gd
@@ -137,7 +132,7 @@ git commit -m "feat: add Skill_Effect_Base with ChanceTier, true_strike, needs_p
 **Files:**
 - Create: `scripts/combat/skills/effects/Skill_Effect_Damage.gd`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```gdscript
 class_name Skill_Effect_Damage
@@ -166,11 +161,11 @@ Crit is authored per-skill: a high-risk single-hit move might have 20%, a safe m
 - **Physical types (Slash/Pierce/Blunt):** `chance_tier` scales the attacker's HIT in the formula `clamp((HIT × tier%) / DODGE, 5%, 95%)`. Default `HIGH` (75%) means a balanced hit rate. Author `CERTAIN` for highly reliable strikes, `LOW` for gamble-type hits. Still not a guaranteed hit — only `true_strike` bypasses the roll entirely.
 - **Magical types (all others):** `chance_tier` is **ignored**. Magical damage always hits. Do not author it for magical Skill_Effect_Damage — the value has no effect and would mislead readers.
 
-- [ ] **Step 2: Verify in Godot**
+- [x] **Step 2: Verify in Godot**
 
 Create a new `Skill_Effect_Damage` resource. Confirm `power`, `damage_type`, and inherited `chance_tier`, `needs_previous_hit`, `true_strike` all appear.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/skills/effects/Skill_Effect_Damage.gd
@@ -184,7 +179,7 @@ git commit -m "feat: add Skill_Effect_Damage resource (implicit stat routing fro
 **Files:**
 - Create: `scripts/combat/skills/MnemonicResource.gd`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```gdscript
 class_name MnemonicResource
@@ -205,11 +200,11 @@ extends Resource
 `is_melee` is emitted with the skill for animation/VFX/camera use — no logic consumer in MVP.
 `merge_display = true` means all hits show as one number visually (e.g. Fire Slash). `false` means each hit is its own number (e.g. Multihit).
 
-- [ ] **Step 2: Verify in Godot**
+- [x] **Step 2: Verify in Godot**
 
 Create a new `MnemonicResource`. Confirm all fields appear and that `effect_steps` accepts `Skill_Effect_Damage` entries.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/skills/MnemonicResource.gd
@@ -223,7 +218,7 @@ git commit -m "feat: add MnemonicResource (costs, targeting, effects, display fl
 **Files:**
 - Create: `scripts/combat/ActionContext.gd`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```gdscript
 class_name ActionContext
@@ -243,11 +238,11 @@ var ailments_applied: Array = []
 `step_results` holds one Dictionary per effect step: `{hit: bool, damage: int, is_crit: bool}`.
 This is the rolling scratchpad SkillExecutor writes to as each effect resolves. Reactions, conditional chains, and post-execution events all read from it.
 
-- [ ] **Step 2: Verify in Godot**
+- [x] **Step 2: Verify in Godot**
 
 Check Godot Output panel for parse errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/ActionContext.gd
@@ -262,19 +257,19 @@ git commit -m "feat: add ActionContext execution scratchpad"
 
 Crit lives on `Skill_Effect_Damage.crit_chance` (per-effect, authored by the designer). It is **not** a character stat. `CharacterStats`, `CombatData`, `GrowthEntry`, and `StatCalculator` must NOT have any Crit field. This task exists so that an implementor explicitly confirms this rather than accidentally adding it during the adjacent stat work.
 
-- [ ] **Step 1: Confirm CharacterStats.gd has no Crit entry**
+- [x] **Step 1: Confirm CharacterStats.gd has no Crit entry**
 
 Open `scripts/characters/stats/CharacterStats.gd`. The `Stat` enum should end at `Pulse`. No `Crit` entry. If one is present, remove it.
 
-- [ ] **Step 2: Confirm CombatData.gd has no Crit export**
+- [x] **Step 2: Confirm CombatData.gd has no Crit export**
 
 Open `scripts/characters/CombatData.gd`. No `@export var Crit`. If present, remove it.
 
-- [ ] **Step 3: Confirm StatCalculator.gd routes no Crit**
+- [x] **Step 3: Confirm StatCalculator.gd routes no Crit**
 
 Open `scripts/combat/StatCalculator.gd`. Neither `compute_player` nor `compute_enemy` should reference `CharacterStats.Stat.Crit`. If present, remove the line.
 
-- [ ] **Step 4: Commit the verification (or any removals)**
+- [x] **Step 4: Commit the verification (or any removals)**
 
 ```bash
 git commit -m "chore: confirm Crit is per-effect — no stat plumbing in CharacterStats/StatCalculator"
@@ -289,7 +284,7 @@ If no changes were needed, `git commit` will say "nothing to commit" — that's 
 **Files:**
 - Modify: `scripts/characters/PlayerData.gd`
 
-- [ ] **Step 1: Add the mnemonics export**
+- [x] **Step 1: Add the mnemonics export**
 
 ```gdscript
 class_name PlayerData
@@ -302,11 +297,11 @@ extends CombatData
 @export var mnemonics: Array[MnemonicResource] = []
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Open any existing PlayerData `.tres` in the Inspector. Confirm the new `Mnemonics` array field appears.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/characters/PlayerData.gd
@@ -320,7 +315,7 @@ git commit -m "feat: add mnemonics array to PlayerData"
 **Files:**
 - Modify: `scripts/characters/EnemyData.gd`
 
-- [ ] **Step 1: Add the basic_attack export**
+- [x] **Step 1: Add the basic_attack export**
 
 ```gdscript
 class_name EnemyData
@@ -336,11 +331,11 @@ extends CombatData
 
 Enemies pick `mnemonics[0]` on their turn (set in CombatCharacter.initialize_enemy — see Task 9). `basic_attack` is authored in the Inspector just like a player skill.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Open any existing EnemyData `.tres` in the Inspector. Confirm `Basic Attack` resource slot appears.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/characters/EnemyData.gd
@@ -354,7 +349,7 @@ git commit -m "feat: add basic_attack mnemonic slot to EnemyData"
 **Files:**
 - Modify: `scripts/combat/CombatCharacter.gd`
 
-- [ ] **Step 1: Add vars and update initialize functions**
+- [x] **Step 1: Add vars and update initialize functions**
 
 ```gdscript
 class_name CombatCharacter
@@ -395,11 +390,11 @@ func initialize_enemy(data: EnemyData) -> void:
 	Log.info("character ready", data.character_name)
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run the combat scene. Confirm no errors in the Output panel.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/CombatCharacter.gd
@@ -413,7 +408,7 @@ git commit -m "feat: CombatCharacter wires mnemonics and resistance_profile from
 **Files:**
 - Modify: `scripts/combat/VitalsComponent.gd`
 
-- [ ] **Step 1: Make max_hp public and add spend methods**
+- [x] **Step 1: Make max_hp public and add spend methods**
 
 In `VitalsComponent.gd`:
 
@@ -440,11 +435,11 @@ func spend_hp_percent(percent: float) -> void:
 `spend_ap` and `spend_mp` are called only after the guard in CombatFSM confirms the actor has enough — they do no bounds checking themselves.
 `spend_hp_percent`: fraction of max HP (0.1 = 10%). Minimum 1 HP drained. HP can reach zero; caller checks for downed state.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Godot parse check.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/VitalsComponent.gd
@@ -460,7 +455,7 @@ git commit -m "feat: VitalsComponent spend_ap, spend_mp, spend_hp_percent"
 
 `base_attack()` is removed. All execution now goes through SkillExecutor.
 
-- [ ] **Step 1: Rewrite the file**
+- [x] **Step 1: Rewrite the file**
 
 ```gdscript
 class_name CombatCalculator
@@ -502,11 +497,11 @@ static func _tier_multiplier(tier: Skill_Effect_Base.ChanceTier) -> float:
 	return 1.0
 ```
 
-- [ ] **Step 2: Verify parse**
+- [x] **Step 2: Verify parse**
 
 Open Godot. Check Output for errors. No scene test yet — SkillExecutor (next task) calls these.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/CombatCalculator.gd
@@ -520,7 +515,7 @@ git commit -m "feat: CombatCalculator real formulas (crit_roll, hit_roll with Ch
 **Files:**
 - Create: `scripts/combat/SkillExecutor.gd`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```gdscript
 class_name SkillExecutor
@@ -615,11 +610,11 @@ static func _get_weapon_damage_type(attacker: CombatCharacter) -> ResistanceType
 	return ResistanceType.DamageType.Slash
 ```
 
-- [ ] **Step 2: Verify parse**
+- [x] **Step 2: Verify parse**
 
 Open Godot. Check for errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/combat/SkillExecutor.gd
@@ -633,7 +628,7 @@ git commit -m "feat: SkillExecutor — ActionContext pipeline, crit, true_strike
 **Files:**
 - Modify: `scripts/combat/CombatEvents.gd`
 
-- [ ] **Step 1: Change the signal signature**
+- [x] **Step 1: Change the signal signature**
 
 Change:
 ```gdscript
@@ -647,11 +642,11 @@ signal action_selected(mnemonic: MnemonicResource, target: CombatCharacter)
 When awaiting in GDScript, multi-param signals return an Array: `[mnemonic, target]`.
 WAIT emits `(null, null)`.
 
-- [ ] **Step 2: Note**
+- [x] **Step 2: Note**
 
 This breaks CombatFSM and CombatUIFSM until Tasks 14 and 15 fix them. Don't run the scene after this step.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit** (grouped into Phase 4 commit)
 
 ```bash
 git add scripts/combat/CombatEvents.gd
@@ -667,13 +662,13 @@ git commit -m "feat: action_selected signal carries mnemonic + target"
 
 Changes: add `_pending_mnemonic`; fix await to unpack two-param signal; enemy auto-picks `mnemonics[0]`; unified `_enter_action_execution()` using SkillExecutor.
 
-- [ ] **Step 1: Add _pending_mnemonic to var declarations**
+- [x] **Step 1: Add _pending_mnemonic to var declarations**
 
 ```gdscript
 var _pending_mnemonic: MnemonicResource = null
 ```
 
-- [ ] **Step 2: Fix _enter_action_select() for both player and enemy**
+- [x] **Step 2: Fix _enter_action_select() for both player and enemy**
 
 Replace the entire function:
 
@@ -703,7 +698,7 @@ func _enter_action_select() -> void:
 	_transition(State.ACTION_EXECUTION)
 ```
 
-- [ ] **Step 3: Replace _enter_action_execution() with unified path**
+- [x] **Step 3: Replace _enter_action_execution() with unified path**
 
 Replace the entire function (and remove `_execute_player_skill` / `_execute_enemy_auto` if they existed from a previous draft):
 
@@ -746,11 +741,11 @@ func _enter_action_execution() -> void:
 	_transition(State.REACTION_SCAN)
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run the combat scene. The scene should start without errors. Enemy turns should proceed (assuming their basic_attack is authored — that's Task 18). Player turns will hang at action selection until CombatUIFSM is fixed in Task 17.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/combat/CombatFSM.gd
@@ -767,7 +762,7 @@ git commit -m "feat: CombatFSM unified execution — both player and enemy use S
 
 The existing `skill_button.tscn` has `MarginContainer/Layout/SkillName`, `Cost_1`, `Cost_2` labels.
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 ```gdscript
 class_name SkillButton
@@ -806,15 +801,15 @@ func setup(m: MnemonicResource, vitals: VitalsComponent) -> void:
 
 `modulate.a = 0.4` dims the button visually without disabling keyboard navigation — ActionMenu still cycles through all skills. The FSM's AP/MP guard prevents actually executing an unaffordable skill.
 
-- [ ] **Step 2: Attach the script in Godot**
+- [x] **Step 2: Attach the script in Godot**
 
 Open `scenes/UI/skill_button.tscn`. Select the root `SkillButton` node → Inspector → Script → attach `scripts/combat/ui/SkillButton.gd`.
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Godot parse check. No errors in Output.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/combat/ui/SkillButton.gd scenes/UI/skill_button.tscn
@@ -830,7 +825,7 @@ git commit -m "feat: SkillButton setup(mnemonic) script"
 
 Two changes: fix the `queue_free` bug (old children must be immediately removed from the scene tree before new ones are added, otherwise `get_children()` still sees them), and add `get_selected_mnemonic()` so CombatUIFSM can retrieve the chosen mnemonic at confirm time.
 
-- [ ] **Step 1: Add _skill_mnemonics var at class level**
+- [x] **Step 1: Add _skill_mnemonics var at class level**
 
 Add to the class vars block (before `_ready()`):
 
@@ -838,7 +833,7 @@ Add to the class vars block (before `_ready()`):
 var _skill_mnemonics: Array[MnemonicResource] = []
 ```
 
-- [ ] **Step 2: Replace populate()**
+- [x] **Step 2: Replace populate()**
 
 Current populate():
 ```gdscript
@@ -878,7 +873,7 @@ func populate(skills: Array[MnemonicResource], items: Array, vitals: VitalsCompo
 
 `remove_child()` detaches the node immediately — `get_children()` no longer sees it. Without this, `queue_free()`-only leaves old children in the tree for the rest of the frame, causing `_item_index` to reference the wrong buttons.
 
-- [ ] **Step 3: Add get_selected_mnemonic()**
+- [x] **Step 3: Add get_selected_mnemonic()**
 
 ```gdscript
 func get_selected_mnemonic() -> MnemonicResource:
@@ -887,11 +882,11 @@ func get_selected_mnemonic() -> MnemonicResource:
 	return _skill_mnemonics[_item_index]
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Godot parse check.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/combat/ui/ActionMenu.gd
@@ -905,14 +900,14 @@ git commit -m "feat: ActionMenu.populate() wired with remove_child fix, get_sele
 **Files:**
 - Modify: `scripts/combat/ui/CombatUIFSM.gd`
 
-- [ ] **Step 1: Add _pending_mnemonic var**
+- [x] **Step 1: Add _pending_mnemonic var**
 
 Add to var declarations:
 ```gdscript
 var _pending_mnemonic: MnemonicResource = null
 ```
 
-- [ ] **Step 2: Update _enter_player_menu()**
+- [x] **Step 2: Update _enter_player_menu()**
 
 Current:
 ```gdscript
@@ -933,7 +928,7 @@ func _enter_player_menu() -> void:
 	# info_panel: "A/D: switch menu   W/S: navigate   Enter: confirm"
 ```
 
-- [ ] **Step 3: Update _on_action_chosen()**
+- [x] **Step 3: Update _on_action_chosen()**
 
 Current:
 ```gdscript
@@ -959,7 +954,7 @@ func _on_action_chosen(category: String, _item_index: int) -> void:
 		_transition(State.PLAYER_TARGETING)
 ```
 
-- [ ] **Step 4: Update _on_target_confirmed()**
+- [x] **Step 4: Update _on_target_confirmed()**
 
 Current:
 ```gdscript
@@ -976,11 +971,11 @@ func _on_target_confirmed(target: CombatCharacter) -> void:
 	_transition(State.WATCHING)
 ```
 
-- [ ] **Step 5: Verify Godot parses cleanly**
+- [x] **Step 5: Verify Godot parses cleanly**
 
 Open Godot. Check Output for errors. At this point, all callers of `action_selected` are consistent. The full pipeline compiles.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/combat/ui/CombatUIFSM.gd
@@ -998,7 +993,7 @@ This task is done in the Godot editor Inspector. No code to write.
 
 ### Part A — Player mnemonic (Uskrav's basic slash)
 
-- [ ] **Step 1: Create TargetingData**
+- [x] **Step 1: Create TargetingData**
 
 New Resource → `TargetingData`.
 - `shape`: SINGLE_ENEMY
@@ -1006,7 +1001,7 @@ New Resource → `TargetingData`.
 
 Save as `resources/mnemonics/targeting_single_enemy.tres`.
 
-- [ ] **Step 2: Create Skill_Effect_Damage**
+- [x] **Step 2: Create Skill_Effect_Damage**
 
 New Resource → `Skill_Effect_Damage`.
 - `power`: 30
@@ -1019,7 +1014,7 @@ New Resource → `Skill_Effect_Damage`.
 
 Save as `resources/mnemonics/effect_slash_30.tres`.
 
-- [ ] **Step 3: Create MnemonicResource**
+- [x] **Step 3: Create MnemonicResource**
 
 New Resource → `MnemonicResource`.
 - `mnemonic_name`: "Tergo Lupi"
@@ -1034,13 +1029,13 @@ New Resource → `MnemonicResource`.
 
 Save as `resources/mnemonics/uskrav_tergo_lupi.tres`.
 
-- [ ] **Step 4: Add mnemonic to Uskrav's PlayerData**
+- [x] **Step 4: Add mnemonic to Uskrav's PlayerData**
 
 Open Uskrav's PlayerData `.tres` under `resources/characters/`. In the `Mnemonics` array, add `uskrav_tergo_lupi.tres`.
 
 ### Part B — Enemy basic attack
 
-- [ ] **Step 5: Create a basic enemy Skill_Effect_Damage**
+- [x] **Step 5: Create a basic enemy Skill_Effect_Damage**
 
 New Resource → `Skill_Effect_Damage`.
 - `power`: 15
@@ -1053,7 +1048,7 @@ New Resource → `Skill_Effect_Damage`.
 
 Save as `resources/mnemonics/effect_blunt_15.tres`.
 
-- [ ] **Step 6: Create enemy MnemonicResource**
+- [x] **Step 6: Create enemy MnemonicResource**
 
 New Resource → `MnemonicResource`.
 - `mnemonic_name`: "Strike"
@@ -1068,13 +1063,13 @@ New Resource → `MnemonicResource`.
 
 Save as `resources/mnemonics/enemy_basic_strike.tres`.
 
-- [ ] **Step 7: Assign to an enemy EnemyData**
+- [x] **Step 7: Assign to an enemy EnemyData**
 
 Open any EnemyData `.tres` used in the debug combat scene. Set `basic_attack` to `enemy_basic_strike.tres`.
 
 ### Part C — End-to-end verification
 
-- [ ] **Step 8: Run the combat scene and verify**
+- [x] **Step 8: Run the combat scene and verify**
 
 Run the scene (F5). Walk through:
 
@@ -1089,7 +1084,7 @@ Run the scene (F5). Walk through:
 
 3. **Both paths used SkillExecutor** — confirm no `base_attack` calls appear in the log.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add resources/mnemonics/
@@ -1127,3 +1122,59 @@ git commit -m "feat: author test mnemonics for Uskrav and enemy — pipeline ver
 - Player ResistanceProfile compiled from gear — blank profile until gear system exists
 - Item use in combat — item_menu stubs remain
 - RUN / escape logic
+
+---
+
+## Implementation Deviations
+
+> Captured during the 2026-05-15 build session. Deviations are ordered by when they were encountered, not by severity.
+
+### 1. Commits grouped by phase, not per task
+The plan expected ~18 individual commits (one per task). In practice we grouped into 5 phase commits + 3 fix commits + 1 cleanup commit to keep history readable. The work is identical; only commit granularity differs.
+
+### 2. Godot headless `class_name` resolution required `preload()` workarounds
+Godot 4.6's headless parser resolves `class_name` alphabetically at parse time. Several files (`CombatCalculator`, `SkillButton`, `ActionMenu`, `CombatUIFSM`, `CombatFSM`, `CombatEvents`, `MnemonicResource`, `ActionContext`, `SkillExecutor`, `PlayerData`, `EnemyData`, `CombatCharacter`) reference types that parse later alphabetically, causing "Could not find type" errors in `--check-only` and `--script` runs.
+
+**Fix:** Added `const SomeType = preload("res://path/to/script.gd")` in affected files, using the preloaded const for type hints and references. The `class_name` declarations were kept for editor use. Runtime behavior is unchanged.
+
+**Later resolved:** `SkillButton` was able to drop the string-path `extends` and use `extends CombatButton` normally once the `.uid` file was in place.
+
+### 3. `CombatButton` base class introduced (not in plan)
+After implementing Task 15, we discovered that Godot's default Button focus/hover/pressed styles draw a rounded grey background on top of the custom `ButtonBackground` shader. The plan only overrode `normal` style; this left `focus`, `hover`, `pressed`, and `disabled` styles intact.
+
+**Fix:** Created `scripts/combat/ui/CombatButton.gd` — a thin base script that overrides all five Button styles with `StyleBoxEmpty` in `_ready()`. `SkillButton`, `WaitButton`, `RunButton`, and `ItemButton` all extend it. The `button_background.gd` script still handles gradient reversal via `focus_entered`/`mouse_entered` signals.
+
+### 4. `@onready` resolution order — `add_child` must precede `setup()`
+In `ActionMenu.populate()`, the plan showed `btn.setup(mnemonic, vitals)` before `_skill_menu.add_child(btn)`. This fails at runtime because `@onready` vars in `SkillButton` only resolve when the node enters the tree (i.e. after `add_child()`).
+
+**Fix:** Swapped the order in `ActionMenu.populate()`:
+```gdscript
+_skill_menu.add_child(btn)   # _ready() fires, @onready labels resolve
+btn.setup(mnemonic, vitals)   # now safe
+```
+
+### 5. Signal emission race condition in `_on_target_confirmed`
+The plan showed `emit` then `transition(WATCHING)`. Because GDScript signal emission is synchronous, CombatFSM's `await action_selected` unblocked immediately and ran through the entire turn pipeline (execution → reaction → turn end → next turn start → please_select_action) **before** `_on_target_confirmed` reached its `_transition(State.WATCHING)` line. The WATCHING transition then overwrote the next turn's PLAYER_MENU state, halting combat.
+
+**Fix:** `_on_target_confirmed` now transitions to WATCHING **before** emitting the signal:
+```gdscript
+func _on_target_confirmed(target: CombatCharacter) -> void:
+    _transition(State.WATCHING)
+    CombatEvents.action_selected.emit(_pending_mnemonic, target)
+    _pending_mnemonic = null
+```
+
+### 6. `PlayerCardBar.set_active()` called `reset()` redundantly
+`set_active()` called `menu.reset()` which fires `_refresh_display()`, then `_enter_player_menu()` called `populate()` which also fires `_refresh_display()`. This caused `ActionMenu ACT 0` to appear twice in the log on every turn start.
+
+**Fix:** Removed `menu.reset()` from `set_active()`. `populate()` handles the full reset including `_item_index = 0`.
+
+### 7. Test mnemonic assigned to both Skugge and Vargi
+The plan refers to "Uskrav's basic slash" and "Uskrav's PlayerData", but the debug combat scene's party is Skugge (slot 0) and Vargi (slot 1). There is no "Uskrav" character in the project — Uskrav is the **mnemonic name** (from the GDD skill chain).
+
+**What we did:** Assigned `uskrav_tergo_lupi.tres` to **Skugge** (the starting character). During playtesting we also assigned it to **Vargi** so both player characters had a skill to test with.
+
+### 8. `SkillMenu` / `ItemMenu` width inconsistency in ActionMenu.tscn
+The scene had `SkillMenu` and `ItemMenu` at 64px wide while `ContentArea` was only 48px with `clip_contents = true`. This didn't cause the reported bug (that was the `size_flags_horizontal = 3` on `SkillName`), but it was inconsistent with `WaitMenu`/`RunMenu` which were 48px.
+
+**Fix:** Aligned `SkillMenu` and `ItemMenu` `offset_right` to 48.0 to match the rest.
