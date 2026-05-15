@@ -19,6 +19,7 @@ func setup(actor: CombatCharacter) -> void:
 	hp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxHP)
 	mp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxMP)
 	ap_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxAP)
+	actor.vitals.vitals_changed.connect(refresh_vitals)
 	# portrait_rect.texture = actor.portrait_texture
 	# Uncomment once portrait_texture is added to CombatCharacter
 	refresh_vitals()

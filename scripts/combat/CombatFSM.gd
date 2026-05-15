@@ -112,6 +112,8 @@ func _enter_action_execution() -> void:
 		Log.info("actor downed", _pending_target.character_name)
 		CombatEvents.actor_downed.emit(_pending_target)
 
+	CombatEvents.action_resolved.emit(_active_actor)
+
 	if _check_combat_end():
 		return
 	_transition(State.REACTION_SCAN)

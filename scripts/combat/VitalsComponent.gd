@@ -1,6 +1,8 @@
 class_name VitalsComponent
 extends Node
 
+signal vitals_changed
+
 const AP_CAP: int = 10
 
 var cur_hp: int = 0
@@ -34,18 +36,23 @@ func is_downed() -> bool:
 
 func gain_ap(amount: int) -> void:
 	cur_ap = min(cur_ap + amount, AP_CAP)
+	vitals_changed.emit()
 
 func take_damage(amount: int) -> void:
 	cur_hp = max(0, cur_hp - amount)
 	if cur_hp == 0:
 		Log.info("HP reached zero")
+	vitals_changed.emit()
 
 func spend_ap(amount: int) -> void:
 	cur_ap -= amount
+	vitals_changed.emit()
 
 func spend_mp(amount: int) -> void:
 	cur_mp -= amount
+	vitals_changed.emit()
 
 func spend_hp_percent(percent: float) -> void:
 	var cost: int = max(1, int(max_hp * percent))
 	cur_hp = max(0, cur_hp - cost)
+	vitals_changed.emit()

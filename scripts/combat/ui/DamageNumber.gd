@@ -1,8 +1,6 @@
 class_name DamageNumber
 extends Node3D
 
-signal animation_finished
-
 const TWEEN_DURATION: float = 0.8
 const FLOAT_DISTANCE: float = 0.6
 
@@ -24,5 +22,4 @@ func _show(world_pos: Vector3, text: String) -> void:
 	tween.tween_callback(_on_tween_done)
 
 func _on_tween_done() -> void:
-	animation_finished.emit()
 	queue_free()
