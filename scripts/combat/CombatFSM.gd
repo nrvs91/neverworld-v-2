@@ -14,6 +14,8 @@ enum State {
 	COMBAT_END
 }
 
+const ENEMY_ACTION_DELAY: float = 1.0
+
 var _state: State = State.NONE
 var _actors: Array = []
 var _active_actor: CombatCharacter = null
@@ -57,6 +59,7 @@ func _enter_action_select() -> void:
 	CombatEvents.please_select_action.emit(_active_actor)
 
 	if not _active_actor.is_player_controlled:
+		await get_tree().create_timer(ENEMY_ACTION_DELAY).timeout
 		_pending_target = _first_living_opponent(_active_actor)
 		if _pending_target == null:
 			Log.info("ActionSelect — enemy has no valid target, skipping")
