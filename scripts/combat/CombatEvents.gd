@@ -1,5 +1,7 @@
 extends Node
 
+const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+
 # Fired by EncounterManager when a random encounter should start.
 # Carries the three pieces of data needed to initialize CombatScene:
 #   - composition: which enemies appear, in which slots
@@ -13,7 +15,7 @@ signal scripted_encounter_triggered(composition: CombatConfig, environment: Pack
 signal combat_started
 signal turn_started(actor: CombatCharacter)
 signal please_select_action(actor: CombatCharacter)
-signal action_selected(target: CombatCharacter)
+signal action_selected(mnemonic: MnemonicRes, target: CombatCharacter)
 signal action_executed(actor: CombatCharacter, target: CombatCharacter, damage: int)
 signal actor_downed(actor: CombatCharacter)
 signal turn_ended(actor: CombatCharacter)

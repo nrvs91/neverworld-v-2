@@ -1,6 +1,8 @@
 class_name CombatFSM
 extends Node
 
+const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+
 enum State {
 	NONE,
 	COMBAT_START,
@@ -16,6 +18,7 @@ var _state: State = State.NONE
 var _actors: Array = []
 var _active_actor: CombatCharacter = null
 var _pending_target: CombatCharacter = null
+var _pending_mnemonic: MnemonicRes = null
 
 func start(actors: Array) -> void:
 	_actors = actors
@@ -54,43 +57,59 @@ func _enter_action_select() -> void:
 	CombatEvents.please_select_action.emit(_active_actor)
 
 	if not _active_actor.is_player_controlled:
-		# Enemy turn — auto-pick target (placeholder until enemy AI is built)
 		_pending_target = _first_living_opponent(_active_actor)
 		if _pending_target == null:
-			Log.info("ActionSelect — enemy has no valid target, skipping to TurnEnd")
+			Log.info("ActionSelect — enemy has no valid target, skipping")
 			_transition(State.TURN_END)
 			return
-		Log.info("ActionSelect — enemy auto-target:", _pending_target.character_name)
+		_pending_mnemonic = _active_actor.mnemonics[0] if not _active_actor.mnemonics.is_empty() else null
+		Log.info("ActionSelect — enemy auto:", _pending_target.character_name)
 		_transition(State.ACTION_EXECUTION)
 		return
 
-	# Player turn — suspend here until CombatUIFSM emits action_selected
-	var target: CombatCharacter = await CombatEvents.action_selected
-	_pending_target = target
+	var result: Array = await CombatEvents.action_selected
+	_pending_mnemonic = result[0] as MnemonicRes
+	_pending_target = result[1] as CombatCharacter
 	if _pending_target == null:
-		Log.info("ActionSelect — no target (WAIT), skipping to TurnEnd")
+		Log.info("ActionSelect — WAIT selected")
 		_transition(State.TURN_END)
 		return
 	Log.info("ActionSelect — target:", _pending_target.character_name)
 	_transition(State.ACTION_EXECUTION)
 
 func _enter_action_execution() -> void:
-	var damage: int = CombatCalculator.base_attack(_active_actor, _pending_target)
-	_pending_target.vitals.take_damage(damage)
-	Log.info("ActionExecution", _active_actor.character_name)
-	Log.info("hits", _pending_target.character_name)
-	Log.info("for", damage)
-	# Fires and moves on — does not wait for CombatUIFSM to finish playing visuals.
-	# When skills get real animations, replace this with a please_play_action(actor, skill, target)
-	# signal and await a presentation_finished signal back. CombatUIFSM would enter an ANIMATING
-	# state, play the sequence, then emit presentation_finished to unblock the logic FSM.
-	# That's Option A — keeps logic and presentation decoupled via a signal handshake.
-	CombatEvents.action_executed.emit(_active_actor, _pending_target, damage)
+	if _pending_mnemonic == null:
+		Log.warn("ActionExecution — no mnemonic, skipping to REACTION_SCAN")
+		_transition(State.REACTION_SCAN)
+		return
+
+	# Guard: check both costs before spending either — avoids partial deductions
+	if _active_actor.vitals.cur_ap < _pending_mnemonic.ap_cost \
+			or _active_actor.vitals.cur_mp < _pending_mnemonic.mp_cost:
+		Log.warn("ActionExecution — insufficient AP/MP, skipping skill")
+		_transition(State.REACTION_SCAN)
+		return
+
+	_active_actor.vitals.spend_ap(_pending_mnemonic.ap_cost)
+	_active_actor.vitals.spend_mp(_pending_mnemonic.mp_cost)
+
+	var context: ActionContext = SkillExecutor.execute(_pending_mnemonic, _active_actor, _pending_target)
+
+	if _pending_mnemonic.hp_cost_percent > 0.0:
+		_active_actor.vitals.spend_hp_percent(_pending_mnemonic.hp_cost_percent)
+
+	for result: Dictionary in context.step_results:
+		# Apply damage BEFORE emitting — listeners read post-damage vitals
+		if result.hit:
+			_pending_target.vitals.take_damage(result.damage)
+		CombatEvents.action_executed.emit(_active_actor, _pending_target, result.damage)
+
+	Log.info("ActionExecution", "%s->%s total:%d" % [_active_actor.character_name, _pending_target.character_name, context.total_damage])
 
 	if _pending_target.vitals.is_downed():
 		Log.info("actor downed", _pending_target.character_name)
 		CombatEvents.actor_downed.emit(_pending_target)
-	
+
 	if _check_combat_end():
 		return
 	_transition(State.REACTION_SCAN)
