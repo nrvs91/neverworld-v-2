@@ -20,13 +20,13 @@ var _menus: Array[VBoxContainer]
 var _category_index: int = 0
 var _item_index: int = 0
 
-var _skill_mnemonics: Array = []
+var _skill_mnemonics: Array[MnemonicRes] = []
 
 func _ready() -> void:
 	_menus = [_skill_menu, _item_menu, _wait_menu, _run_menu]
 	_refresh_display()
 
-func populate(skills: Array, items: Array, vitals: VitalsComponent) -> void:
+func populate(skills: Array[MnemonicRes], items: Array, vitals: VitalsComponent) -> void:
 	_skill_mnemonics = skills
 	for child in _skill_menu.get_children():
 		_skill_menu.remove_child(child)

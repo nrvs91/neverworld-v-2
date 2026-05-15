@@ -1,5 +1,5 @@
 class_name SkillButton
-extends "res://scripts/combat/ui/CombatButton.gd"
+extends CombatButton
 
 const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 

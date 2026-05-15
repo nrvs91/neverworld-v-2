@@ -31,7 +31,6 @@ func set_active(actor: CombatCharacter) -> void:
 	_active_actor = actor
 	if _menus.has(actor):
 		_menus[actor].visible = true
-		_menus[actor].reset()
 
 func reset_active() -> void:
 	if _active_actor and _menus.has(_active_actor):
