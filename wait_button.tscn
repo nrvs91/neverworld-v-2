@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://ontrgrrbog26"]
 
-[ext_resource type="PackedScene" uid="uid://fs1i273norxu" path="res://scenes/UI/button_background.tscn" id="1_2qoma"]
+[ext_resource type="Script" uid="uid://c4wlfgqvubkqo" path="res://scripts/combat/ui/CombatButton.gd" id="1_2qoma"]
+[ext_resource type="PackedScene" uid="uid://fs1i273norxu" path="res://scenes/UI/button_background.tscn" id="1_vjx6i"]
 [ext_resource type="Shader" uid="uid://cmfgylwklrrnx" path="res://scenes/UI/button_gradient.gdshader" id="2_g8bi0"]
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="3_j4dyn"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_10blr"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1wi7t"]
 shader = ExtResource("2_g8bi0")
@@ -17,10 +16,10 @@ shader_parameter/is_selected = false
 custom_minimum_size = Vector2(48, 8)
 offset_right = 8.0
 offset_bottom = 8.0
-theme_override_styles/normal = SubResource("StyleBoxEmpty_10blr")
 button_mask = 0
+script = ExtResource("1_2qoma")
 
-[node name="ButtonBackground" parent="." unique_id=72015564 instance=ExtResource("1_2qoma")]
+[node name="ButtonBackground" parent="." unique_id=72015564 instance=ExtResource("1_vjx6i")]
 show_behind_parent = true
 material = SubResource("ShaderMaterial_1wi7t")
 layout_mode = 1

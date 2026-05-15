@@ -1,5 +1,5 @@
 class_name SkillButton
-extends Button
+extends "res://scripts/combat/ui/CombatButton.gd"
 
 const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 
@@ -9,14 +9,6 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 @onready var _background = $ButtonBackground
 
 var mnemonic: MnemonicRes = null
-
-func _ready() -> void:
-	var empty := StyleBoxEmpty.new()
-	add_theme_stylebox_override("normal", empty)
-	add_theme_stylebox_override("hover", empty)
-	add_theme_stylebox_override("pressed", empty)
-	add_theme_stylebox_override("disabled", empty)
-	add_theme_stylebox_override("focus", empty)
 
 ## Skills always cost exactly two resources: AP + either HP or MP.
 ## vitals is needed to calculate the real HP cost and to check affordability.
