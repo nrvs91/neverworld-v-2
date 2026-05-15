@@ -15,6 +15,7 @@ var _index: int = 0
 func _ready() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.albedo_color = Color(0.95, 0.82, 0.35)  # AP bar gold
 	var mesh_instance := $Marker as MeshInstance3D
 	mesh_instance.mesh = _build_pyramid(PYRAMID_RADIUS, PYRAMID_HEIGHT)
