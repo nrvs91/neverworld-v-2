@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="6_4ppee"]
 [ext_resource type="Script" uid="uid://v1u2ophifr6m" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="7_w04d5"]
 [ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="8_styd4"]
+[ext_resource type="Resource" uid="uid://bevbhr88aabfj" path="res://resources/mnemonics/viper_strike.tres" id="9_4ppee"]
 
 [sub_resource type="Resource" id="Resource_weqmv"]
 script = ExtResource("1_2vacv")
@@ -89,7 +90,7 @@ script = ExtResource("1_n73al")
 character_portrait = ExtResource("1_h48qx")
 growth_table = SubResource("Resource_4ppee")
 allowed_gear = Array[int]([2, 8, 128, 4096, 8192, 16384, 32768, 65536, 131072])
-mnemonics = Array[ExtResource("5_omsjp")]([SubResource("Resource_eq13c")])
+mnemonics = Array[ExtResource("5_omsjp")]([SubResource("Resource_eq13c"), ExtResource("9_4ppee")])
 MaxHP = 26
 MaxMP = 12
 MaxAP = 10

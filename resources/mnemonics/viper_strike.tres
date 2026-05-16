@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://bevbhr88aabfj"]
+
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_n4wrn"]
+[ext_resource type="Script" uid="uid://v1u2ophifr6m" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="2_qe16x"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="2_wtefk"]
+[ext_resource type="Script" uid="uid://cma280k2omsb6" path="res://scripts/combat/skills/effects/Skill_Effect_DoT.gd" id="3_8uslu"]
+[ext_resource type="Resource" path="res://resources/mnemonics/targeting_single_enemy.tres" id="4_8uslu"]
+
+[sub_resource type="Resource" id="Resource_n7v6j"]
+script = ExtResource("2_qe16x")
+power = 25
+inherit_from_weapon = false
+metadata/_custom_type_script = "uid://v1u2ophifr6m"
+
+[sub_resource type="Resource" id="Resource_pcdy5"]
+script = ExtResource("3_8uslu")
+needs_previous_hit = true
+metadata/_custom_type_script = "uid://cma280k2omsb6"
+
+[resource]
+script = ExtResource("2_wtefk")
+mnemonic_name = "Viper Strike"
+targeting = ExtResource("4_8uslu")
+effect_steps = Array[ExtResource("1_n4wrn")]([SubResource("Resource_n7v6j"), SubResource("Resource_pcdy5")])
+metadata/_custom_type_script = "uid://b237vbpqp01dw"
