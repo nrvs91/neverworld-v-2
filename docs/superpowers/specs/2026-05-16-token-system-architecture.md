@@ -184,9 +184,10 @@ Signals (already declared in stub, now used):
 
 ## SkillExecutor — Rewrite as Factory
 
+ActionContext is created by CombatFSM before SkillExecutor is called — this allows pre-execution reactions to write to it first (redirect target, set negated flag). SkillExecutor receives the context rather than creating it.
+
 ```
-execute(mnemonic, attacker, target) → ActionContext:
-  create fresh ActionContext
+execute(mnemonic, context) → ActionContext:
   for each effect in mnemonic.effect_steps:
     if effect.needs_previous_hit and not context.any_hit:
       context.record_step(false, 0, false)
@@ -262,15 +263,24 @@ These trigger types are known and designed — they are not implemented in this 
 
 Both require adding a new `tick_*()` method to `ActiveTokens` and a new dispatch call in CombatFSM. The token data model and `RuntimeToken` base class do not change.
 
-**PRE_EXECUTION (ON_TARGETED)** — fires *before* SkillExecutor runs, before ActionContext is created. This is a distinct class of reaction from the above — it intercepts the *targeting* phase, not the *resolution* phase.
+**PRE_EXECUTION** — same token model and `tick_*()` pattern as all other triggers. Just dispatched earlier: before SkillExecutor runs, not after. Not architecturally special — just queue position 1.
 
 Used by:
-- **PREMONITION** — target sees the attack coming and counters first. The incoming attack may be negated entirely or still resolve afterward (design decision deferred to reaction spec).
-- **COVER** — a tank steps in front of the intended target. SkillExecutor runs, but against the tank instead of the original target.
+- **PREMONITION** — target counters before the hit lands. Sets `context.attack_negated = true` to cancel SkillExecutor entirely, or fires its counter and lets the original attack still resolve — design decision deferred to reaction spec.
+- **COVER** — a tank intercepts. Sets `context.primary_target = tank` so SkillExecutor runs against the tank instead. `context.intended_target` (future field) records who was originally aimed at for display ("Bjorn covers Skugge!").
 
-Dispatch point: CombatFSM ACTION_EXECUTION, *before* calling SkillExecutor. CombatFSM checks for PRE_EXECUTION tokens on the pending target, fires them, and resolves any redirect before execution begins.
+Dispatch point in full ACTION_EXECUTION sequence:
+```
+1. CombatFSM creates ActionContext (mnemonic, attacker, pending_target)
+2. target.active_tokens.tick_pre_execution(context)
+3. for each ally of target: ally.active_tokens.tick_pre_execution(context)   ← COVER lives here
+4. if context.attack_negated → skip to REACTION_SCAN
+5. SkillExecutor.execute(context)
+6. target.active_tokens.tick_damage_taken(context)
+7. for each ally of target: ally.active_tokens.tick_ally_hit(context)
+```
 
-**COVER and ActionContext:** COVER is the one pre-execution reaction that leaves a trace in the resolution record. When it fires, `primary_target` is redirected to the tank — but knowing who the *intended* target was has display and design value ("Bjorn covers Skugge!"). A future `intended_target: CombatCharacter` field on ActionContext accommodates this. Not needed now — documented so COVER is never mistakenly shoehorned into ON_DAMAGE_TAKEN.
+Note: ActionContext must be created in CombatFSM *before* calling SkillExecutor so pre-execution tokens can write to it. SkillExecutor receives the already-created context rather than creating its own.
 
 ---
 
