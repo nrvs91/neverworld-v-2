@@ -22,3 +22,5 @@ signal combat_text_shown(target: CombatCharacter, text: String)
 signal actor_downed(actor: CombatCharacter)
 signal turn_ended(actor: CombatCharacter)
 signal combat_ended(player_won: bool)
+
+signal dot_ticked(token: RuntimeToken, context: ActionContext)
