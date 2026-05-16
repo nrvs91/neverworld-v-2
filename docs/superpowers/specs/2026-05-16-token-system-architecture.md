@@ -262,6 +262,16 @@ These trigger types are known and designed — they are not implemented in this 
 
 Both require adding a new `tick_*()` method to `ActiveTokens` and a new dispatch call in CombatFSM. The token data model and `RuntimeToken` base class do not change.
 
+**PRE_EXECUTION (ON_TARGETED)** — fires *before* SkillExecutor runs, before ActionContext is created. This is a distinct class of reaction from the above — it intercepts the *targeting* phase, not the *resolution* phase.
+
+Used by:
+- **PREMONITION** — target sees the attack coming and counters first. The incoming attack may be negated entirely or still resolve afterward (design decision deferred to reaction spec).
+- **COVER** — a tank steps in front of the intended target. SkillExecutor runs, but against the tank instead of the original target.
+
+Dispatch point: CombatFSM ACTION_EXECUTION, *before* calling SkillExecutor. CombatFSM checks for PRE_EXECUTION tokens on the pending target, fires them, and resolves any redirect before execution begins.
+
+**COVER and ActionContext:** COVER is the one pre-execution reaction that leaves a trace in the resolution record. When it fires, `primary_target` is redirected to the tank — but knowing who the *intended* target was has display and design value ("Bjorn covers Skugge!"). A future `intended_target: CombatCharacter` field on ActionContext accommodates this. Not needed now — documented so COVER is never mistakenly shoehorned into ON_DAMAGE_TAKEN.
+
 ---
 
 ## Validation Target: Viper Strike
