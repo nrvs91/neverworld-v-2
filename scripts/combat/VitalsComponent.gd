@@ -11,18 +11,18 @@ var cur_ap: int = 0
 var cur_ct: float = 0.0
 
 var max_hp: int = 0
-var _max_mp: int = 0
+var max_mp: int = 0
 
 ## FUTURE: signature grows to setup(max_hp, max_mp, cur_hp, cur_mp) once the persistence
 ##   loop exists. cur_hp / cur_mp come from CharacterSaveData and survive across encounters
 ##   (dungeon attrition pillar). Also needs CombatEnd to write cur_hp / cur_mp back to
 ##   CharacterSaveData — without that writeback, persistence is one-directional.
 
-func setup(max_hp_val: int, max_mp: int) -> void:
+func setup(max_hp_val: int, max_mp_val: int) -> void:
 	max_hp = max_hp_val
-	_max_mp = max_mp
+	max_mp = max_mp_val
 	cur_hp = max_hp_val
-	cur_mp = max_mp
+	cur_mp = max_mp_val
 	cur_ap = 3
 	cur_ct = 0.0
 	Log.debug("VitalsComponent setup")
