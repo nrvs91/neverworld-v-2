@@ -125,7 +125,24 @@ DoTs always land if the skill hits — they have no application chance. This dis
 
 ## ActionContext — Resolution Window
 
-Minimal change from current implementation. Add one method:
+Full field list:
+
+```
+mnemonic          — what skill was used
+attacker          — who's acting (team derivable via .is_player_controlled)
+primary_target    — main target
+step_results[]    — one entry per INSTANT step that fires: {hit, damage, is_crit}
+tokens_applied[]  — RuntimeTokens that attached during this execution (persistent only)
+total_damage      — sum of all landed instant hits
+any_hit           — true only if an instant damaging step connected
+any_crit          — true if any instant step critted
+```
+
+**`any_hit` contract:** only ever set to `true` by `record_step()` when `hit = true`. Persistent token attachment does NOT set `any_hit`. This keeps the flag honest: it means "a damaging hit landed," not "something happened." `needs_previous_hit` on any step can safely check `context.any_hit` without risk of false positives from unconditional DoT attachments.
+
+**Team membership is not stored.** `attacker.is_player_controlled` and `primary_target.is_player_controlled` are available to any downstream system that holds the context. Pre-computing team flags into the context would be denormalization — the data is already on the character. Derive at read-time.
+
+One new method on ActionContext:
 
 ```gdscript
 func record_step(hit: bool, damage: int, is_crit: bool) -> void:
@@ -137,7 +154,7 @@ func record_step(hit: bool, damage: int, is_crit: bool) -> void:
         any_crit = true
 ```
 
-Tokens call `context.record_step()` inside `fire()`. `needs_previous_hit` checks `context.any_hit`. CombatFSM reads the final context after SkillExecutor returns.
+INSTANT tokens call `context.record_step()` inside `fire()`. Persistent tokens call nothing — SkillExecutor appends them to `context.tokens_applied` directly after attaching them to `active_tokens`.
 
 A fresh ActionContext is created at the start of each mnemonic resolution. It is not reused between turns.
 
@@ -176,10 +193,10 @@ execute(mnemonic, attacker, target) → ActionContext:
       continue
     token = _create_token(effect, attacker, target)
     if token.trigger == INSTANT:
-      token.fire(context)
+      token.fire(context)        # writes to context via record_step()
     else:
       target.active_tokens.add_token(token)
-      context.record_step(true, 0, false)  # persistent tokens don't add to total_damage
+      context.tokens_applied.append(token)  # does NOT touch any_hit
   return context
 ```
 
