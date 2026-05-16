@@ -74,8 +74,8 @@ var owner: CombatCharacter   # who this token is attached to (target)
 
 Two resolution methods — which one a subclass implements depends on its trigger:
 
-- `fire(context: ActionContext)` — called by SkillExecutor for INSTANT tokens during mnemonic resolution. Reads `context` for `needs_previous_hit` checks. Writes step results back via `context.record_step()`.
-- `tick()` — called by `ActiveTokens.tick_turn_start()` for ON_TURN_START tokens. No ActionContext — uses `self.owner` and `self.source` directly. Emits its own CombatEvents.
+- `fire(context: ActionContext)` — called by SkillExecutor for INSTANT tokens. Reads `context.any_hit` for chaining. Writes results via `context.record_step()`.
+- `tick(context: ActionContext)` — called by `ActiveTokens.tick_turn_start()` for ON_TURN_START tokens. Context is freshly created per token by ActiveTokens. Writes results via `context.record_step()`. Broadcasts the context with `dot_ticked` so reactive tokens on other characters can read it.
 
 ### RuntimeToken_Damage
 
@@ -95,7 +95,7 @@ Properties:
   - BURN: `owner.vitals.max_hp × 0.1 × resist_mult`
   - BLEED: `owner.vitals.max_hp × 0.1 × resist_mult`
 
-`tick()` resolves: look up owner's resistance state for `damage_type`, apply `CombatCalculator.resist_multiplier()`, call `owner.vitals.take_damage()`, emit `CombatEvents.dot_ticked`.
+`tick(context: ActionContext)` resolves: look up owner's resistance state for `damage_type`, apply `CombatCalculator.resist_multiplier()`. If `resist_mult == 0.0` (IMMUNE), return immediately — no damage, no broadcast, charges still decrement. Otherwise call `owner.vitals.take_damage()`, call `context.record_step(true, damage, false)`, emit `CombatEvents.dot_ticked(self, context)`.
 
 `charges` is decremented by `ActiveTokens` after `tick()` returns. When charges reach zero, `ActiveTokens` removes the token and emits `token_removed`.
 
@@ -138,11 +138,15 @@ any_hit           — true only if an instant damaging step connected
 any_crit          — true if any instant step critted
 ```
 
-**`any_hit` contract:** only ever set to `true` by `record_step()` when `hit = true`. Persistent token attachment does NOT set `any_hit`. This keeps the flag honest: it means "a damaging hit landed," not "something happened." `needs_previous_hit` on any step can safely check `context.any_hit` without risk of false positives from unconditional DoT attachments.
+**The right paradigm: ActionContext exists because a token resolved — not because a mnemonic was declared.** This distinction matters for reactive tokens like BLOOD SCENT (a boss token that grants a free attack whenever a BLEED ticks on a player). Without a context produced by the tick, BLOOD SCENT would need bespoke plumbing. With one, it just listens to `dot_ticked(token, context)` and reads the same newspaper everything else does.
 
-**Team membership is not stored.** `attacker.is_player_controlled` and `primary_target.is_player_controlled` are available to any downstream system that holds the context. Pre-computing team flags into the context would be denormalization — the data is already on the character. Derive at read-time.
+**`mnemonic`, `attacker`, `primary_target` are nullable.** For DoT tick contexts, these fields are `null` — the metadata lives on the `RuntimeToken` itself (`token.source`, `token.owner`, `token.dot_tag`). The context carries results only. Never read `context.mnemonic` from a DoT context.
 
-One new method on ActionContext:
+**`any_hit` contract:** only ever set to `true` by `record_step()` when `hit = true`. Persistent token attachment does NOT set `any_hit`.
+
+**Team membership is not stored.** Derive at read-time from `CombatCharacter.is_player_controlled`.
+
+One method on ActionContext:
 
 ```gdscript
 func record_step(hit: bool, damage: int, is_crit: bool) -> void:
@@ -154,11 +158,9 @@ func record_step(hit: bool, damage: int, is_crit: bool) -> void:
         any_crit = true
 ```
 
-INSTANT tokens call `context.record_step()` inside `fire()`. Persistent tokens call nothing — SkillExecutor appends them to `context.tokens_applied` directly after attaching them to `active_tokens`.
-
-A fresh ActionContext is created at the start of each mnemonic resolution. It is not reused between turns.
-
-DoT ticks do not use ActionContext — `tick()` is self-contained.
+**Context lifecycle:**
+- Mnemonic resolution: CombatFSM creates one context per skill use, passes it to SkillExecutor. INSTANT tokens call `fire(context)`. Persistent tokens append to `tokens_applied`.
+- DoT ticking: `ActiveTokens.tick_turn_start()` creates one fresh context **per token**. Each token calls `tick(context)`, writes its result via `record_step()`, then the context is broadcast with the signal and discarded. No cross-contamination between a POISON tick and a BURN tick on the same actor.
 
 ---
 
@@ -173,7 +175,7 @@ ActiveTokens
   flush()               → clear all tokens on combat end
 ```
 
-`tick_turn_start()` order: iterate `_tokens`, collect ON_TURN_START entries, call `token.tick()` on each, decrement `token.charges`, collect those at zero into a removal list, remove and emit `token_removed` for each. Order within ON_TURN_START follows token addition order (FIFO). PULSE ordering applies to multi-actor reaction resolution, not to a single actor's own token ticking.
+`tick_turn_start()` creates **one fresh ActionContext per token**. For each ON_TURN_START token: create context (mnemonic/attacker/primary_target = null), call `token.tick(context)`, decrement charges, collect expired tokens, remove and emit `token_removed`. Order follows token addition order (FIFO). PULSE ordering applies to multi-actor reaction resolution, not to a single actor's own token ticking.
 
 Signals (already declared in stub, now used):
 - `token_added(token: RuntimeToken)` — consumed by display
@@ -234,10 +236,10 @@ Damage application reads `result.damage` and calls `target.vitals.take_damage()`
 ## CombatEvents — New Signals
 
 ```gdscript
-signal dot_ticked(owner: CombatCharacter, damage: int, dot_tag: String)
+signal dot_ticked(token: RuntimeToken, context: ActionContext)
 ```
 
-Emitted by `RuntimeToken_DoT.tick()`. Consumed by the floating number system so DoT ticks show damage numbers.
+Emitted by `RuntimeToken_DoT.tick(context)` after `context.record_step()`. Carries everything: `token.owner`, `token.dot_tag`, `token.damage_type` are on the token; `context.total_damage`, `context.any_hit` are in the context. Consumed by the floating number system (`token.owner`, `context.total_damage`) and by any future reactive token that cares about DoT events (e.g. BLOOD SCENT checks `token.dot_tag == "BLEED"`). No bespoke signal parameters needed — the newspaper carries it all.
 
 Existing signals (`action_executed`, `actor_downed`, `vitals_changed`) are unchanged.
 
