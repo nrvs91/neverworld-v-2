@@ -359,6 +359,7 @@ var damage_type: ResistanceType.DamageType = ResistanceType.DamageType.Nature
 
 func _init() -> void:
 	trigger = Trigger.ON_TURN_START
+	token_type = "DOT"  # factory overwrites with "POISON"/"BURN"/"BLEED"; fallback for manual construction
 
 ## GDD tick formulas (fixed per dot_tag, not authored per instance):
 ##   POISON — (max_hp × 10% + max_mp × 10%) × resist_mult

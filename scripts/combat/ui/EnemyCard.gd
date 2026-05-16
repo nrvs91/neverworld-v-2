@@ -7,6 +7,7 @@ const NUDGE_DURATION: float = 0.12
 @onready var hp_bar: TextureProgressBar = $VBox/TopBar/HPBar
 @onready var mp_bar: TextureProgressBar = $VBox/TopBar/MPBar
 @onready var ap_bar: TextureProgressBar = $VBox/APBar
+@onready var _token_label: Label = $VBox/TokenContainer/TokenLabel
 
 var _actor: CombatCharacter = null
 
@@ -16,6 +17,8 @@ func setup(actor: CombatCharacter) -> void:
 	mp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxMP)
 	ap_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxAP)
 	actor.vitals.vitals_changed.connect(refresh_vitals)
+	actor.tokens.token_added.connect(_refresh_token_display)
+	actor.tokens.token_removed.connect(_refresh_token_display)
 	refresh_vitals()
 
 func refresh_vitals() -> void:
@@ -24,6 +27,9 @@ func refresh_vitals() -> void:
 	hp_bar.value = _actor.vitals.cur_hp
 	mp_bar.value = _actor.vitals.cur_mp
 	ap_bar.value = _actor.vitals.cur_ap
+
+func _refresh_token_display(_token = null) -> void:
+	_token_label.text = _actor.tokens.get_display_text()
 
 func set_inactive() -> void:
 	modulate.a = 0.5

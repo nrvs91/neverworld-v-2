@@ -1,6 +1,8 @@
 class_name RuntimeToken_Damage
 extends RuntimeToken
 
+const ActionContext = preload("res://scripts/combat/ActionContext.gd")
+
 var power: int = 10
 var damage_type: ResistanceType.DamageType = ResistanceType.DamageType.Slash
 var crit_chance: int = 5

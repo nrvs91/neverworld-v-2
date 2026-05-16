@@ -26,6 +26,11 @@ theme_override_constants/separation = 1
 [node name="TokenContainer" type="HBoxContainer" parent="VBox" unique_id=1117720940]
 layout_mode = 2
 
+[node name="TokenLabel" type="Label" parent="VBox/TokenContainer" unique_id=999999001]
+layout_mode = 2
+theme_override_font_sizes/font_size = 5
+text = ""
+
 [node name="TopBar" type="HBoxContainer" parent="VBox" unique_id=1165859655]
 layout_mode = 2
 theme_override_constants/separation = 1

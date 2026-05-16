@@ -1,92 +1,67 @@
 class_name SkillExecutor
-## Static utility. Resolves a mnemonic's effect steps against a target.
-## Creates and returns an ActionContext populated with per-step results.
+## Token factory. Creates RuntimeToken instances from a mnemonic's effect steps.
+## Receives an ActionContext created by CombatFSM — does not create its own.
 
-const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
-const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effect_Base.gd")
+const RuntimeToken = preload("res://scripts/combat/tokens/RuntimeToken.gd")
+const RuntimeToken_Damage = preload("res://scripts/combat/tokens/RuntimeToken_Damage.gd")
+const RuntimeToken_DoT = preload("res://scripts/combat/tokens/RuntimeToken_DoT.gd")
 const SkillEffectDamage = preload("res://scripts/combat/skills/effects/Skill_Effect_Damage.gd")
+const SkillEffectDoT = preload("res://scripts/combat/skills/effects/Skill_Effect_DoT.gd")
+const Skill_Effect_Base = preload("res://scripts/combat/skills/effects/Skill_Effect_Base.gd")
 
-static func execute(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharacter) -> ActionContext:
-	var ctx := ActionContext.new()
-	ctx.mnemonic = mnemonic
-	ctx.attacker = attacker
-	ctx.primary_target = target
-
-	for effect in mnemonic.effect_steps:
-		if effect.needs_previous_hit and not ctx.any_hit:
-			ctx.step_results.append({hit = false, damage = 0, is_crit = false})
+static func execute(context: ActionContext) -> void:
+	for effect in context.mnemonic.effect_steps:
+		if effect.needs_previous_hit and not context.any_hit:
+			context.record_step(false, 0, false)
 			continue
-		var result: Dictionary = _resolve_effect(effect, attacker, target)
-		ctx.step_results.append(result)
-		if result.hit:
-			ctx.any_hit = true
-			ctx.total_damage += result.damage
-		if result.is_crit:
-			ctx.any_crit = true
 
-	return ctx
+		var token: RuntimeToken = _create_token(effect, context.attacker, context.primary_target)
 
-static func _resolve_effect(effect: SkillEffectBase, attacker: CombatCharacter, target: CombatCharacter) -> Dictionary:
+		if token.trigger == RuntimeToken.Trigger.INSTANT:
+			token.fire(context)
+		else:
+			context.primary_target.tokens.add_token(token)
+			context.tokens_applied.append(token)
+
+static func _create_token(effect: Skill_Effect_Base, attacker: CombatCharacter, target: CombatCharacter) -> RuntimeToken:
 	if effect is SkillEffectDamage:
-		return _resolve_damage(effect as SkillEffectDamage, attacker, target)
-	Log.warn("SkillExecutor — unknown effect type, skipping")
-	return {hit = false, damage = 0, is_crit = false}
+		return _create_damage_token(effect as SkillEffectDamage, attacker, target)
+	if effect is SkillEffectDoT:
+		return _create_dot_token(effect as SkillEffectDoT, attacker, target)
+	Log.warn("SkillExecutor — unknown effect type", effect.get_class())
+	var fallback := RuntimeToken.new()
+	fallback.source = attacker
+	fallback.owner = target
+	return fallback
 
-static func _resolve_damage(effect: SkillEffectDamage, attacker: CombatCharacter, target: CombatCharacter) -> Dictionary:
-	var is_phys: bool = _is_physical(effect.damage_type)
+static func _create_damage_token(effect: SkillEffectDamage, attacker: CombatCharacter, target: CombatCharacter) -> RuntimeToken_Damage:
+	var token := RuntimeToken_Damage.new()
+	token.source = attacker
+	token.owner = target
+	token.power = effect.power
+	token.damage_type = effect.damage_type
+	token.crit_chance = effect.crit_chance
+	token.chance_tier = effect.chance_tier
+	token.inherit_from_weapon = effect.inherit_from_weapon
+	token.true_strike = effect.true_strike
+	return token
 
-	# ChanceTier contract enforcement:
-	# Physical (Slash/Pierce/Blunt) — chance_tier scales HIT in the hit formula below.
-	# Magical (everything else)     — always hits, chance_tier is not read here at all.
-	# true_strike                   — bypasses hit roll regardless of physical/magical.
-
-	# Crit roll first — crit = automatic hit.
-	# crit_chance is authored on the effect, not read from attacker stats.
-	var is_crit: bool = CombatCalculator.crit_roll(effect.crit_chance)
-
-	# Hit roll (physical only, skipped for magical and true_strike)
-	if is_phys and not is_crit and not effect.true_strike:
-		var hit_stat: int = attacker.stats.stat(CharacterStats.Stat.Hit)
-		var dodge_stat: int = target.stats.stat(CharacterStats.Stat.Dodge)
-		if not CombatCalculator.hit_roll(hit_stat, dodge_stat, effect.chance_tier):
-			Log.info("SkillExecutor — missed", "%s->%s" % [attacker.character_name, target.character_name])
-			return {hit = false, damage = 0, is_crit = false}
-
-	# Resolve the effective damage type:
-	# physical + inherit_from_weapon → read from equipped weapon (stub for now)
-	# physical + not inherit  → use effect.damage_type directly
-	# magical                 → always use effect.damage_type
-	var effective_type: ResistanceType.DamageType = effect.damage_type
-	if is_phys and effect.inherit_from_weapon:
-		effective_type = _get_weapon_damage_type(attacker)
-
-	# Stat routing from effective damage type
-	var atk_stat := CharacterStats.Stat.AtkPhys if is_phys else CharacterStats.Stat.AtkMag
-	var def_stat := CharacterStats.Stat.DefPhys if is_phys else CharacterStats.Stat.DefMag
-	var atk: int = attacker.stats.stat(atk_stat)
-	var def_val: int = target.stats.stat(def_stat)
-	var raw: int = CombatCalculator.calc_damage(effect.power, atk, def_val)
-
-	# Crit doubles damage
-	if is_crit:
-		raw *= 2
-
-	# Resistance lookup uses effective_type, not effect.damage_type
-	var resist_state := target.resistance_profile.get_state(effective_type)
-	var final_damage: int = max(0, int(raw * CombatCalculator.resist_multiplier(resist_state)))
-
-	var summary := "%s->%s %d (crit:%s resist:%s)" % [attacker.character_name, target.character_name,
-		final_damage, is_crit, ResistanceType.State.keys()[resist_state]]
-	Log.info("SkillExecutor", summary)
-	return {hit = true, damage = final_damage, is_crit = is_crit}
-
-static func _is_physical(dt: ResistanceType.DamageType) -> bool:
-	return dt == ResistanceType.DamageType.Slash \
-		or dt == ResistanceType.DamageType.Pierce \
-		or dt == ResistanceType.DamageType.Blunt
-
-static func _get_weapon_damage_type(_attacker: CombatCharacter) -> ResistanceType.DamageType:
-	# TODO: read from attacker's equipped weapon once gear system exists.
-	# Falls back to effect.damage_type at call site — this stub only fires when
-	# inherit_from_weapon = true and no gear system is in place yet.
-	return ResistanceType.DamageType.Slash
+static func _create_dot_token(effect: SkillEffectDoT, attacker: CombatCharacter, target: CombatCharacter) -> RuntimeToken_DoT:
+	var token := RuntimeToken_DoT.new()
+	token.source = attacker
+	token.owner = target
+	token.charges = effect.charges
+	match effect.dot_tag:
+		Skill_Effect_DoT.DotTag.POISON:
+			token.dot_tag = "POISON"
+			token.token_type = "POISON"
+			token.damage_type = ResistanceType.DamageType.Nature
+		Skill_Effect_DoT.DotTag.BURN:
+			token.dot_tag = "BURN"
+			token.token_type = "BURN"
+			token.damage_type = ResistanceType.DamageType.Fire
+		Skill_Effect_DoT.DotTag.BLEED:
+			token.dot_tag = "BLEED"
+			token.token_type = "BLEED"
+			token.damage_type = ResistanceType.DamageType.Bleed
+	return token

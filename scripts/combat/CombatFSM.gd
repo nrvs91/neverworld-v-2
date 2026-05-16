@@ -83,7 +83,6 @@ func _enter_action_execution() -> void:
 		_transition(State.REACTION_SCAN)
 		return
 
-	# Guard: check both costs before spending either — avoids partial deductions
 	if _active_actor.vitals.cur_ap < _pending_mnemonic.ap_cost \
 			or _active_actor.vitals.cur_mp < _pending_mnemonic.mp_cost:
 		Log.warn("ActionExecution — insufficient AP/MP, skipping skill")
@@ -93,24 +92,26 @@ func _enter_action_execution() -> void:
 	_active_actor.vitals.spend_ap(_pending_mnemonic.ap_cost)
 	_active_actor.vitals.spend_mp(_pending_mnemonic.mp_cost)
 
-	var context: ActionContext = SkillExecutor.execute(_pending_mnemonic, _active_actor, _pending_target)
+	# ActionContext is created here so future PRE_EXECUTION reactions can write to it
+	# before SkillExecutor runs (e.g. COVER redirects primary_target, PREMONITION negates)
+	var context := ActionContext.new()
+	context.mnemonic = _pending_mnemonic
+	context.attacker = _active_actor
+	context.primary_target = _pending_target
+
+	SkillExecutor.execute(context)
 
 	if _pending_mnemonic.hp_cost_percent > 0.0:
 		_active_actor.vitals.spend_hp_percent(_pending_mnemonic.hp_cost_percent)
 
-	for result: Dictionary in context.step_results:
-		# Apply damage BEFORE emitting — listeners read post-damage vitals
-		if result.hit:
-			_pending_target.vitals.take_damage(result.damage)
-			CombatEvents.action_executed.emit(_active_actor, _pending_target, result.damage)
-		else:
-			CombatEvents.combat_text_shown.emit(_pending_target, "MISS")
+	# Tokens handled damage application and action_executed emission.
+	# FSM reads final context state for bookkeeping only.
+	Log.info("ActionExecution", "%s->%s total:%d" % [
+		_active_actor.character_name, context.primary_target.character_name, context.total_damage])
 
-	Log.info("ActionExecution", "%s->%s total:%d" % [_active_actor.character_name, _pending_target.character_name, context.total_damage])
-
-	if _pending_target.vitals.is_downed():
-		Log.info("actor downed", _pending_target.character_name)
-		CombatEvents.actor_downed.emit(_pending_target)
+	if context.primary_target.vitals.is_downed():
+		Log.info("actor downed", context.primary_target.character_name)
+		CombatEvents.actor_downed.emit(context.primary_target)
 
 	CombatEvents.action_resolved.emit(_active_actor)
 

@@ -1,6 +1,8 @@
 class_name RuntimeToken_DoT
 extends RuntimeToken
 
+const ActionContext = preload("res://scripts/combat/ActionContext.gd")
+
 var dot_tag: String = "POISON"
 var damage_type: ResistanceType.DamageType = ResistanceType.DamageType.Nature
 

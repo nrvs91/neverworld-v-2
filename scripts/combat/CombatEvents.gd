@@ -1,6 +1,8 @@
 extends Node
 
 const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+const RuntimeToken = preload("res://scripts/combat/tokens/RuntimeToken.gd")
+const ActionContext = preload("res://scripts/combat/ActionContext.gd")
 
 # Fired by EncounterManager when a random encounter should start.
 # Carries the three pieces of data needed to initialize CombatScene:
