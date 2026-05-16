@@ -97,8 +97,10 @@ git commit -m "fix: make max_mp public on VitalsComponent — needed by DoT tick
 
 In `scripts/combat/CombatEvents.gd`, add after the existing signals:
 ```gdscript
-signal dot_ticked(owner: CombatCharacter, damage: int, dot_tag: String)
+signal dot_ticked(token: RuntimeToken, context: ActionContext)
 ```
+
+Carries the token (metadata: owner, dot_tag, damage_type) and the context (results: total_damage, any_hit). Consumers get everything without bespoke parameters. Future reactive tokens like BLOOD SCENT listen here and read what they need.
 
 - [ ] **Step 2: Verify parse**
 
@@ -108,7 +110,7 @@ Open Godot. Check Output — no errors.
 
 ```bash
 git add scripts/combat/CombatEvents.gd
-git commit -m "feat: add dot_ticked signal to CombatEvents"
+git commit -m "feat: dot_ticked signal carries (token, context) — full resolution facts for reactive tokens"
 ```
 
 ---
@@ -180,8 +182,9 @@ func fire(_context: ActionContext) -> void:
 	pass
 
 ## Called by ActiveTokens.tick_turn_start() for ON_TURN_START tokens.
-## Self-contained — uses self.owner and self.source directly. No ActionContext needed.
-func tick() -> void:
+## ActiveTokens creates one fresh context per token before calling this.
+## mnemonic/attacker/primary_target are null on that context — read self.owner/self.source instead.
+func tick(_context: ActionContext) -> void:
 	pass
 ```
 
@@ -361,11 +364,17 @@ func _init() -> void:
 ##   POISON — (max_hp × 10% + max_mp × 10%) × resist_mult
 ##   BURN   — max_hp × 10% × resist_mult
 ##   BLEED  — max_hp × 10% × resist_mult
-func tick() -> void:
+## Context is created fresh per-token by ActiveTokens. mnemonic/attacker/primary_target are null.
+func tick(context: ActionContext) -> void:
 	var resist_state := ResistanceType.State.NONE
 	if owner.resistance_profile != null:
 		resist_state = owner.resistance_profile.get_state(damage_type)
 	var resist_mult: float = CombatCalculator.resist_multiplier(resist_state)
+
+	# IMMUNE (resist_mult == 0) — no damage, no broadcast, charges still decrement
+	if resist_mult == 0.0:
+		Log.info("RuntimeToken_DoT — IMMUNE, tick skipped", owner.character_name)
+		return
 
 	var raw: float
 	match dot_tag:
@@ -382,7 +391,8 @@ func tick() -> void:
 	var damage: int = max(1, int(raw))
 	Log.info("RuntimeToken_DoT tick", "%s %s %d dmg" % [owner.character_name, dot_tag, damage])
 	owner.vitals.take_damage(damage)
-	CombatEvents.dot_ticked.emit(owner, damage, dot_tag)
+	context.record_step(true, damage, false)
+	CombatEvents.dot_ticked.emit(self, context)
 ```
 
 - [ ] **Step 2: Verify parse**
@@ -423,13 +433,15 @@ func add_token(token: RuntimeToken) -> void:
 	token_added.emit(token)
 
 ## Fire all ON_TURN_START tokens, decrement charges, remove expired ones.
+## One fresh ActionContext per token — no cross-contamination between ticks.
 ## Called by CombatFSM at the start of the active actor's turn.
 func tick_turn_start() -> void:
 	var to_remove: Array[RuntimeToken] = []
 	for token in _tokens:
 		if token.trigger != RuntimeToken.Trigger.ON_TURN_START:
 			continue
-		token.tick()
+		var ctx := ActionContext.new()
+		token.tick(ctx)
 		token.charges -= 1
 		if token.charges <= 0:
 			to_remove.append(token)
