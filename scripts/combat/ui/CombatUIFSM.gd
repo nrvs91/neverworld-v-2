@@ -34,6 +34,7 @@ func start(actors: Array) -> void:
 	CombatEvents.turn_started.connect(_on_turn_started)
 	CombatEvents.please_select_action.connect(_on_please_select_action)
 	CombatEvents.action_executed.connect(_on_action_executed)
+	CombatEvents.dot_ticked.connect(_on_dot_ticked)
 	CombatEvents.combat_text_shown.connect(_on_combat_text_shown)
 	CombatEvents.actor_downed.connect(_on_actor_downed)
 	CombatEvents.combat_ended.connect(_on_combat_ended)
@@ -123,6 +124,11 @@ func _on_action_executed(_actor: CombatCharacter, target: CombatCharacter, damag
 	var dn := DamageNumberScene.instantiate() as DamageNumber
 	get_parent().add_child(dn)
 	dn.show_at(target.global_position + Vector3(0.0, 0.5, 0.0), damage)
+
+func _on_dot_ticked(token: RuntimeToken, context: ActionContext) -> void:
+	var dn := DamageNumberScene.instantiate() as DamageNumber
+	get_parent().add_child(dn)
+	dn.show_at(token.owner.global_position + Vector3(0.0, 0.5, 0.0), context.total_damage)
 
 func _on_combat_text_shown(target: CombatCharacter, text: String) -> void:
 	var dn := DamageNumberScene.instantiate() as DamageNumber

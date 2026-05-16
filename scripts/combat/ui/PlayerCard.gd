@@ -23,6 +23,7 @@ func setup(actor: CombatCharacter) -> void:
 	actor.vitals.vitals_changed.connect(refresh_vitals)
 	actor.tokens.token_added.connect(_refresh_token_display)
 	actor.tokens.token_removed.connect(_refresh_token_display)
+	actor.tokens.token_updated.connect(_refresh_token_display)
 	# portrait_rect.texture = actor.portrait_texture
 	# Uncomment once portrait_texture is added to CombatCharacter
 	refresh_vitals()

@@ -10,6 +10,10 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 
 var mnemonic: MnemonicRes = null
 
+func _ready() -> void:
+	if _background and _background.material:
+		_background.material = _background.material.duplicate()
+
 ## Skills always cost exactly two resources: AP + either HP or MP.
 ## vitals is needed to calculate the real HP cost and to check affordability.
 func setup(m: MnemonicRes, vitals: VitalsComponent) -> void:

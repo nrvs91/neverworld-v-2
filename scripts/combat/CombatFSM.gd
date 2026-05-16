@@ -57,6 +57,7 @@ func _enter_action_select() -> void:
 	CombatEvents.please_select_action.emit(_active_actor)
 
 	if not _active_actor.is_player_controlled:
+		await get_tree().create_timer(0.6).timeout
 		_pending_target = _first_living_opponent(_active_actor)
 		if _pending_target == null:
 			Log.info("ActionSelect — enemy has no valid target, skipping")
