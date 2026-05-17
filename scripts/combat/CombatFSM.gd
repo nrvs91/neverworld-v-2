@@ -132,7 +132,8 @@ func _enter_reaction_scan() -> void:
 func _enter_turn_end() -> void:
 	TurnTracker.consume_ct(_active_actor)
 	CombatEvents.turn_ended.emit(_active_actor)
-	
+	# PLACEHOLDER: replace with await on animation_finished once real attack anims exist
+	await get_tree().create_timer(0.8).timeout
 	if _check_combat_end():
 		return
 	_transition(State.TURN_START)
