@@ -422,6 +422,8 @@ Resistance states are **authored directly on enemies** via `ResistanceProfile`. 
 
 **DoT behaviour** — DoTs (BURN, POISON, BLEED) always land if the skill hits, regardless of resistance state. The resistance multiplier applies to tick damage only. A BURN on a RESISTANT-to-Fire enemy ticks at 0.5×. A Fire-IMMUNE enemy takes 0× tick damage but the token is still applied — it ticks for zero.
 
+**DoT reapplication** — Reapplying a DoT that is already active on a target extends the existing token by adding the new charges to the current remaining charges, capped at 9. No second stack is created. Charges represent duration only — tick damage is flat per the formula above regardless of how many charges remain. (9 is the cap: single digit, UI-friendly, and unreachable in normal play without deliberate setup.)
+
 The distinction matters: fire-IMMUNE means zero fire damage, but FREEZE (Stone-type) still lands and functions normally.
 
 ### AP Economy
@@ -502,7 +504,7 @@ A token has five properties:
 
 **Charges = duration for ticking effects.** 3 charges on a DoT means 3 ticks — 3 turns. 3 charges on a reactive stance means 3 reactions before it expires. The number always means the same thing: how many times this token fires.
 
-**Tokens are objects, not counters.** A BURN token is a discrete thing attached to a character. It can be transferred between combatants by a transfer skill. It can be cleansed. It ticks independently. Two BURN tokens on the same target tick separately.
+**Tokens are objects, not counters.** A BURN token is a discrete thing attached to a character. It can be transferred between combatants by a transfer skill. It can be cleansed. It ticks independently.
 
 **Composition:** the trigger and the payload are independent. A `DamagePayload` is the same component whether it fires instantly (sword slash), on a timer (BURN tick), or reactively (Counter Strike). A `HealPayload` is the same whether it fires instantly (Flash Heal) or reactively (Vigil). New token types = new trigger + existing payload. The resolution logic is written once per payload type.
 

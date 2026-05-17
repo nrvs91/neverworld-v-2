@@ -8,9 +8,18 @@ signal token_added(token: RuntimeToken)
 signal token_removed(token: RuntimeToken)
 signal token_updated(token: RuntimeToken)
 
+const CHARGES_CAP: int = 9
+
 var _tokens: Array[RuntimeToken] = []
 
 func add_token(token: RuntimeToken) -> void:
+	for existing in _tokens:
+		if existing.token_type == token.token_type:
+			var prev: int = existing.charges
+			existing.charges = min(existing.charges + token.charges, CHARGES_CAP)
+			Log.info("ActiveTokens — extended", "%s %d->%d" % [token.token_type, prev, existing.charges])
+			token_updated.emit(existing)
+			return
 	_tokens.append(token)
 	Log.info("ActiveTokens — added", "%s %s" % [token.owner.character_name, token.token_type])
 	token_added.emit(token)
