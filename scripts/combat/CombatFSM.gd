@@ -100,6 +100,9 @@ func _enter_action_execution() -> void:
 	context.attacker = _active_actor
 	context.primary_target = _pending_target
 
+	CombatEvents.action_announced.emit(_pending_mnemonic.mnemonic_name)
+	await get_tree().create_timer(0.5).timeout
+
 	SkillExecutor.execute(context)
 
 	if _pending_mnemonic.hp_cost_percent > 0.0:

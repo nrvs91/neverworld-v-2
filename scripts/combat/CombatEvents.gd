@@ -26,3 +26,4 @@ signal turn_ended(actor: CombatCharacter)
 signal combat_ended(player_won: bool)
 
 signal dot_ticked(token: RuntimeToken, context: ActionContext)
+signal action_announced(text: String)
