@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://cd30cp6w83uqc"]
+
+[ext_resource type="Shader" uid="uid://yr8c4b0llrs6" path="res://scenes/UI/button_gradient_centered.gdshader" id="1_0u086"]
+[ext_resource type="Script" uid="uid://xbkmlh7u686i" path="res://scripts/combat/ui/ActionAnnouncer.gd" id="1_scrpt"]
+[ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="2_nmok6"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xw48u"]
+shader = ExtResource("1_0u086")
+shader_parameter/color_dark = Color(0.1, 0.1, 0.15, 0.6)
+shader_parameter/color_light = Color(0.857242, 0.9163012, 0.731806, 1)
+shader_parameter/step_count = 12
+shader_parameter/center_ratio = 0.5
+
+[node name="ActionAnnouncer" type="ColorRect" unique_id=985803771]
+show_behind_parent = true
+material = SubResource("ShaderMaterial_xw48u")
+custom_minimum_size = Vector2(24, 8)
+offset_right = 24.0
+offset_bottom = 8.0
+pivot_offset = Vector2(2, -6)
+script = ExtResource("1_scrpt")
+
+[node name="ActionText" type="Label" parent="." unique_id=2033105209]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_nmok6")
+theme_override_font_sizes/font_size = 6
+horizontal_alignment = 1
+vertical_alignment = 1
