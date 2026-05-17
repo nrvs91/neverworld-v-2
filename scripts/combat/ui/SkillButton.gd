@@ -11,6 +11,7 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 var mnemonic: MnemonicRes = null
 
 func _ready() -> void:
+	super._ready()
 	if _background and _background.material:
 		_background.material = _background.material.duplicate()
 
