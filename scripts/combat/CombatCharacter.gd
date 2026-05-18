@@ -13,6 +13,7 @@ var character_name: String = ""
 var is_player_controlled: bool = false
 var mnemonics: Array[MnemonicRes] = []
 var resistance_profile: ResistanceProfile = null
+var ai_behavior: AIBehaviorComponent = null
 
 func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	is_player_controlled = true
@@ -35,4 +36,7 @@ func initialize_enemy(data: EnemyData) -> void:
 	resistance_profile = data.resistance_profile if data.resistance_profile != null else ResistanceProfile.new()
 	if data.basic_attack:
 		mnemonics = [data.basic_attack]
+	ai_behavior = AIBehaviorComponent.new()
+	ai_behavior.name = "AIBehaviorComponent"
+	add_child(ai_behavior)
 	Log.info("character ready", data.character_name)

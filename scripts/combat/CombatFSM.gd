@@ -46,7 +46,8 @@ func _enter_turn_start() -> void:
 	_active_actor = TurnTracker.advance_to_next_turn(_actors)
 	# AP gain happens BEFORE token ticks — tokens may modify AP gain
 	_active_actor.vitals.gain_ap(1)
-	# Token tick order matters (DoT before HoT? Buffs before Debuffs?) — define when token system is built
+	# Token tick order matters (DoT before HoT? Buffs before Debuffs?)
+	# Define when token system is built.
 	_active_actor.tokens.tick_turn_start()
 	Log.info("TurnStart", _active_actor.character_name)
 	Log.info("AP:", _active_actor.vitals.cur_ap)
@@ -55,19 +56,11 @@ func _enter_turn_start() -> void:
 
 func _enter_action_select() -> void:
 	CombatEvents.please_select_action.emit(_active_actor)
-
-	if not _active_actor.is_player_controlled:
-		await get_tree().create_timer(0.6).timeout
-		_pending_target = _first_living_opponent(_active_actor)
-		if _pending_target == null:
-			Log.info("ActionSelect — enemy has no valid target, skipping")
-			_transition(State.TURN_END)
-			return
-		_pending_mnemonic = _active_actor.mnemonics[0] if not _active_actor.mnemonics.is_empty() else null
-		Log.info("ActionSelect — enemy auto:", _pending_target.character_name)
-		_transition(State.ACTION_EXECUTION)
-		return
-
+	# FSM is actor-agnostic. PlayerInputComponent fires action_selected for players,
+	# AIBehaviorComponent fires it for enemies. We just wait.
+	# Godot 4: awaiting a multi-param signal yields Array [param0, param1].
+	# action_selected(mnemonic: MnemonicRes, target: CombatCharacter) → result[0], result[1].
+	# WAIT or no-target emits (null, null) — null check below catches it.
 	var result: Array = await CombatEvents.action_selected
 	_pending_mnemonic = result[0] as MnemonicRes
 	_pending_target = result[1] as CombatCharacter
@@ -172,13 +165,3 @@ func _check_combat_end() -> bool:
 	
 	return false
 
-func _first_living_opponent(actor: CombatCharacter) -> CombatCharacter:
-	for a: CombatCharacter in _actors:
-		if a.vitals.is_downed():
-			continue
-		
-		var is_enemy: bool = a.is_player_controlled != actor.is_player_controlled
-		if is_enemy:
-			return a
-	
-	return null

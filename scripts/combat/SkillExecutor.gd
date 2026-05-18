@@ -16,10 +16,15 @@ static func execute(context: ActionContext) -> void:
 			continue
 
 		var token: RuntimeToken = _create_token(effect, context.attacker, context.primary_target)
+		if token == null:
+			continue
 
 		if token.trigger == RuntimeToken.Trigger.INSTANT:
 			token.fire(context)
 		else:
+			# TODO: TargetingData.shape is authored but not consumed here.
+			# All persistent effects attach to context.primary_target regardless of shape.
+			# Wire TargetingData before authoring any AoE, SELF, or filter-targeted skills.
 			context.primary_target.tokens.add_token(token)
 			context.tokens_applied.append(token)
 
@@ -64,4 +69,7 @@ static func _create_dot_token(effect: SkillEffectDoT, attacker: CombatCharacter,
 			token.dot_tag = "BLEED"
 			token.token_type = "BLEED"
 			token.damage_type = ResistanceType.DamageType.Bleed
+		_:
+			Log.warn("SkillExecutor — unhandled DotTag", str(effect.dot_tag))
+			return null
 	return token

@@ -217,6 +217,143 @@ CombatStart state
 
 ---
 
+## Token System
+
+The token system models all combat effects — damage, DoT, buffs, debuffs, marks, reactions — as first-class runtime objects. Every effect flows through a unified token lifecycle.
+
+### RuntimeToken Hierarchy
+
+Tokens are `RefCounted` instances spawned by `SkillExecutor` from mnemonic effect data. Each token carries:
+- **token_type**: Display/deduplication key (e.g. `"POISON"`, `"BURN"`, `"DAMAGE"`)
+- **trigger**: When the token fires — `INSTANT` or `ON_TURN_START` (stubs: `ON_DAMAGE_TAKEN`, `ON_ALLY_HIT`, `PRE_EXECUTION`)
+- **charges**: Decrement counter; token expires when charges ≤ 0
+- **source** / **owner**: The attacker and target `CombatCharacter`
+
+```
+RuntimeToken (base)
+  ├── RuntimeToken_Damage   ← INSTANT — hit/crit/resist pipeline, applies damage, emits action_executed
+  ├── RuntimeToken_DoT      ← ON_TURN_START — ticks per GDD formula, emits dot_ticked
+  └── (future) RuntimeToken_Buff, RuntimeToken_Ailment, RuntimeToken_Mark, RuntimeToken_Reaction
+```
+
+**Two dispatch paths:**
+
+- **INSTANT** (`RuntimeToken_Damage`): `fire(context)` runs immediately during mnemonic resolution. Result written to `ActionContext` via `record_step()`. Token does not persist.
+- **Persistent** (`RuntimeToken_DoT`, future): Added to `CombatCharacter.tokens` (`ActiveTokens` container). `tick()` called each turn. Charges decrement; token auto-expires at 0.
+
+### Skill Execution Flow
+
+```
+CombatFSM._enter_action_execution()
+  ├── Create ActionContext (attacker, target, mnemonic)
+  ├── Call SkillExecutor.execute(context)
+  │     └── For each effect in mnemonic.effect_steps:
+  │           ├── Check needs_previous_hit vs context.any_hit
+  │           ├── _create_token(effect, attacker, target)  ← factory dispatch
+  │           ├── INSTANT  → token.fire(context)           ← resolves immediately
+  │           └── Persistent → target.tokens.add_token(token)
+  ├── Spend hp_cost_percent (if any)
+  ├── Check target downed
+  └── Emit action_resolved
+```
+
+### DoT Tick Formulas
+
+Fixed per `dot_tag` — not authored per instance:
+
+```
+POISON: (max_hp × 10% + max_mp × 10%) × resist_multiplier
+BURN:   max_hp × 10% × resist_multiplier
+BLEED:  max_hp × 10% × resist_multiplier
+```
+
+IMMUNE targets (resist_multiplier == 0): tick skipped silently, charges still decrement.
+
+DoT stacking: re-application extends existing token charges (capped at 9) rather than creating a duplicate.
+
+### ActionContext — Execution Snapshot
+
+Created in `CombatFSM` before `SkillExecutor` runs, so future `PRE_EXECUTION` reactions can modify it (redirect target, negate skill) before effects resolve.
+
+```
+ActionContext
+  ├── mnemonic, attacker, primary_target   ← set by CombatFSM
+  ├── step_results: Array                  ← {hit, damage, is_crit} per effect step
+  ├── tokens_applied: Array                ← persistent tokens queued this execution
+  ├── total_damage, any_hit, any_crit      ← rolling totals; any_hit only set by INSTANT hits
+```
+
+---
+
+## Skill Data Layer
+
+Skills are authored as `.tres` resources. No skill logic lives in code — only data.
+
+### MnemonicResource
+
+One skill's complete definition:
+
+```
+MnemonicResource
+  ├── mnemonic_name, rank, is_melee, merge_display
+  ├── ap_cost, mp_cost, hp_cost_percent
+  ├── targeting: TargetingData              ← shape (SINGLE/ALL/SELF) + filter (HAS_DOT, IS_DOWNED)
+  └── effect_steps: Array[Skill_Effect_Base] ← ordered list; SkillExecutor iterates in order
+```
+
+### Skill_Effect_Base Hierarchy
+
+```
+Skill_Effect_Base (Resource)
+  ├── chance_tier: ChanceTier    ← CERTAIN/HIGH(75%)/MEDIUM(50%)/LOW(25%)
+  ├── needs_previous_hit: bool   ← skip if prior step missed
+  ├── true_strike: bool          ← bypass hit roll entirely
+  ├── Skill_Effect_Damage        ← power, damage_type, crit_chance, inherit_from_weapon
+  └── Skill_Effect_DoT           ← dot_tag (POISON/BURN/BLEED), charges
+```
+
+**ChanceTier semantics by effect type:**
+- Physical damage: scales attacker HIT in `clamp((HIT × tier%) / DODGE, 5%, 95%)`
+- Magical damage / heals / buffs: ignored — always connects
+- Ailments (future): raw application probability before resistance
+
+---
+
+## Combat FSM States
+
+The Logic FSM drives turn-by-turn combat. No UI concerns — all presentation via `CombatEvents` bus.
+
+```
+COMBAT_START → TURN_START ←────────────────────┐
+                   ↓                            │
+              ACTION_SELECT                     │
+                   ↓                            │
+            ACTION_EXECUTION                    │
+                   ↓                            │
+            REACTION_SCAN (stub)                │
+                   ↓                            │
+               TURN_END ────────────────────────┘
+                   ↓ (all enemies OR all players dead)
+               COMBAT_END
+```
+
+| State | Responsibility |
+|-------|----------------|
+| **COMBAT_START** | Emit `combat_started`. Transition to TURN_START. |
+| **TURN_START** | Advance turn tracker, award AP, tick active actor's ON_TURN_START tokens (DoT etc.), emit `turn_started`. |
+| **ACTION_SELECT** | Player: await `action_selected` signal. Enemy: auto-pick first opponent + `mnemonics[0]` after delay. WAIT → TURN_END. |
+| **ACTION_EXECUTION** | Guard AP/MP. Create ActionContext. Run SkillExecutor. Spend HP cost. Check downed. Emit `action_resolved`. |
+| **REACTION_SCAN** | Stub — future home for COUNTER, BRACE, VIGIL, PREMONITION, COVER. Currently a no-op pass-through. |
+| **TURN_END** | Consume CT. Emit `turn_ended`. Wait for presentation. Loop to TURN_START. |
+| **COMBAT_END** | Emit `combat_ended(player_won)`. Suspend. |
+
+**Known gaps (to address before they become load-bearing):**
+- Enemy AI is inlined in ACTION_SELECT — should move to `AIBehaviorComponent` before authoring a second enemy
+- `TargetingData.shape` is authored but not yet consumed by SkillExecutor or CombatUIFSM
+- Hardcoded `create_timer()` delays stand in for a `presentation_finished` signal that doesn't exist yet
+
+---
+
 ## Event Buses
 
 Cross-system communication uses domain-specific autoload event buses — signal declarations only, no logic.
