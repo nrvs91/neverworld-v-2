@@ -164,4 +164,3 @@ func _check_combat_end() -> bool:
 		return true
 	
 	return false
-

@@ -35,9 +35,10 @@ func tick_turn_start() -> void:
 		var ctx := ActionContext.new()
 		token.tick(ctx)
 		token.charges -= 1
-		token_updated.emit(token)
 		if token.charges <= 0:
 			to_remove.append(token)
+		else:
+			token_updated.emit(token)
 	for token in to_remove:
 		_tokens.erase(token)
 		Log.info("ActiveTokens — expired", "%s %s" % [token.owner.character_name, token.token_type])
