@@ -29,6 +29,8 @@ This gives us one rule that governs the whole system:
 
 **CombatEvents** — the broadcaster. Gains one new signal: `action_context_ready(context: ActionContext)`. Fired by ActionPipeline at two moments: before execution (pre-pass) and after the primary action resolves (post-pass). Every armed token on the board receives it synchronously.
 
+> **Constraint: `action_context_ready` is synchronous-only. No `await` inside any `check_trigger` handler, ever.** GDScript signal emission is synchronous — all connected listeners fire and return before the next line executes. ActionPipeline relies on this: it emits, the queue populates, then it drains. An `await` inside `check_trigger` breaks the ordering guarantee silently — the drain starts before the queue is fully built. This constraint belongs as a comment on the signal declaration in `CombatEvents.gd`.
+
 **ActionPipeline** — a new Node under CombatScene. Manages the full execution lifecycle. Owns the queue. Emits `pipeline_complete` when done. The FSM delegates here; the FSM never touches the queue.
 
 **RuntimeToken** — unchanged in base structure. The Trigger enum already names the reaction types. A token's `check_trigger(context)` method is the self-validation step: reads the context, returns true if conditions are met.
