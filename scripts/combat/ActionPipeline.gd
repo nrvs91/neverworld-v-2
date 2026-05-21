@@ -9,7 +9,7 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 	# Front-loaded null guard — validate before entering async territory.
 	# If anything is missing here, pipeline_complete still fires so the FSM never hangs.
 	if mnemonic == null or attacker == null or target == null:
-		Log.error("ActionPipeline.run — invalid inputs", mnemonic, attacker, target)
+		Log.error("ActionPipeline.run — invalid inputs", mnemonic, attacker)
 		pipeline_complete.emit()
 		return
 
