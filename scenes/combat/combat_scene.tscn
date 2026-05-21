@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dd8q4s0qtb57f" path="res://scenes/combat/ui/player_card_bar.tscn" id="8_pcbar"]
 [ext_resource type="PackedScene" uid="uid://dm7mes58ahsmm" path="res://scenes/combat/targeting_cursor.tscn" id="10_tcrs"]
 [ext_resource type="Script" uid="uid://4xu4ue3arhty" path="res://scripts/combat/ui/CombatUIFSM.gd" id="11_uifs"]
+[ext_resource type="PackedScene" path="res://scenes/combat/components/action_pipeline.tscn" id="12_apline"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fyyo7"]
 albedo_color = Color(0.44044712, 0.2400937, 0, 1)
@@ -112,6 +113,8 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TargetingCursor" parent="." unique_id=218799812 instance=ExtResource("10_tcrs")]
+
+[node name="ActionPipeline" parent="." unique_id=111111111 instance=ExtResource("12_apline")]
 
 [node name="CombatFSM" type="Node" parent="." unique_id=999999999]
 script = ExtResource("6_abc12")
