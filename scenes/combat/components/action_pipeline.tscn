@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://actionpipeline01"]
+[gd_scene format=3 uid="uid://caq62feecj3si"]
 
 [ext_resource type="Script" path="res://scripts/combat/ActionPipeline.gd" id="1_actionpipeline"]
 

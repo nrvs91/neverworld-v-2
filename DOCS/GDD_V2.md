@@ -262,8 +262,7 @@ Combat is driven by **two FSMs running in parallel** — one for logic, one for 
 | `CombatStart` | Call `EnterBattle` on all actors, emit `CombatStarted` |
 | `TurnStart` | Tick CT for all non-downed actors, find highest-priority ready actor. Active actor gains AP (+1, modified by tokens/gear). Active actor's `OnTurnStart` tokens tick: DoT damage, HoT healing, duration countdown, expired tokens removed. Emit `TurnStarted`. |
 | `ActionSelect` | Emit `please_select_action`. Await `action_selected(skill, target)` signal. The FSM is actor-agnostic — `PlayerInputComponent` fires the signal for player actors, `AIBehaviorComponent` fires it for enemies. The FSM does not branch on actor type. |
-| `ActionExecution` | Resolve skill — hit/miss, crit, all effect steps via `CombatCalculator`. Emits granular events to the bus (`self_damaged`, `hit_landed`, etc.), then steps back. Never handles reactions directly. |
-| `ReactionScan` | Two-tier resolution. Tier 1 (direct — `onSelfDamaged`): actor reacts to being the target. Tier 2 (contextual — `onAllyDamaged`, `onAllyHit`): actor reacts to events involving others. PULSE ordering within each tier. One reaction per actor per action window. Window closes after Tier 2 — no re-scan. Reactions do NOT re-enter `ActionExecution`. |
+| `ActionExecution` | Delegate to `ActionPipeline` — calls `pipeline.run()` and awaits `pipeline_complete`. The FSM does nothing else in this state. ActionPipeline owns the full execution cycle: announce, PRE-pass, primary skill execution, POST-pass, downed detection. |
 | `TurnEnd` | Consume CT, emit `TurnEnded`, check win/loss condition |
 | `CombatEnd` | Emit `CombatEnded`, hand off to post-combat flow (XP, loot, exit) |
 
@@ -290,17 +289,33 @@ During `ActionSelect`, the FSM emits `please_select_action` and waits for `actio
 
 Any FSM that branches on actor type effectively has two versions of every state. Adding a new actor type — a summoned ally, a charmed enemy, a guest NPC — means touching the FSM. The component model absorbs that variation without the FSM noticing.
 
-**Why ActionExecution never touches reactions**
+**Why ActionExecution delegates to ActionPipeline**
 
-`ActionExecution` resolves the primary action and emits granular events to the bus — `hit_landed`, `self_damaged`, `ally_healed` — then steps back. It has no knowledge of what tokens exist or whether any of them care about what just happened.
+`ActionExecution` calls `pipeline.run()` and awaits `pipeline_complete`. That's the entire state. `ActionPipeline` is a dedicated Node — a sibling of `CombatFSM` under `CombatScene` — that owns the full execution cycle. The FSM's only job here is to delegate and wait.
 
-If execution handled reactions inline, two concerns that change for different reasons would be coupled. Adding a new reaction type would mean modifying execution. A bug in reaction ordering would trace back into execution. The event bus is the contract. Execution honors it by emitting faithfully. `ReactionScan` consumes it. Neither knows the other's internals.
+ActionPipeline runs in three phases: a **PRE-pass** (reaction tokens that fire *before* the primary, and may cancel it), the **primary skill execution**, and a **POST-pass** (reaction tokens that fire after and need the primary's result). Each pass iterates directly over all actors' token lists and calls `check_trigger(context)` on each reaction token. No signal connections, no connect/disconnect lifecycle. Tokens self-select into the queue; the pipeline never needs to know they exist in advance.
 
-**Why ReactionScan has two tiers and a closed window**
+**Why PRE and POST are the right two windows**
 
-Reactions split into two tiers because they don't share the same trigger event. Tier 1 (direct) reactions — COUNTER — respond to `self_damaged`, a primary event from the action itself. Tier 2 (contextual) reactions — VIGIL, FOLLOW UP — respond to events that may include Tier 1 output (e.g. the counter-attack that damaged an ally). Collapsing both into a single PULSE-ordered pool produces ordering that depends on signal connection sequence, not design intent. Separating by trigger tier gives deterministic, legible resolution.
+Some reactions must fire *before* the primary resolves — HAMEDO (hit the attacker before they act), PREMONITION (nullify the spell before it lands). A post-only scan can't express that. Some reactions genuinely need the primary's result — COUNTER needs to know the hit landed; VIGIL needs to know who took damage and for how much. Collapsing both into one scan forces artificial ordering workarounds.
 
-The window closes after Tier 2. Tier 1 output is visible to Tier 2 — but Tier 2 output reopens nothing. One window, one pass. The complexity budget for the reaction system comes from *composition within a window* — multiple simple tokens interacting in one scan — not from chains between windows.
+PRE and POST are the natural split. PRE is "before the primary resolves." POST is "after." Within each pass, order is deterministic — direct array iteration over the actors list, not signal connection order. The window closes after POST. No chains between windows; Tier 2 output reopens nothing.
+
+**Why not every token that responds to combat is a reaction**
+
+PRE/POST pass tokens are for effects that need a temporal window around the primary action. Not everything qualifies. Passive tokens are checked inline during damage resolution — they modify *how* something resolves, not *when* relative to the primary. The distinction:
+
+| Token | Type | Resolution point |
+|---|---|---|
+| COVER / INTERCEPT | Passive | `RuntimeToken_Damage.fire()` — target redirect before damage calc. Protectee is always targetable; effects aimed at them resolve on the protector instead. AoE dedup: protector takes 1 hit max per action regardless of how many targets redirect to them. |
+| BRACE / Shield | Passive | `RuntimeToken_Damage.fire()` — damage modifier during calc |
+| HAMEDO | PRE reaction | ActionPipeline pre-pass — fires before primary, may down the attacker and cancel the action |
+| PREMONITION | PRE reaction | ActionPipeline pre-pass — sets `context.negated = true`, primary skipped |
+| COUNTER | POST reaction | ActionPipeline post-pass — fires after primary lands |
+| VIGIL | POST reaction | ActionPipeline post-pass — heals the damaged ally after primary resolves |
+| FOLLOW UP | POST reaction | ActionPipeline post-pass — fires after an ally hits |
+
+The rule: if the effect modifies *how Z works* or *redirects A to B*, it is passive state checked inline. If it is *when X happens, do Y* with a genuine before/after window, it belongs in a pass.
 
 ---
 
@@ -497,10 +512,11 @@ A token has five properties:
 | Sword slash | Instant | 1 | Created, fires immediately, expires |
 | BURN (3 turns) | OnTurnStart | 3 | Ticks at the start of the owner's turn, −1 charge per tick |
 | EMPOWER (2 turns) | OnTurnStart | 2 | Buffs a stat while active, ticks down each turn |
-| Counter Strike | OnDamageTaken | 1 | Waits. When owner is hit, fires its payload (a damage effect), then expires |
-| Vigil | OnAllyHit | 3 | Waits. When any ally takes damage, heals that ally. 3 charges = 3 reactions |
-| Brace | OnDamageTaken | 1 | Reduces incoming damage by 40% on the next hit, then expires |
+| Counter Strike | POST reaction | 1 | Waits. After the primary action resolves, fires its payload (a damage effect), then expires |
+| Vigil | POST reaction | 3 | After primary resolves, heals the ally that took damage. 3 charges = 3 reactions |
+| Brace | Passive | 1 | Checked inline during damage calc. Reduces incoming damage by 40%, then expires |
 | KEEN | OnNextPhysHit | 1 | Guarantees a crit on the next physical hit, consumed on use |
+| COVERED | Passive (paired) | N | Checked inline during damage calc. Effects aimed at this actor resolve on their protector instead. One charge consumed per redirect. Paired with COVERING on the protector. |
 
 **Charges = duration for ticking effects.** 3 charges on a DoT means 3 ticks — 3 turns. 3 charges on a reactive stance means 3 reactions before it expires. The number always means the same thing: how many times this token fires.
 
@@ -508,7 +524,7 @@ A token has five properties:
 
 **Composition:** the trigger and the payload are independent. A `DamagePayload` is the same component whether it fires instantly (sword slash), on a timer (BURN tick), or reactively (Counter Strike). A `HealPayload` is the same whether it fires instantly (Flash Heal) or reactively (Vigil). New token types = new trigger + existing payload. The resolution logic is written once per payload type.
 
-**The execution state is an orchestrator, not a resolver.** It reads the skill's effect list, stamps out tokens from each blueprint, attaches them to the appropriate targets, and steps back. The tokens resolve themselves. The calculator is a utility that payload components call when they need math — it doesn't drive the flow.
+**ActionPipeline is the orchestrator, not a resolver.** It announces the action, runs the PRE-pass, validates execution, calls `SkillExecutor.execute(context)`, runs the POST-pass, and emits `action_resolved(context)`. It never calculates damage or resolves effects itself. The tokens resolve themselves. `CombatCalculator` is a pure utility that payload components call when they need math — it doesn't drive the flow.
 
 **Multi-step skills and conditional chaining:** A mnemonic's effect list is an ordered sequence of steps. Each step can read what the previous step did via a shared scratch pad (resolution context). This enables conditional effects — Poison Jab is two steps: (1) deal Pierce damage, (2) apply 3 Poison tokens *if step 1 hit*. The DoT step has `RequiresPreviousHit = true` — if the damage missed, no poison. The scratch pad tracks: did the last step hit, was it a crit, how many targets were hit. This is internal to a single skill use and discarded afterward — it is not token state.
 
