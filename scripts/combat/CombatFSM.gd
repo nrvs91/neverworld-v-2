@@ -9,7 +9,6 @@ enum State {
 	TURN_START,
 	ACTION_SELECT,
 	ACTION_EXECUTION,
-	REACTION_SCAN,
 	TURN_END,
 	COMBAT_END
 }
@@ -36,7 +35,6 @@ func _transition(next: State) -> void:
 		State.TURN_START:       _enter_turn_start()
 		State.ACTION_SELECT:    _enter_action_select()
 		State.ACTION_EXECUTION: _enter_action_execution()
-		State.REACTION_SCAN:    _enter_reaction_scan()
 		State.TURN_END:         _enter_turn_end()
 		State.COMBAT_END:       _enter_combat_end()
 
@@ -75,53 +73,12 @@ func _enter_action_select() -> void:
 
 func _enter_action_execution() -> void:
 	if _pending_mnemonic == null:
-		Log.warn("ActionExecution — no mnemonic, skipping to REACTION_SCAN")
-		_transition(State.REACTION_SCAN)
+		Log.warn("ActionExecution — no mnemonic, skipping")
+		_transition(State.TURN_END)
 		return
 
-	if _active_actor.vitals.cur_ap < _pending_mnemonic.ap_cost \
-			or _active_actor.vitals.cur_mp < _pending_mnemonic.mp_cost:
-		Log.warn("ActionExecution — insufficient AP/MP, skipping skill")
-		_transition(State.REACTION_SCAN)
-		return
-
-	_active_actor.vitals.spend_ap(_pending_mnemonic.ap_cost)
-	_active_actor.vitals.spend_mp(_pending_mnemonic.mp_cost)
-
-	# ActionContext is created here so future PRE_EXECUTION reactions can write to it
-	# before SkillExecutor runs (e.g. COVER redirects primary_target, PREMONITION negates)
-	var context := ActionContext.new()
-	context.mnemonic = _pending_mnemonic
-	context.attacker = _active_actor
-	context.primary_target = _pending_target
-
-	CombatEvents.action_announced.emit(_pending_mnemonic.mnemonic_name)
-	await get_tree().create_timer(0.5).timeout
-
-	SkillExecutor.execute(context)
-
-	if _pending_mnemonic.hp_cost_percent > 0.0:
-		_active_actor.vitals.spend_hp_percent(_pending_mnemonic.hp_cost_percent)
-
-	# Tokens handled damage application and action_executed emission.
-	# FSM reads final context state for bookkeeping only.
-	Log.info("ActionExecution", "%s->%s total:%d" % [
-		_active_actor.character_name, context.primary_target.character_name, context.total_damage])
-
-	if context.primary_target.vitals.is_downed():
-		Log.info("actor downed", context.primary_target.character_name)
-		CombatEvents.actor_downed.emit(context.primary_target)
-
-	CombatEvents.action_resolved.emit(_active_actor)
-
-	if _check_combat_end():
-		return
-	_transition(State.REACTION_SCAN)
-
-func _enter_reaction_scan() -> void:
-	# STUB: reactions not yet implemented
-	if _check_combat_end():
-		return
+	_action_pipeline.run(_pending_mnemonic, _active_actor, _pending_target, _actors)
+	await _action_pipeline.pipeline_complete
 	_transition(State.TURN_END)
 
 func _enter_turn_end() -> void:
