@@ -8,6 +8,7 @@ extends Node
 @onready var combat_camera: Camera3D = $Camera3D
 @onready var logic_fsm: CombatFSM = $CombatFSM
 @onready var ui_fsm: CombatUIFSM = $CombatUIFSM
+@onready var action_pipeline: ActionPipeline = $ActionPipeline
 
 func _clear_environment() -> void:
 	for child in environment_mount.get_children():
@@ -26,8 +27,5 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 	await get_tree().process_frame
 	var all_actors: Array = player_spawner.get_all_characters() + enemy_spawner.get_all_characters()
 	Log.info("CombatScene — actors ready:", all_actors.size())
-	for actor in enemy_spawner.get_all_characters():
-		if actor.ai_behavior:
-			actor.ai_behavior.setup(all_actors)
 	ui_fsm.start(all_actors)
-	logic_fsm.start(all_actors)
+	logic_fsm.start(all_actors, action_pipeline)

@@ -19,9 +19,11 @@ var _actors: Array = []
 var _active_actor: CombatCharacter = null
 var _pending_target: CombatCharacter = null
 var _pending_mnemonic: MnemonicRes = null
+var _action_pipeline: ActionPipeline = null
 
-func start(actors: Array) -> void:
+func start(actors: Array, pipeline: ActionPipeline) -> void:
 	_actors = actors
+	_action_pipeline = pipeline
 	Log.info("CombatFSM starting with", _actors.size())
 	_transition(State.COMBAT_START)
 
