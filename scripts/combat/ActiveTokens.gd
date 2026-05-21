@@ -53,6 +53,15 @@ func get_display_text() -> String:
 		parts.append("%s×%d" % [token.token_type, token.charges])
 	return " ".join(parts)
 
+## Returns all tokens whose trigger matches and whose check_trigger passes for this context.
+## Called by ActionPipeline during pre and post passes. Safe to call with an empty token list.
+func collect_triggers(context: ActionContext, trigger: RuntimeToken.Trigger) -> Array:
+	var result: Array = []
+	for token in _tokens:
+		if token.trigger == trigger and token.check_trigger(context):
+			result.append(token)
+	return result
+
 func flush() -> void:
 	_tokens.clear()
 	Log.info("ActiveTokens flushed")

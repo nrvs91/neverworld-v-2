@@ -25,3 +25,9 @@ func fire(_context: ActionContext) -> void:
 ## mnemonic/attacker/primary_target are null on that context — read self.owner/self.source instead.
 func tick(_context: ActionContext) -> void:
 	pass
+
+## Override in reaction token subclasses to declare trigger conditions.
+## Called by ActiveTokens.collect_triggers() during ActionPipeline pre/post passes.
+## Must return synchronously — no await. This is a condition check, not a firing step.
+func check_trigger(_context: ActionContext) -> bool:
+	return false
