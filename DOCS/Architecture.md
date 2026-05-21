@@ -228,7 +228,7 @@ Tokens are `RefCounted` instances spawned by `SkillExecutor` from mnemonic effec
 - **token_type**: Display/deduplication key (e.g. `"POISON"`, `"BURN"`, `"DAMAGE"`)
 - **trigger**: When the token fires — `INSTANT`, `ON_TURN_START`, `ON_DAMAGE_TAKEN`, `ON_ALLY_HIT`, `PRE_EXECUTION`
 - **charges**: Decrement counter; token expires when charges ≤ 0
-- **source** / **owner**: The attacker and target `CombatCharacter`
+- **source** / **owner**: The initiator and recipient `CombatCharacter`
 
 ```
 RuntimeToken (base)
@@ -267,7 +267,7 @@ CombatFSM._enter_action_execution()
         ├── Emit action_announced → hold 0.5s for presentation
         ├── PRE-PASS: iterate all actors' tokens for PRE_EXECUTION triggers
         │     └── Each reaction fires with fresh context (trigger_context → primary)
-        ├── VALIDATE: attacker alive? AP/MP sufficient? negated?
+        ├── VALIDATE: source alive? AP/MP sufficient? negated?
         ├── Spend AP/MP (only if validation passes)
         ├── SkillExecutor.execute(context)  ← primary action
         │     └── For each effect in mnemonic.effect_steps:
@@ -286,7 +286,7 @@ CombatFSM._enter_action_execution()
 **Key rules:**
 - Validation happens **after** pre-pass, **before** resource spend. Pre-reactions (HAMEDO) can down the attacker; if so, action is `cancelled` — no AP/MP spent.
 - If a PRE reaction negates the action (PREMONITION), action is `negated` — AP/MP **are** spent.
-- Reactions fire with their own clean `ActionContext`. `trigger_context` points to the primary action's context so reactions can read `attacker`, `any_hit`, `total_damage`, etc.
+- Reactions fire with their own clean `ActionContext`. `trigger_context` points to the primary action's context so reactions can read `source`, `any_hit`, `total_damage`, etc.
 - Post-queue is built from the primary context only. Reaction attacks do not trigger further reactions — one level deep per GDD spec.
 
 ### DoT Tick Formulas
@@ -309,7 +309,7 @@ Created by `ActionPipeline` before any effects resolve. Reactions get their own 
 
 ```
 ActionContext
-  ├── mnemonic, attacker, primary_target   ← set by ActionPipeline
+  ├── mnemonic, source, target             ← set by ActionPipeline
   ├── step_results: Array                  ← {hit, damage, is_crit} per effect step
   ├── tokens_applied: Array                ← persistent tokens queued this execution
   ├── total_damage, any_hit, any_crit      ← rolling totals; any_hit only set by INSTANT hits

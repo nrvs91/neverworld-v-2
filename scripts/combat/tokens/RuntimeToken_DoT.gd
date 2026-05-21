@@ -14,7 +14,7 @@ func _init() -> void:
 ##   POISON — (max_hp × 10% + max_mp × 10%) × resist_mult
 ##   BURN   — max_hp × 10% × resist_mult
 ##   BLEED  — max_hp × 10% × resist_mult
-## Context is created fresh per-token by ActiveTokens. mnemonic/attacker/primary_target are null.
+## Context is created fresh per-token by ActiveTokens. mnemonic/source/target are null.
 func tick(context: ActionContext) -> void:
 	var resist_state := ResistanceType.State.NONE
 	if owner.resistance_profile != null:

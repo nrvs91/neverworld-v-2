@@ -15,7 +15,7 @@ static func execute(context: ActionContext) -> void:
 			context.record_step(false, 0, false)
 			continue
 
-		var token: RuntimeToken = _create_token(effect, context.attacker, context.primary_target)
+		var token: RuntimeToken = _create_token(effect, context.source, context.target)
 		if token == null:
 			continue
 
@@ -23,9 +23,9 @@ static func execute(context: ActionContext) -> void:
 			token.fire(context)
 		else:
 			# TODO: TargetingData.shape is authored but not consumed here.
-			# All persistent effects attach to context.primary_target regardless of shape.
+			# All persistent effects attach to context.target regardless of shape.
 			# Wire TargetingData before authoring any AoE, SELF, or filter-targeted skills.
-			context.primary_target.tokens.add_token(token)
+			context.target.tokens.add_token(token)
 			context.tokens_applied.append(token)
 
 static func _create_token(effect: Skill_Effect_Base, attacker: CombatCharacter, target: CombatCharacter) -> RuntimeToken:

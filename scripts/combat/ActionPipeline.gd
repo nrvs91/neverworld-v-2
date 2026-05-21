@@ -15,8 +15,8 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 
 	var context := ActionContext.new()
 	context.mnemonic = mnemonic
-	context.attacker = attacker
-	context.primary_target = target
+	context.source = attacker
+	context.target = target
 
 	# Announce and hold for presentation
 	CombatEvents.action_announced.emit(mnemonic.mnemonic_name)
@@ -31,11 +31,11 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		var reaction_ctx := ActionContext.new()
 		reaction_ctx.trigger_context = context
 		token.fire(reaction_ctx)
-		if reaction_ctx.primary_target != null and reaction_ctx.primary_target.vitals.is_downed():
-			Log.info("ActionPipeline — downed (pre-reaction)", reaction_ctx.primary_target.character_name)
-			CombatEvents.actor_downed.emit(reaction_ctx.primary_target)
+		if reaction_ctx.target != null and reaction_ctx.target.vitals.is_downed():
+			Log.info("ActionPipeline — downed (pre-reaction)", reaction_ctx.target.character_name)
+			CombatEvents.actor_downed.emit(reaction_ctx.target)
 
-	# VALIDATE: can the attacker still execute after pre-reactions?
+	# VALIDATE: can the source still execute after pre-reactions?
 	if not _can_execute(context):
 		if context.negated:
 			Log.info("ActionPipeline — primary action negated")
@@ -56,10 +56,10 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 	if mnemonic.hp_cost_percent > 0.0:
 		attacker.vitals.spend_hp_percent(mnemonic.hp_cost_percent)
 
-	# Downed detection for primary target
-	if context.primary_target.vitals.is_downed():
-		Log.info("ActionPipeline — downed", context.primary_target.character_name)
-		CombatEvents.actor_downed.emit(context.primary_target)
+	# Downed detection for target
+	if context.target.vitals.is_downed():
+		Log.info("ActionPipeline — downed", context.target.character_name)
+		CombatEvents.actor_downed.emit(context.target)
 
 	# POST-PASS: direct iteration with updated context (any_hit, total_damage, etc. are set).
 	# Each reaction fires with its own clean context. trigger_context points to the primary.
@@ -72,22 +72,22 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		var reaction_ctx := ActionContext.new()
 		reaction_ctx.trigger_context = context
 		token.fire(reaction_ctx)
-		if reaction_ctx.primary_target != null and reaction_ctx.primary_target.vitals.is_downed():
-			Log.info("ActionPipeline — downed (post-reaction)", reaction_ctx.primary_target.character_name)
-			CombatEvents.actor_downed.emit(reaction_ctx.primary_target)
+		if reaction_ctx.target != null and reaction_ctx.target.vitals.is_downed():
+			Log.info("ActionPipeline — downed (post-reaction)", reaction_ctx.target.character_name)
+			CombatEvents.actor_downed.emit(reaction_ctx.target)
 
 	Log.info("ActionPipeline — resolved", "%s->%s total:%d" % [
-		attacker.character_name, context.primary_target.character_name, context.total_damage])
+		attacker.character_name, context.target.character_name, context.total_damage])
 	CombatEvents.action_resolved.emit(context)
 	pipeline_complete.emit()
 
 ## Validation rules, in order:
-## 1. Attacker downed → cancelled (no resource cost)
-## 2. Attacker stunned/silenced/frozen → cancelled (no resource cost)
+## 1. Source downed → cancelled (no resource cost)
+## 2. Source stunned/silenced/frozen → cancelled (no resource cost)
 ## 3. Action negated by PRE reaction → negated (resource cost IS spent)
 ## 4. Insufficient AP/MP after pre-reactions → cancelled (no resource cost)
 func _can_execute(context: ActionContext) -> bool:
-	var attacker: CombatCharacter = context.attacker
+	var attacker: CombatCharacter = context.source
 
 	if attacker.vitals.is_downed():
 		context.cancelled = true

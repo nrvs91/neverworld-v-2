@@ -4,8 +4,8 @@ extends RefCounted
 const MnemonicResource = preload("res://scripts/combat/skills/MnemonicResource.gd")
 
 var mnemonic: MnemonicResource
-var attacker: CombatCharacter
-var primary_target: CombatCharacter
+var source: CombatCharacter
+var target: CombatCharacter
 
 var step_results: Array = []
 var tokens_applied: Array = []
@@ -14,14 +14,14 @@ var any_hit: bool = false
 var any_crit: bool = false
 
 # Reference to the primary action's context. Set on reaction contexts so tokens
-# can read the triggering event for target resolution (e.g. COUNTER hits the attacker).
+# can read the triggering event for target resolution (e.g. COUNTER hits the source).
 var trigger_context: ActionContext = null
 
 # Set by PRE_EXECUTION reactions (e.g. Premonition) to nullify the primary action.
 # ActionPipeline checks this after the pre-pass and skips SkillExecutor if true.
 var negated: bool = false
 
-# Set by ActionPipeline when validation fails (attacker downed, stunned, etc.).
+# Set by ActionPipeline when validation fails (source downed, stunned, etc.).
 # Used for UI feedback — "cancelled" is distinct from "negated" (no resource cost).
 var cancelled: bool = false
 

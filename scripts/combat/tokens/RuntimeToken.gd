@@ -22,7 +22,7 @@ func fire(_context: ActionContext) -> void:
 
 ## Called by ActiveTokens.tick_turn_start() for ON_TURN_START tokens.
 ## ActiveTokens creates one fresh context per token before calling this.
-## mnemonic/attacker/primary_target are null on that context — read self.owner/self.source instead.
+## mnemonic/source/target are null on that context — read self.owner/self.source instead.
 func tick(_context: ActionContext) -> void:
 	pass
 
