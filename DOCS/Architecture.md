@@ -191,16 +191,17 @@ combat_character.tscn
 
 Combat runs in a **dedicated battle scene** — separate from the overworld. The overworld freezes, the battle scene loads, the fight resolves, the player returns.
 
-### Two FSMs in parallel
+### Two FSMs + ActionPipeline
 
 ```
-Logic FSM    ←→ (event bus) ←→    UI FSM
+Logic FSM → ActionPipeline ←→ (event bus) ←→ UI FSM
 ```
 
-- Logic FSM owns game state — turn order, damage resolution, resource mutation
-- UI FSM owns presentation — animations, floating numbers, bar updates
-- They never touch each other directly — all communication through `CombatEvents` bus
-- Logic FSM pauses at checkpoints and waits for `PresentationReady` from UI FSM
+- **Logic FSM** owns turn order and state transitions — a pure state pump. No damage math, no resource logic.
+- **ActionPipeline** owns the action resolution cycle — announce, pre-reactions, primary execution, post-reactions, downed checks, resource spend. Called by Logic FSM, awaits `pipeline_complete` before transitioning.
+- **UI FSM** owns presentation — animations, floating numbers, bar updates.
+- FSM and UI never touch each other directly — all communication through `CombatEvents` bus.
+- ActionPipeline communicates with UI through the same bus (`action_announced`, `action_resolved`, `actor_downed`).
 
 ### Combat Actors
 
@@ -225,7 +226,7 @@ The token system models all combat effects — damage, DoT, buffs, debuffs, mark
 
 Tokens are `RefCounted` instances spawned by `SkillExecutor` from mnemonic effect data. Each token carries:
 - **token_type**: Display/deduplication key (e.g. `"POISON"`, `"BURN"`, `"DAMAGE"`)
-- **trigger**: When the token fires — `INSTANT` or `ON_TURN_START` (stubs: `ON_DAMAGE_TAKEN`, `ON_ALLY_HIT`, `PRE_EXECUTION`)
+- **trigger**: When the token fires — `INSTANT`, `ON_TURN_START`, `ON_DAMAGE_TAKEN`, `ON_ALLY_HIT`, `PRE_EXECUTION`
 - **charges**: Decrement counter; token expires when charges ≤ 0
 - **source** / **owner**: The attacker and target `CombatCharacter`
 
@@ -233,7 +234,7 @@ Tokens are `RefCounted` instances spawned by `SkillExecutor` from mnemonic effec
 RuntimeToken (base)
   ├── RuntimeToken_Damage   ← INSTANT — hit/crit/resist pipeline, applies damage, emits action_executed
   ├── RuntimeToken_DoT      ← ON_TURN_START — ticks per GDD formula, emits dot_ticked
-  └── (future) RuntimeToken_Buff, RuntimeToken_Ailment, RuntimeToken_Mark, RuntimeToken_Reaction
+  └── (future) RuntimeToken_Buff, RuntimeToken_Ailment, RuntimeToken_Mark
 ```
 
 **Two dispatch paths:**
@@ -241,21 +242,52 @@ RuntimeToken (base)
 - **INSTANT** (`RuntimeToken_Damage`): `fire(context)` runs immediately during mnemonic resolution. Result written to `ActionContext` via `record_step()`. Token does not persist.
 - **Persistent** (`RuntimeToken_DoT`, future): Added to `CombatCharacter.tokens` (`ActiveTokens` container). `tick()` called each turn. Charges decrement; token auto-expires at 0.
 
-### Skill Execution Flow
+**Passive vs Reaction:**
+
+Not every token that responds to combat activity is a "reaction." The pipeline's PRE/POST passes are for tokens that genuinely need a **before/after window** around the primary action. Everything else is **passive state** that damage resolution reads inline.
+
+| Token | Type | Where It Lives |
+|---|---|---|
+| **COVER / INTERCEPT** | Passive | `RuntimeToken_Damage.fire()` — target resolution step. Redirect effects from protectee to protector. |
+| **BRACE / Shield** | Passive | `RuntimeToken_Damage.fire()` — damage calc step. "Reduce damage by X%" modifies the number inline. |
+| **COUNTER** | POST reaction | ActionPipeline post-pass. "If you hit me, I hit back" — needs primary to resolve first. |
+| **HAMEDO** | PRE reaction | ActionPipeline pre-pass. "Hit first before they hit you" — may kill attacker to cancel action. |
+| **PREMONITION** | PRE reaction | ActionPipeline pre-pass. Nullifies incoming spell; sets `context.negated = true`. |
+| **VIGIL** | POST reaction | ActionPipeline post-pass. "When ally takes damage, heal them" — needs primary to resolve. |
+| **FOLLOW UP** | POST reaction | ActionPipeline post-pass. "When ally hits enemy, I hit too" — same window as VIGIL. |
+
+**Rule:** If the effect can be described as "modify how Z works" or "redirect from A to B," it's passive state. If it's "when X happens, do Y," it's a reaction that belongs in a pass.
+
+### Action Resolution Flow
 
 ```
 CombatFSM._enter_action_execution()
-  ├── Create ActionContext (attacker, target, mnemonic)
-  ├── Call SkillExecutor.execute(context)
-  │     └── For each effect in mnemonic.effect_steps:
-  │           ├── Check needs_previous_hit vs context.any_hit
-  │           ├── _create_token(effect, attacker, target)  ← factory dispatch
-  │           ├── INSTANT  → token.fire(context)           ← resolves immediately
-  │           └── Persistent → target.tokens.add_token(token)
-  ├── Spend hp_cost_percent (if any)
-  ├── Check target downed
-  └── Emit action_resolved
+  └── ActionPipeline.run(mnemonic, attacker, target, actors)
+        ├── Create ActionContext
+        ├── Emit action_announced → hold 0.5s for presentation
+        ├── PRE-PASS: iterate all actors' tokens for PRE_EXECUTION triggers
+        │     └── Each reaction fires with fresh context (trigger_context → primary)
+        ├── VALIDATE: attacker alive? AP/MP sufficient? negated?
+        ├── Spend AP/MP (only if validation passes)
+        ├── SkillExecutor.execute(context)  ← primary action
+        │     └── For each effect in mnemonic.effect_steps:
+        │           ├── Check needs_previous_hit vs context.any_hit
+        │           ├── _create_token(effect, attacker, target)
+        │           ├── INSTANT  → token.fire(context)
+        │           └── Persistent → target.tokens.add_token(token)
+        ├── Spend hp_cost_percent (if any)
+        ├── Check primary target downed
+        ├── POST-PASS: iterate all actors' tokens for ON_DAMAGE_TAKEN / ON_ALLY_HIT
+        │     └── Each reaction fires with fresh context (trigger_context → primary)
+        ├── Emit action_resolved(context)
+        └── Emit pipeline_complete → FSM transitions to TURN_END
 ```
+
+**Key rules:**
+- Validation happens **after** pre-pass, **before** resource spend. Pre-reactions (HAMEDO) can down the attacker; if so, action is `cancelled` — no AP/MP spent.
+- If a PRE reaction negates the action (PREMONITION), action is `negated` — AP/MP **are** spent.
+- Reactions fire with their own clean `ActionContext`. `trigger_context` points to the primary action's context so reactions can read `attacker`, `any_hit`, `total_damage`, etc.
+- Post-queue is built from the primary context only. Reaction attacks do not trigger further reactions — one level deep per GDD spec.
 
 ### DoT Tick Formulas
 
@@ -273,14 +305,19 @@ DoT stacking: re-application extends existing token charges (capped at 9) rather
 
 ### ActionContext — Execution Snapshot
 
-Created in `CombatFSM` before `SkillExecutor` runs, so future `PRE_EXECUTION` reactions can modify it (redirect target, negate skill) before effects resolve.
+Created by `ActionPipeline` before any effects resolve. Reactions get their own fresh `ActionContext` with `trigger_context` pointing back to the primary.
 
 ```
 ActionContext
-  ├── mnemonic, attacker, primary_target   ← set by CombatFSM
+  ├── mnemonic, attacker, primary_target   ← set by ActionPipeline
   ├── step_results: Array                  ← {hit, damage, is_crit} per effect step
   ├── tokens_applied: Array                ← persistent tokens queued this execution
   ├── total_damage, any_hit, any_crit      ← rolling totals; any_hit only set by INSTANT hits
+  ├── trigger_context: ActionContext       ← set on reaction contexts; points to primary action
+  ├── negated: bool                        ← set by PRE reaction (e.g. PREMONITION)
+  ├── cancelled: bool                      ← set by ActionPipeline when validation fails
+  ├── pre_queue: Array                     ← RuntimeTokens collected during pre-pass
+  └── post_queue: Array                    ← RuntimeTokens collected during post-pass
 ```
 
 ---
@@ -330,8 +367,6 @@ COMBAT_START → TURN_START ←────────────────�
                    ↓                            │
             ACTION_EXECUTION                    │
                    ↓                            │
-            REACTION_SCAN (stub)                │
-                   ↓                            │
                TURN_END ────────────────────────┘
                    ↓ (all enemies OR all players dead)
                COMBAT_END
@@ -341,16 +376,15 @@ COMBAT_START → TURN_START ←────────────────�
 |-------|----------------|
 | **COMBAT_START** | Emit `combat_started`. Transition to TURN_START. |
 | **TURN_START** | Advance turn tracker, award AP, tick active actor's ON_TURN_START tokens (DoT etc.), emit `turn_started`. |
-| **ACTION_SELECT** | Player: await `action_selected` signal. Enemy: auto-pick first opponent + `mnemonics[0]` after delay. WAIT → TURN_END. |
-| **ACTION_EXECUTION** | Guard AP/MP. Create ActionContext. Run SkillExecutor. Spend HP cost. Check downed. Emit `action_resolved`. |
-| **REACTION_SCAN** | Stub — future home for COUNTER, BRACE, VIGIL, PREMONITION, COVER. Currently a no-op pass-through. |
-| **TURN_END** | Consume CT. Emit `turn_ended`. Wait for presentation. Loop to TURN_START. |
+| **ACTION_SELECT** | Player: await `action_selected` signal. Enemy: AI picks target + mnemonic. WAIT → TURN_END. |
+| **ACTION_EXECUTION** | Delegate to `ActionPipeline.run()`. Await `pipeline_complete`. Transition to TURN_END. |
+| **TURN_END** | Consume CT. Emit `turn_ended`. Wait for presentation. Check combat end. Loop to TURN_START. |
 | **COMBAT_END** | Emit `combat_ended(player_won)`. Suspend. |
 
 **Known gaps (to address before they become load-bearing):**
-- Enemy AI is inlined in ACTION_SELECT — should move to `AIBehaviorComponent` before authoring a second enemy
 - `TargetingData.shape` is authored but not yet consumed by SkillExecutor or CombatUIFSM
 - Hardcoded `create_timer()` delays stand in for a `presentation_finished` signal that doesn't exist yet
+- Reaction token subclasses (COUNTER, HAMEDO, PREMONITION, VIGIL, FOLLOW UP) are not yet implemented — pipeline infrastructure is wired, queues are always empty
 
 ---
 
