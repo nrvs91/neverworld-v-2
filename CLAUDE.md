@@ -25,6 +25,12 @@ In Godot, the natural unit of composition is the **node and scene.** Prefer atta
 
 Ask before adding complexity: *does this actually need to be a system, or is it just a node with a signal?*
 
+### 3. Simplify From First Principles
+
+When a mechanic feels like it needs a system, a pipeline, or an abstraction — stop. Describe the effect in plain English. If the answer is "redirect damage from A to B," that's a target check, not a reaction queue. If the answer is "when X happens, do Y," that's a signal. If the answer is "modify how Z works," that's a passive token check.
+
+The architecture should reflect the effect, not the other way around. Reactions are for things that genuinely need a before/after window. Everything else is just state.
+
 ---
 
 ## Project Basics
