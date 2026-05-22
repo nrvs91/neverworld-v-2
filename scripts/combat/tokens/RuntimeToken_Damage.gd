@@ -3,12 +3,12 @@ extends RuntimeToken
 
 const ActionContext = preload("res://scripts/combat/ActionContext.gd")
 
-var power: int = 10
-var damage_type: ResistanceType.DamageType = ResistanceType.DamageType.Slash
-var crit_chance: int = 5
-var chance_tier: Skill_Effect_Base.ChanceTier = Skill_Effect_Base.ChanceTier.HIGH
-var inherit_from_weapon: bool = true
-var true_strike: bool = false
+@export var power: int = 10
+@export var damage_type: ResistanceType.DamageType = ResistanceType.DamageType.Slash
+@export var crit_chance: int = 5
+@export var chance_tier: Skill_Effect_Base.ChanceTier = Skill_Effect_Base.ChanceTier.HIGH
+@export var inherit_from_weapon: bool = true
+@export var true_strike: bool = false
 
 func _init() -> void:
 	token_type = "DAMAGE"
