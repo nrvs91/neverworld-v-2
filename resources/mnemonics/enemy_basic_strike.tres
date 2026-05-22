@@ -1,22 +1,27 @@
 [gd_resource type="Resource" script_class="MnemonicResource" format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_0v4da"]
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="2_xqmmf"]
-[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="3_gmsnc"]
-[ext_resource type="Script" path="res://scripts/combat/skills/TargetingData.gd" id="4_pxevm"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
+[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
+[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_gmsnc"]
+[ext_resource type="Script" path="res://scripts/combat/skills/TargetingData.gd" id="5_pxevm"]
 
-[sub_resource type="Resource" id="Resource_jvskl"]
-script = ExtResource("2_xqmmf")
+[sub_resource type="Resource" id="Resource_dmg"]
+script = ExtResource("3_damage")
 power = 15
 damage_type = 2
 inherit_from_weapon = false
 crit_chance = 3
 
-[sub_resource type="Resource" id="Resource_pxmql"]
-script = ExtResource("4_pxevm")
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_instant")
+token = SubResource("Resource_dmg")
+
+[sub_resource type="Resource" id="Resource_targeting"]
+script = ExtResource("5_pxevm")
 
 [resource]
-script = ExtResource("3_gmsnc")
+script = ExtResource("4_gmsnc")
 mnemonic_name = "Strike"
-targeting = SubResource("Resource_pxmql")
-effect_steps = Array[ExtResource("1_0v4da")]([SubResource("Resource_jvskl")])
+targeting = SubResource("Resource_targeting")
+effect_steps = Array[ExtResource("1_0v4da")]([SubResource("Resource_effect")])

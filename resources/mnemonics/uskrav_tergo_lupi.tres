@@ -1,19 +1,24 @@
 [gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://cbkgtwihvevg2"]
 
 [ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_537wx"]
-[ext_resource type="Script" uid="uid://v1u2ophifr6m" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="2_cfoht"]
-[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="3_u5tj5"]
-[ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="4_8gwnu"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
+[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_u5tj5"]
+[ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="5_8gwnu"]
 
-[sub_resource type="Resource" id="Resource_affwj"]
-script = ExtResource("2_cfoht")
+[sub_resource type="Resource" id="Resource_dmg"]
+script = ExtResource("3_damage")
 power = 30
 
-[sub_resource type="Resource" id="Resource_pxmql"]
-script = ExtResource("4_8gwnu")
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_instant")
+token = SubResource("Resource_dmg")
+
+[sub_resource type="Resource" id="Resource_targeting"]
+script = ExtResource("5_8gwnu")
 
 [resource]
-script = ExtResource("3_u5tj5")
+script = ExtResource("4_u5tj5")
 mnemonic_name = "Uskrav"
-targeting = SubResource("Resource_pxmql")
-effect_steps = Array[ExtResource("1_537wx")]([SubResource("Resource_affwj")])
+targeting = SubResource("Resource_targeting")
+effect_steps = Array[ExtResource("1_537wx")]([SubResource("Resource_effect")])

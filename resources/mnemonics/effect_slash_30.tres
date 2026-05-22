@@ -1,7 +1,0 @@
-[gd_resource type="Resource" script_class="Skill_Effect_Damage" format=3]
-
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="1_rp1hk"]
-
-[resource]
-script = ExtResource("1_rp1hk")
-power = 30
