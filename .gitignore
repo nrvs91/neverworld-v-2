@@ -29,3 +29,6 @@ Thumbs.db
 # IDE/editor metadata
 .idea/
 .vscode/
+
+# Git worktrees
+.worktrees/
