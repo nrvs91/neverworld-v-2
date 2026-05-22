@@ -31,6 +31,7 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		var reaction_ctx := ActionContext.new()
 		reaction_ctx.trigger_context = context
 		token.fire(reaction_ctx)
+		token.owner.tokens.remove_token(token)
 		if reaction_ctx.target != null and reaction_ctx.target.vitals.is_downed():
 			Log.info("ActionPipeline — downed (pre-reaction)", reaction_ctx.target.character_name)
 			CombatEvents.actor_downed.emit(reaction_ctx.target)
@@ -72,6 +73,7 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		var reaction_ctx := ActionContext.new()
 		reaction_ctx.trigger_context = context
 		token.fire(reaction_ctx)
+		token.owner.tokens.remove_token(token)
 		if reaction_ctx.target != null and reaction_ctx.target.vitals.is_downed():
 			Log.info("ActionPipeline — downed (post-reaction)", reaction_ctx.target.character_name)
 			CombatEvents.actor_downed.emit(reaction_ctx.target)
