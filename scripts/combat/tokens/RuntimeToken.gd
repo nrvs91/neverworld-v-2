@@ -1,5 +1,5 @@
 class_name RuntimeToken
-extends RefCounted
+extends Resource
 
 enum Trigger {
 	INSTANT,
@@ -11,23 +11,14 @@ enum Trigger {
 
 var token_type: String = ""
 var trigger: Trigger = Trigger.INSTANT
-var charges: int = 1
 var source: CombatCharacter = null
 var owner: CombatCharacter = null
 
-## Called by SkillExecutor for INSTANT tokens during mnemonic resolution.
-## Reads context.any_hit for conditional chaining. Writes result via context.record_step().
 func fire(_context: ActionContext) -> void:
 	pass
 
-## Called by ActiveTokens.tick_turn_start() for ON_TURN_START tokens.
-## ActiveTokens creates one fresh context per token before calling this.
-## mnemonic/source/target are null on that context — read self.owner/self.source instead.
 func tick(_context: ActionContext) -> void:
 	pass
 
-## Override in reaction token subclasses to declare trigger conditions.
-## Called by ActiveTokens.collect_triggers() during ActionPipeline pre/post passes.
-## Must return synchronously — no await. This is a condition check, not a firing step.
 func check_trigger(_context: ActionContext) -> bool:
 	return false

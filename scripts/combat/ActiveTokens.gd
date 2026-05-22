@@ -6,60 +6,68 @@ const ActionContext = preload("res://scripts/combat/ActionContext.gd")
 
 signal token_added(token: RuntimeToken)
 signal token_removed(token: RuntimeToken)
-signal token_updated(token: RuntimeToken)
-
-const CHARGES_CAP: int = 9
 
 var _tokens: Array[RuntimeToken] = []
 
+## Append one token instance. No stacking — multiple tokens of the same type are allowed.
 func add_token(token: RuntimeToken) -> void:
-	for existing in _tokens:
-		if existing.token_type == token.token_type:
-			var prev: int = existing.charges
-			existing.charges = min(existing.charges + token.charges, CHARGES_CAP)
-			Log.info("ActiveTokens — extended", "%s %d->%d" % [token.token_type, prev, existing.charges])
-			token_updated.emit(existing)
-			return
 	_tokens.append(token)
 	Log.info("ActiveTokens — added", "%s %s" % [token.owner.character_name, token.token_type])
 	token_added.emit(token)
 
-## Fire all ON_TURN_START tokens, decrement charges, remove expired ones.
+## Remove a specific token instance (called after it fires or expires).
+func remove_token(token: RuntimeToken) -> void:
+	_tokens.erase(token)
+	Log.info("ActiveTokens — consumed", "%s %s" % [token.owner.character_name, token.token_type])
+	token_removed.emit(token)
+
+## Fire ONE token per type with ON_TURN_START trigger, then remove it.
 ## One fresh ActionContext per token — no cross-contamination between ticks.
 ## Called by CombatFSM at the start of the active actor's turn.
 func tick_turn_start() -> void:
-	var to_remove: Array[RuntimeToken] = []
+	var fired_types: Array[String] = []
+	var to_tick: Array[RuntimeToken] = []
+
 	for token in _tokens:
 		if token.trigger != RuntimeToken.Trigger.ON_TURN_START:
 			continue
+		if token.token_type in fired_types:
+			continue
+		fired_types.append(token.token_type)
+		to_tick.append(token)
+
+	for token in to_tick:
 		var ctx := ActionContext.new()
 		token.tick(ctx)
-		token.charges -= 1
-		if token.charges <= 0:
-			to_remove.append(token)
-		else:
-			token_updated.emit(token)
-	for token in to_remove:
 		_tokens.erase(token)
 		Log.info("ActiveTokens — expired", "%s %s" % [token.owner.character_name, token.token_type])
 		token_removed.emit(token)
 
-## Returns a display string for the card UI. Format: "POISON×3 BURN×2"
+## Returns display string for card UI. Counts instances per type. Format: "POISON×3 BURN×1"
 func get_display_text() -> String:
 	if _tokens.is_empty():
 		return ""
-	var parts: Array = []
+	var counts: Dictionary = {}
 	for token in _tokens:
-		parts.append("%s×%d" % [token.token_type, token.charges])
+		counts[token.token_type] = counts.get(token.token_type, 0) + 1
+	var parts: Array = []
+	for type_name in counts:
+		parts.append("%s×%d" % [type_name, counts[type_name]])
 	return " ".join(parts)
 
-## Returns all tokens whose trigger matches and whose check_trigger passes for this context.
-## Called by ActionPipeline during pre and post passes. Safe to call with an empty token list.
+## Returns ONE token per type whose trigger matches and whose check_trigger passes.
+## Only one fires per trigger event — multiple instances of same type queue for future events.
 func collect_triggers(context: ActionContext, trigger: RuntimeToken.Trigger) -> Array:
 	var result: Array = []
+	var seen_types: Array[String] = []
 	for token in _tokens:
-		if token.trigger == trigger and token.check_trigger(context):
+		if token.trigger != trigger:
+			continue
+		if token.token_type in seen_types:
+			continue
+		if token.check_trigger(context):
 			result.append(token)
+			seen_types.append(token.token_type)
 	return result
 
 func flush() -> void:
