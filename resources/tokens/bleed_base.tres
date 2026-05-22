@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="RuntimeToken_Bleed" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Bleed.gd" id="1_bleed"]
+
+[resource]
+script = ExtResource("1_bleed")
