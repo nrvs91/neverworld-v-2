@@ -11,7 +11,7 @@ static func calc_damage(power: int, atk: int, def_val: int) -> int:
 
 ## Crit roll. Returns true if the attack crits.
 ## Crit = automatic hit + 2× damage. Must be rolled BEFORE the hit roll.
-## crit_chance comes from the effect (Skill_Effect_Damage.crit_chance), NOT from a character stat.
+## crit_chance comes from RuntimeToken_Damage, NOT from a character stat.
 static func crit_roll(crit_chance: int) -> bool:
 	return randf() < crit_chance / 100.0
 

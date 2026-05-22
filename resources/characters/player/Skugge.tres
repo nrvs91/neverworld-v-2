@@ -7,7 +7,8 @@
 [ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_weqmv"]
 [ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="5_omsjp"]
 [ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="6_4ppee"]
-[ext_resource type="Script" uid="uid://v1u2ophifr6m" path="res://scripts/combat/skills/effects/Skill_Effect_Damage.gd" id="7_w04d5"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="7_instant"]
+[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="7b_damage"]
 [ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="8_styd4"]
 [ext_resource type="Resource" uid="uid://bevbhr88aabfj" path="res://resources/mnemonics/viper_strike.tres" id="9_4ppee"]
 
@@ -72,9 +73,13 @@ script = ExtResource("2_h48qx")
 levels = Array[ExtResource("1_2vacv")]([SubResource("Resource_weqmv"), SubResource("Resource_opvup"), SubResource("Resource_rex71"), SubResource("Resource_gyu77"), SubResource("Resource_omsjp")])
 metadata/_custom_type_script = "uid://ctf4nx0yni78o"
 
-[sub_resource type="Resource" id="Resource_affwj"]
-script = ExtResource("7_w04d5")
+[sub_resource type="Resource" id="Resource_dmg_uskrav"]
+script = ExtResource("7b_damage")
 power = 30
+
+[sub_resource type="Resource" id="Resource_affwj"]
+script = ExtResource("7_instant")
+token = SubResource("Resource_dmg_uskrav")
 
 [sub_resource type="Resource" id="Resource_pxmql"]
 script = ExtResource("8_styd4")
