@@ -62,6 +62,9 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		Log.info("ActionPipeline — downed", context.target.character_name)
 		CombatEvents.actor_downed.emit(context.target)
 
+	# Brief pause so damage numbers finish animating before reactions announce.
+	await get_tree().create_timer(0.4).timeout
+
 	# POST-PASS: direct iteration with updated context (any_hit, total_damage, etc. are set).
 	# Each reaction fires with its own clean context. trigger_context points to the primary.
 	for actor: CombatCharacter in actors:
@@ -70,6 +73,8 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		for token in actor.tokens.collect_triggers(context, RuntimeToken.Trigger.ON_ALLY_HIT):
 			context.post_queue.append(token)
 	for token in context.post_queue:
+		CombatEvents.action_announced.emit(token.token_type)
+		await get_tree().create_timer(0.5).timeout
 		var reaction_ctx := ActionContext.new()
 		reaction_ctx.trigger_context = context
 		token.fire(reaction_ctx)

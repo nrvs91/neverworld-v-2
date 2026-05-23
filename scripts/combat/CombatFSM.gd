@@ -23,6 +23,9 @@ var _action_pipeline: ActionPipeline = null
 func start(actors: Array, pipeline: ActionPipeline) -> void:
 	_actors = actors
 	_action_pipeline = pipeline
+	for actor: CombatCharacter in _actors:
+		if actor.ai_behavior != null:
+			actor.ai_behavior.setup(_actors)
 	Log.info("CombatFSM starting with", _actors.size())
 	_transition(State.COMBAT_START)
 

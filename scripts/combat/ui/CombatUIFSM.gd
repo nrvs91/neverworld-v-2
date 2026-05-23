@@ -65,6 +65,11 @@ func _enter_player_menu() -> void:
 	# info_panel: "A/D: switch menu   W/S: navigate   Enter: confirm"
 
 func _enter_player_targeting() -> void:
+	if _pending_mnemonic != null and _pending_mnemonic.targeting.shape == TargetingData.Shape.SELF:
+		_transition(State.WATCHING)
+		CombatEvents.action_selected.emit(_pending_mnemonic, _active_actor)
+		_pending_mnemonic = null
+		return
 	var targets := _actors.filter(func(a: CombatCharacter) -> bool:
 		return not a.is_player_controlled and not a.vitals.is_downed()
 	)
