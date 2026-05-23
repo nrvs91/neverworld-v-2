@@ -1,12 +1,14 @@
 # NEVERWORLD — Reaction Architecture Design Log
 
-> **Date:** 2026-05-21
+> **Date:** 2026-05-21 (Part I) + 2026-05-22 (Part II — Epiphany)
 > **Status:** Design crystallized, awaiting implementation plan
-> **Scope:** COUNTER, HAMEDO, VIGIL, FOLLOW UP — all damage-dealing reactions
+> **Scope:** The universal token-grant system. Reactions, buffs, debuffs, ailments, DoT, HoT — all persistent effects.
 
 ---
 
-## The Problem We Started With
+## Part I: The Problem and the Breakthrough
+
+### The Problem We Started With
 
 We built an `ActionPipeline` with PRE/POST passes for reactions. The pipeline collects tokens via `ActiveTokens.collect_triggers()`, checks conditions via `RuntimeToken.check_trigger()`, and fires them via `RuntimeToken.fire()`.
 
@@ -23,29 +25,27 @@ damage = Power × AtkStat / (DefStat + 10) × Random(0.85, 1.0)
 
 This isn't a coding problem. It's a **design contradiction**: our entire damage system is built around authored mnemonics, but reactions aren't mnemonics.
 
----
+### The Failed Attempts
 
-## The Failed Attempts
-
-### Attempt 1: Universal COUNTER Token with Hardcoded Power
+**Attempt 1: Universal COUNTER Token with Hardcoded Power**
 ```gdscript
 class_name RuntimeToken_Counter
 var power: int = 20
 ```
-**Why it failed:** No progression. No tuning. UI shows "COUNTER ???". Every COUNTER in the game deals the same damage. The player can't inspect the Power because there's no authored source.
+**Why it failed:** No progression. No tuning. UI shows "COUNTER ???". Every COUNTER in the game deals the same damage.
 
-### Attempt 2: % Return Damage
+**Attempt 2: % Return Damage**
 ```gdscript
 var counter_damage: int = int(incoming_damage * 0.5)
 ```
-**Why it failed:** Degenerate case. Boss has COUNTER ×1. Player pokes with a weak mage hit (2 damage), eats 1 back, token gone for free. Big hits become discouraged. Not tactical — solved.
+**Why it failed:** Degenerate case. Boss has COUNTER ×1. Player pokes with a weak hit (2 damage), eats 1 back, token gone for free.
 
-### Attempt 3: Token Carries `payload_mnemonic` — The Breakthrough
+**Attempt 3: Token Carries `payload_mnemonic` — The Breakthrough**
 The user's insight: **COUNTER is a mnemonic. Just like Uskrav.**
 
 ```
-COUNTER (mnemonic, AP=4, HP%=0)
-└── Skill_Effect_ReactionGrant
+COUNTER STANCE (mnemonic, AP=4, HP%=0)
+└── Skill_Effect_Reaction
     trigger = ON_DAMAGE_TAKEN
     charges = 3
     payload_mnemonic = COUNTER STRIKE
@@ -53,320 +53,305 @@ COUNTER (mnemonic, AP=4, HP%=0)
 
 The token is a **trigger wrapper**. The mnemonic is the **payload**.
 
-**Why this works:**
-- Power lives where it belongs: on the mnemonic, authored by designer
-- Ranked progression: COUNTER I (Power=20), COUNTER II (Power=35), COUNTER III (Power=50)
-- RESONANCE investment bumps rank, just like Uskrav
-- Composable: FERVOR can grant COUNTER III tokens + MOMENTUM tokens in one skill
+### The Self-Reference Trap (And Escape)
 
----
-
-## The Self-Reference Trap (And Escape)
-
-**The user's first instinct:** "COUNTER is a mnemonic. It grants COUNTER tokens. Those tokens execute... COUNTER itself."
-
-**The problem:** If `COUNTER.tres` has two effect steps:
-1. `ReactionGrant` → grant 3× COUNTER tokens
+If `COUNTER.tres` has two effect steps:
+1. `Reaction` → grant 3× COUNTER tokens
 2. `Damage` → Power=20
 
-Then when the player **casts** COUNTER, `SkillExecutor.execute()` runs step 1 (grant tokens) **and then step 2** (deal immediate damage to the target). So casting your counter-stance also stabs the enemy. That's wrong — setting a stance shouldn't deal damage.
+Then when the player **casts** COUNTER, `SkillExecutor.execute()` runs step 1 (grant tokens) **and then step 2** (deal immediate damage). Casting your stance also stabs the enemy. Wrong.
 
 **The fix: Separate resources.**
 
 ```
-COUNTER STANCE (mnemonic, AP=4, HP%=0)
-└── Skill_Effect_ReactionGrant
+COUNTER STANCE (mnemonic, AP=4)
+└── Skill_Effect_Reaction
     trigger = ON_DAMAGE_TAKEN
     charges = 3
-    payload_mnemonic = COUNTER STRIKE   ← points to DIFFERENT resource
+    payload_mnemonic = COUNTER STRIKE   ← DIFFERENT resource
 
-COUNTER STRIKE (mnemonic, AP=0, HP%=0)
+COUNTER STRIKE (mnemonic, AP=0)
 └── Skill_Effect_Damage
     power = 20
     damage_type = Pierce
 ```
 
-- **COUNTER STANCE** is what the player casts. Costs AP. Grants tokens. Appears in the action menu.
+- **COUNTER STANCE** is what the player casts. Costs AP. Grants tokens.
 - **COUNTER STRIKE** is what the token executes. Never cast directly. Has the Power.
-- Both are authored separately. The stance references the strike as its payload.
 - RESONANCE upgrades bump both: more charges on stance, more Power on strike.
-
-**This is the price of composability.** One mnemonic cannot be both a buff and its own payload without the immediate-effect contradiction. Two resources is boring, but boring is exactly what this codebase needs.
 
 ---
 
-## The Final Architecture
+## Part II: The Epiphany — Container, Template, Instance
+
+### The Realization
+
+**All combat effects reduce to three layers:**
+
+| Layer | What It Is | Godot Type | Example |
+|-------|-----------|------------|---------|
+| **Container** | Costs, description, targeting, bundle of effect references | `MnemonicResource` | "Viper Strike" — 2 AP, single target |
+| **Template** | "Create a token with these settings" | `Skill_Effect_*` | "Create a DoT token, poison, 3 charges" |
+| **Instance** | The thing attached to a character that actually executes | `RuntimeToken_*` | The POISON token ticking on the enemy |
+
+**The mnemonic doesn't know what it does.** It just says: "I cost 2 AP, target one enemy, and here are my effect templates." The templates say: "Create this token with these settings." The token says: "When my trigger fires, I do this."
+
+### The Unified Effect Family
+
+**All persistent effects are the same architectural pattern: grant a token with N charges.**
+
+| Effect Type | Token Trigger | Token Behavior | Data Lives |
+|-------------|--------------|----------------|------------|
+| `Skill_Effect_DoT` | `ON_TURN_START` | `tick()` reads `dot_tag`, looks up formula | **Inline** in token |
+| `Skill_Effect_Buff` | `ON_TURN_START` | `tick()` applies modifier to stat | **Inline** in token |
+| `Skill_Effect_Ailment` | `ON_TURN_START` | `tick()` applies status (stunned, silenced) | **Inline** in token |
+| `Skill_Effect_Reaction` | `ON_DAMAGE_TAKEN` / `PRE_EXECUTION` | `fire()` executes `payload_mnemonic` via `SkillExecutor` | **External** — references another mnemonic |
+
+**Reactions are not special.** They are just token grants whose payload is external rather than inline. The DoT token knows its own formula. The reaction token knows which mnemonic to execute.
+
+### The Outliers: Instant Effects
+
+| Effect Type | Token Trigger | Token Behavior | Persists? |
+|-------------|--------------|----------------|-----------|
+| `Skill_Effect_Damage` | `INSTANT` | `fire()` calculates damage, applies it, discards self | **No** |
+| `Skill_Effect_Healing` | `INSTANT` | `fire()` restores HP, discards self | **No** |
+
+Damage and healing are the **only** effects that don't create persistent tokens. They fire once and vanish. Every other effect in the game — DoT, buff, debuff, ailment, reaction, HoT — attaches a token that executes later.
+
+### The Finite Template Library
+
+The game needs **~10 effect templates**, total. Not hundreds. Not per-skill. Per **type**.
+
+```
+resources/effects/
+  ├── damage_base.tres          ← power=0 (overridden per mnemonic)
+  ├── heal_base.tres            ← heal_power=0
+  ├── dot_poison.tres           ← dot_tag=POISON
+  ├── dot_burn.tres             ← dot_tag=BURN
+  ├── dot_bleed.tres            ← dot_tag=BLEED
+  ├── buff_empower.tres         ← buff_type=EMPOWER, modifier=1.5
+  ├── buff_keen.tres            ← buff_type=KEEN
+  ├── debuff_slow.tres          ← debuff_type=SLOW, modifier=0.5
+  ├── debuff_weaken.tres        ← debuff_type=WEAKEN, modifier=0.5
+  ├── reaction_counter.tres     ← trigger=ON_DAMAGE_TAKEN
+  ├── reaction_vigil.tres       ← trigger=ON_ALLY_HIT
+  ├── reaction_hamedo.tres      ← trigger=PRE_EXECUTION
+  └── reaction_follow_up.tres   ← trigger=ON_ALLY_HIT
+```
+
+**Finite. Predictable. Reusable.** A mnemonic references one or more templates and overrides fields:
+
+```gdscript
+# Viper Strike.tres
+mnemonic_name = "Viper Strike"
+ap_cost = 2
+effect_steps = [damage_base, dot_poison]
+  damage_base.power = 25
+  damage_base.damage_type = Pierce
+  dot_poison.charges = 3
+
+# Counter Stance.tres
+mnemonic_name = "COUNTER"
+ap_cost = 4
+effect_steps = [reaction_counter]
+  reaction_counter.charges = 3
+  reaction_counter.payload_mnemonic = counter_strike_1
+```
+
+### The Authoring Workflow
+
+1. **Create effect template** (once per type)
+   - `resources/effects/reaction_counter.tres`
+   - Script: `Skill_Effect_Reaction`
+   - `trigger = ON_DAMAGE_TAKEN`
+   - `charges = 1` ← default, overridden per mnemonic
+
+2. **Create payload mnemonic** (for reactions only)
+   - `resources/mnemonics/counter_strike_1.tres`
+   - `power = 20`
+   - `damage_type = Pierce`
+
+3. **Create stance mnemonic**
+   - `resources/mnemonics/counter_stance.tres`
+   - `mnemonic_name = "COUNTER"`
+   - `ap_cost = 4`
+   - `effect_steps = [reaction_counter]` ← references template
+   - Override: `reaction_counter.charges = 3`
+   - Override: `reaction_counter.payload_mnemonic = counter_strike_1`
+
+**The mnemonic is a dumb container.** It doesn't know it's a reaction. It just knows: "I cost 4 AP and I apply this effect." The effect template knows it's a reaction grant. The payload mnemonic knows it's a damage effect. Composition all the way down.
+
+### Why Reactions Are Abstracted
+
+**The user's caveat:** "We abstract the reaction just cause its a special somewhat case, even tho it's just a conditional damage_effect/applytoken_effect."
+
+**Honest assessment:** Reactions are abstracted for two reasons, neither of which is fundamental:
+
+1. **Payload is external.** DoT, buff, and ailment tokens carry their behavior inline (formula, modifier, status type). Reaction tokens carry a `payload_mnemonic` reference. This requires a separate resource and a `TargetMode` enum for target resolution.
+
+2. **Trigger conditions are complex.** DoT ticks every turn unconditionally. Reactions check `trigger_context.any_hit`, `trigger_context.source`, etc. This requires `check_trigger()` to read the primary action context.
+
+**But conceptually?** Reactions are just token grants. The same family as DoT and buff. The abstraction exists because the payload is external, not because reactions are a different species.
+
+**Future unification:** If we ever want buffs with external payloads (e.g., "grant a buff that executes a heal mnemonic"), the same `payload_mnemonic` pattern applies. The abstraction isn't reaction-specific — it's "token grant with external payload."
+
+---
+
+## Updated Architecture
 
 ### Components
 
 | Component | Role |
 |-----------|------|
-| `Skill_Effect_ReactionGrant` | New effect resource. Extends `Skill_Effect_Base`. Specifies: trigger enum, charges, payload_mnemonic reference, target_mode |
-| `RuntimeToken_Reaction` | Generic reaction token. No subclasses for Counter/Vigil/Hamedo. Fields: `trigger`, `payload_mnemonic`, `target_mode` |
-| `SkillExecutor` | Extended to create `RuntimeToken_Reaction` from `Skill_Effect_ReactionGrant`. Extended to execute payload mnemonics when tokens fire |
-| ActionPipeline | **Unchanged.** PRE/POST pass already wired. Tokens collected, tokens fired. The pipeline doesn't know or care what the payload is |
-| CombatUIFSM | **Unchanged.** COUNTER STANCE appears in action menu like any other skill. Player casts it. Token appears on card |
+| `MnemonicResource` | **Container.** Costs, description, targeting, array of effect template references |
+| `Skill_Effect_Damage` | **Template.** "Create a Damage token, fire instantly" |
+| `Skill_Effect_Healing` | **Template.** "Create a Heal token, fire instantly" |
+| `Skill_Effect_DoT` | **Template.** "Create a DoT token, attach with N charges" |
+| `Skill_Effect_Buff` | **Template.** "Create a Buff token, attach with N charges" |
+| `Skill_Effect_Debuff` | **Template.** "Create a Debuff token, attach with N charges" |
+| `Skill_Effect_Ailment` | **Template.** "Create an Ailment token, attach with N charges" |
+| `Skill_Effect_Reaction` | **Template.** "Create a Reaction token, attach with N charges, payload = mnemonic" |
+| `RuntimeToken` | **Base instance.** trigger, charges, source, owner |
+| `RuntimeToken_Damage` | **Instance.** `fire()` calculates and applies damage |
+| `RuntimeToken_DoT` | **Instance.** `tick()` applies DoT formula |
+| `RuntimeToken_Reaction` | **Instance.** `fire()` executes `payload_mnemonic` via `SkillExecutor` |
+| `SkillExecutor` | **Factory.** Reads mnemonic effect steps, creates correct tokens, fires instant ones, attaches persistent ones |
+| `ActionPipeline` | **Orchestrator.** Announces, pre-pass, validates, executes primary, post-pass, emits resolved. Unchanged by this design |
 
-### Token Lifecycle
+### Token Trigger Enum
 
-```
-1. COMBAT START
-   Character has COUNTER STANCE equipped
-   (but NO tokens yet — stances are cast mid-combat)
-
-2. PLAYER TURN
-   Player selects COUNTER STANCE from action menu
-   ActionPipeline runs:
-     ├── SkillExecutor.execute()
-     │     └── Skill_Effect_ReactionGrant
-     │           └── RuntimeToken_Reaction created
-     │                 trigger = ON_DAMAGE_TAKEN
-     │                 charges = 3
-     │                 payload_mnemonic = COUNTER STRIKE
-     │                 target_mode = SOURCE
-     │                 → added to character.tokens
-     └── action_resolved emitted
-
-3. ENEMY TURN — enemy hits player
-   ActionPipeline runs the primary action:
-     ├── PRE-PASS (empty)
-     ├── VALIDATE
-     ├── SkillExecutor.execute(primary)
-     ├── POST-PASS
-     │     └── collect_triggers(context, ON_DAMAGE_TAKEN)
-     │           └── finds player's COUNTER token
-     │                 check_trigger() → true (primary hit me)
-     │                 → added to post_queue
-     ├── Execute post_queue:
-     │     └── token.fire(reaction_ctx)
-     │           ├── resolve target via target_mode
-     │           │     SOURCE → primary.source (the enemy)
-     │           ├── build scratch ActionContext
-     │           │     source = token.owner (the player)
-     │           │     target = resolved target (the enemy)
-     │           │     mnemonic = payload_mnemonic (COUNTER STRIKE)
-     │           ├── SkillExecutor.execute(reaction_ctx)
-     │           │     └── Skill_Effect_Damage(power=20)
-     │           │           └── RuntimeToken_Damage created, fired, damage dealt
-     │           └── token.charges -= 1 (now 2)
-     └── action_resolved emitted
-
-4. NEXT ENEMY HIT
-   Same flow. Token has 2 charges. Fires again. Now 1 charge.
-
-5. THIRD ENEMY HIT
-   Token fires. Charges hit 0. Token removed from ActiveTokens.
-   No more counters until player re-casts the stance.
+```gdscript
+enum Trigger {
+    INSTANT,           # Damage, Healing — fire now, discard
+    ON_TURN_START,     # DoT, Buff, Debuff, Ailment, HoT — tick on owner's turn
+    ON_DAMAGE_TAKEN,   # COUNTER, BRACE — fire when owner is hit
+    ON_ALLY_HIT,       # VIGIL, FOLLOW UP — fire when ally is hit
+    PRE_EXECUTION,     # HAMEDO, PREMONITION — fire before primary action
+}
 ```
 
-### Target Resolution Modes
+### Target Resolution Modes (for reactions)
 
 ```gdscript
 enum TargetMode {
     SOURCE,      # Hit the one who initiated the primary action
     TARGET,      # Hit the primary target of the primary action
-    OWNER,       # Target is self (e.g. self-heal on trigger)
-    ALLY_HIT,    # The ally who was hit (for ON_ALLY_HIT triggers)
+    OWNER,       # Target is self
+    ALLY_HIT,    # The ally who was hit
 }
 ```
 
-| Reaction | Trigger | TargetMode |
-|----------|---------|------------|
-| COUNTER | ON_DAMAGE_TAKEN | SOURCE |
-| HAMEDO | PRE_EXECUTION | SOURCE |
-| VIGIL | ON_ALLY_HIT | TARGET |
-| FOLLOW UP | ON_ALLY_HIT | SOURCE |
+### Execution Path
 
-### Execution Path for Reactions
+**Primary actions** go through `ActionPipeline.run()`:
+1. Announce
+2. PRE-pass (collect PRE_EXECUTION tokens)
+3. Validate
+4. SkillExecutor.execute(primary context)
+5. POST-pass (collect ON_DAMAGE_TAKEN / ON_ALLY_HIT tokens)
+6. Emit resolved
 
-**Reactions call `SkillExecutor.execute()` directly. They bypass `ActionPipeline.run()`.**
-
-Why:
-- No announce banner. A counter is a quick strike, not a dramatic skill declaration.
-- No pre-pass. If COUNTER triggered PREMONITION on the enemy, that would be a chain. The GDD says "one level deep."
-- No validation. The reaction already passed `check_trigger()`. No AP/MP cost.
-- No post-pass. If COUNTER hit triggered another COUNTER, that's a chain. We stop at one.
-
-The reaction token's `fire()`:
+**Reactions** bypass the pipeline:
 ```gdscript
-func fire(context: ActionContext) -> void:
-    var primary := context.trigger_context
-    var resolved_target := _resolve_target(primary)
-    
-    var reaction_ctx := ActionContext.new()
-    reaction_ctx.source = owner
-    reaction_ctx.target = resolved_target
-    reaction_ctx.mnemonic = payload_mnemonic
-    
-    SkillExecutor.execute(reaction_ctx)
-    
-    # Downed check — same as primary
-    if resolved_target.vitals.is_downed():
-        CombatEvents.actor_downed.emit(resolved_target)
+# Inside RuntimeToken_Reaction.fire()
+var reaction_ctx := ActionContext.new()
+reaction_ctx.source = owner
+reaction_ctx.target = _resolve_target(trigger_context)
+reaction_ctx.mnemonic = payload_mnemonic
+SkillExecutor.execute(reaction_ctx)
 ```
+
+No announce. No validation. No pre/post pass. Direct execution. Prevents chains.
 
 ---
 
-## Design Decisions and Rationale
+## Design Decisions
 
-### 1. Stances Are Cast, Not Passive
+### 1. Mnemonics Are Dumb Containers
 
-Characters start combat with **zero** reaction tokens. They must spend a turn and AP to cast a stance.
+A mnemonic does not know what it does. It only knows what it costs, what it targets, and which effect templates it references. The templates determine the behavior.
 
-**Why:** Tactical depth. "Do I attack now or set up COUNTER?" If counters were always-on, they'd be must-equips with no tempo cost. Making them active stances creates real decisions.
+**Why:** Composability. FERVOR grants MOMENTUM + COUNTER with the same pattern as Viper Strike grants damage + poison. The container is just a delivery mechanism.
 
-**Future:** Gear that grants tokens at combat start is a separate concern. Don't build it now.
+### 2. Effect Templates Are External Resources
 
-### 2. Payload Mnemonics Have Zero Cost
+Effect templates live as standalone `.tres` files in `resources/effects/`. Mnemonics reference them. Godot creates unique copies when fields are overridden.
 
-COUNTER STRIKE has AP=0, MP=0, HP%=0. The cost is paid on the stance (COUNTER STANCE, AP=4).
+**Why:** Reuse. `dot_poison.tres` is referenced by Viper Strike, Poison Jab, and any future poison skill. One template, many usages.
 
-**Why:** The player already paid. Triggering the reaction is free. This is identical to how buffs work in most RPGs — pay upfront, triggered effect is gratis.
+### 3. Charges Are Per-Mnemonic Override
 
-**Authoring guideline:** "Payload mnemonics should have zero costs. Costs go on the stance."
+The template defines a default charge count (usually 1). The mnemonic overrides it.
 
-### 3. One Generic Reaction Token Class
+```gdscript
+# dot_poison.tres default:
+charges = 1
+
+# Viper Strike overrides:
+dot_poison.charges = 3
+
+# Poison Jab overrides:
+dot_poison.charges = 5
+```
+
+**Why:** The same template can create short or long-duration effects without duplicating files.
+
+### 4. Reactions Use External Payloads
+
+Reaction templates reference a `payload_mnemonic` — a separate mnemonic resource that defines the actual effect (damage, heal, buff).
+
+**Why:** Power scaling. The payload mnemonic carries Power, damage type, crit chance — all the authored data. The reaction template just says "when triggered, execute this."
+
+### 5. Payload Mnemonics Have Zero Cost
+
+`COUNTER STRIKE` has AP=0, MP=0, HP%=0. The cost is paid on the stance (`COUNTER STANCE`, AP=4).
+
+**Why:** The player already paid. Triggering the reaction is free. Costs on payload mnemonics are meaningless because they're never cast directly.
+
+### 6. One Generic Reaction Token Class
 
 No `RuntimeToken_Counter`, `RuntimeToken_Hamedo`, `RuntimeToken_Vigil`.
 
 Just `RuntimeToken_Reaction` with:
-- `trigger: Trigger` (PRE_EXECUTION, ON_DAMAGE_TAKEN, ON_ALLY_HIT)
+- `trigger: Trigger`
 - `payload_mnemonic: MnemonicResource`
 - `target_mode: TargetMode`
 
-**Why:** The behavior is entirely data-driven. The token just reads its fields and calls SkillExecutor. No need for subclasses.
-
-### 4. Reaction Execution Bypasses ActionPipeline
-
-Direct `SkillExecutor.execute()`, no pipeline.
-
-**Why:** Prevents infinite chains. The pipeline's POST-pass triggers reactions. If a reaction went through the pipeline, its POST-pass would trigger more reactions. One level deep is the rule.
-
-**Belt-and-suspenders:** Add `reaction_depth: int` to ActionContext, cap at 1. Probably unnecessary since direct SkillExecutor prevents chains by construction, but cheap insurance.
-
-### 5. Payloads Can Be Any Mnemonic
-
-COUNTER STRIKE is just a mnemonic with a `Skill_Effect_Damage` step. But a payload could be:
-- A heal (VIGIL heals the ally who took damage)
-- A buff (HAMEDO grants the attacker a stun token)
-- A multi-step skill (COUNTER STRIKE IV hits twice)
-
-**Why:** This is the GDD's "trigger and payload are independent" principle. A DamagePayload is the same component whether it fires instantly or reactively.
+**Why:** Data-driven. Behavior is determined by the payload, not the token class.
 
 ---
 
-## Edge Cases and Open Questions
+## Edge Cases
 
-### Edge Case 1: Reaction Token Downed During Execution
+### Edge Case 1: Self-Reference
 
-What if COUNTER fires, the counter-attack hits the enemy, and the enemy's PREMONITION token negates it? Or what if the enemy dies mid-reaction?
+**Problem:** Reaction template references its own mnemonic as payload.
 
-**Resolution:** The reaction's `SkillExecutor.execute()` runs to completion. Downed checks happen after each effect step (same as primary). If the target dies, remaining effect steps still run (unless we add a per-step downed check). This is consistent with primary execution.
+**Resolution:** Godot's resource system allows circular references, but it's brittle and confusing. Authoring guideline: "Payload mnemonics must be separate resources. Never self-reference."
 
-### Edge Case 2: Reaction Damage Exceeds Target HP
+### Edge Case 2: Payload Is Null
 
-Same as primary damage. `take_damage()` handles overkill. No special case.
+**Problem:** `payload_mnemonic` not set on reaction template.
 
-### Edge Case 3: Multiple Reactions on Same Trigger
+**Resolution:** `SkillExecutor._create_reaction_token()` logs error and returns null. `RuntimeToken_Reaction.fire()` logs warning and returns. Never crash.
 
-Player has COUNTER ×3 and BRACE ×1. Both are `ON_DAMAGE_TAKEN`. Enemy hits.
+### Edge Case 3: Target Resolution Fails
 
-**Resolution:** Both are collected into `post_queue`. Both fire in iteration order. The pipeline doesn't prioritize. If order matters (e.g., BRACE reduces damage, COUNTER hits back), that's a design question for the future. For now, iterate in token-attachment order.
+**Problem:** `target_mode = SOURCE` but `trigger_context.source` is null.
+
+**Resolution:** `_resolve_target()` returns null. `fire()` logs warning and returns. Graceful degradation.
 
 ### Edge Case 4: Reaction Token With Zero Charges
 
-Token has `charges = 0` somehow. `ActiveTokens.tick_turn_start()` doesn't decrement charges (that's for ON_TURN_START). But `check_trigger()` could be called.
+**Problem:** Token reaches 0 charges but isn't removed.
 
-**Resolution:** `ActiveTokens.collect_triggers()` only iterates `_tokens`. If a token has 0 charges, it should have been removed. Ensure `fire()` decrements and `ActiveTokens` removes at 0.
+**Resolution:** `fire()` decrements charges. `ActiveTokens` removes at 0. `collect_triggers()` only iterates active tokens.
 
-### Edge Case 5: Payload Mnemonic Is Null
+### Edge Case 5: Reaction Downs Last Enemy
 
-`Skill_Effect_ReactionGrant` doesn't set `payload_mnemonic`. Token is created with null payload.
+**Problem:** Counter kills final enemy. Combat should end.
 
-**Resolution:** `SkillExecutor._create_reaction_token()` should assert/Log.error if payload is null. Runtime check in `RuntimeToken_Reaction.fire()` logs and returns if null. Never crash.
-
-### Edge Case 6: Target Resolution Fails
-
-`target_mode = SOURCE` but `trigger_context.source` is null (shouldn't happen). `target_mode = ALLY_HIT` but no ally was hit.
-
-**Resolution:** `_resolve_target()` returns null. `fire()` logs warning and returns without executing. Graceful degradation.
-
-### Open Question 1: Reaction UI Presentation
-
-Does the player see "Counter Strike!" banner when a reaction fires? Or just a floating damage number?
-
-**Current thinking:** No banner. Just floating number. Reactions are quick strikes, not dramatic declarations. If we want banners later, we add a `CombatEvents.reaction_fired` signal and UI subscribes. Not in MVP.
-
-### Open Question 2: Reaction Downed Check
-
-After a reaction fires and deals damage, should `_check_combat_end()` run?
-
-**Current thinking:** No. The pipeline's `_check_combat_end()` runs at TURN_END. If a reaction downs the last enemy, combat ends at TURN_END. Checking after every reaction is premature and would interrupt the flow. The GDD's "check at TURN_END" rule stands.
-
-### Open Question 3: Reaction Tokens and DoT
-
-Can a reaction token's payload be a DoT? E.g., COUNTER POISON: when hit, apply poison.
-
-**Current thinking:** Yes. The payload is a mnemonic. If the mnemonic has `Skill_Effect_DoT` steps, they attach to the target like any DoT. This is emergent behavior — we don't need to design it, it just works.
-
-### Open Question 4: Can Reactions Crit?
-
-If COUNTER STRIKE has `crit_chance = 5`, the `RuntimeToken_Damage` will roll crit normally.
-
-**Current thinking:** Yes. Reactions use the full damage pipeline. If the payload mnemonic has crit_chance, it rolls. This is consistent.
-
-### Open Question 5: MOMENTUM and COUNTER
-
-MOMENTUM: "+25% Phys.Atk on next physical hit."
-
-If player has MOMENTUM ×2 and COUNTER triggers, does the counter get the buff?
-
-**Current thinking:** MOMENTUM is a passive token checked by `RuntimeToken_Damage.fire()`. The counter's payload executes `Skill_Effect_Damage`, which creates `RuntimeToken_Damage`, which checks for MOMENTUM. So yes, the counter gets the buff. This is correct and emergent.
-
----
-
-## Composability Examples
-
-### FERVOR
-```
-FERVOR (mnemonic, AP=5)
-├── Skill_Effect_Buff  ← grant 3× MOMENTUM tokens to all allies
-│   token_type = MOMENTUM
-│   charges = 1
-├── Skill_Effect_ReactionGrant  ← grant 3× COUNTER III tokens to all allies
-│   trigger = ON_DAMAGE_TAKEN
-│   charges = 3
-│   payload_mnemonic = COUNTER STRIKE III
-```
-
-### VIGIL
-```
-VIGIL STANCE (mnemonic, AP=4)
-└── Skill_Effect_ReactionGrant
-    trigger = ON_ALLY_HIT
-    charges = 3
-    payload_mnemonic = VIGIL HEAL
-
-VIGIL HEAL (mnemonic, AP=0)
-└── Skill_Effect_Healing
-    heal_power = 25
-    target_mode = TARGET  ← heals the ally who was hit
-```
-
-### HAMEDO
-```
-HAMEDO STANCE (mnemonic, AP=3)
-└── Skill_Effect_ReactionGrant
-    trigger = PRE_EXECUTION
-    charges = 2
-    payload_mnemonic = HAMEDO STRIKE
-
-HAMEDO STRIKE (mnemonic, AP=0)
-└── Skill_Effect_Damage
-    power = 15
-    damage_type = Pierce
-    target_mode = SOURCE
-```
+**Resolution:** `_check_combat_end()` runs at TURN_END. Not after every reaction. Combat ends cleanly at the end of the turn.
 
 ---
 
@@ -374,11 +359,12 @@ HAMEDO STRIKE (mnemonic, AP=0)
 
 | Feature | Why Not Now |
 |---------|-------------|
-| Gear-granted reactions at combat start | Gear system is minimal; stances are cast mid-combat for now |
-| Reaction banners/animations | No animation system yet; floating numbers suffice for MVP |
-| Reaction chain prevention (`reaction_depth`) | Direct SkillExecutor prevents chains by construction; add later if needed |
+| Gear-granted tokens at combat start | Gear system is minimal; cast stances mid-combat |
+| Reaction banners/animations | No animation system; floating numbers suffice |
+| Reaction chain prevention | Direct SkillExecutor prevents chains by construction |
 | Reaction priority/order | One reaction at a time; iterate in attachment order |
-| Multiple payload steps | COUNTER STRIKE has one step for now; multi-step payloads work but aren't tested |
+| Multi-step payloads | COUNTER STRIKE has one step for now |
+| Buff/Debuff/Ailment templates | DoT and Reaction prove the pattern; extend later |
 | PREMONITION nullification UI | Negated actions just log; no visual feedback yet |
 
 ---
@@ -386,51 +372,45 @@ HAMEDO STRIKE (mnemonic, AP=0)
 ## Files to Create/Modify
 
 ### New Files
-- `scripts/combat/skills/effects/Skill_Effect_ReactionGrant.gd`
+- `scripts/combat/skills/effects/Skill_Effect_Reaction.gd`
 - `scripts/combat/tokens/RuntimeToken_Reaction.gd`
+- `resources/effects/reaction_counter.tres`
+- `resources/effects/dot_poison.tres` (move from embedded)
 - `resources/mnemonics/counter_stance.tres`
 - `resources/mnemonics/counter_strike.tres`
-- `resources/mnemonics/vigil_stance.tres` (future)
-- `resources/mnemonics/vigil_heal.tres` (future)
 
 ### Modified Files
-- `scripts/combat/SkillExecutor.gd` — add `_create_reaction_token()`, handle `Skill_Effect_ReactionGrant`
-- `scripts/combat/ActionContext.gd` — add `reaction_depth: int = 0` (optional, insurance)
-- `scripts/combat/tokens/RuntimeToken.gd` — add `TargetMode` enum (if not already present)
-- `DOCS/GDD_V2.md` — add stance/payload separation note
-- `DOCS/Architecture.md` — update reaction architecture section
+- `scripts/combat/SkillExecutor.gd` — add `_create_reaction_token()`, handle `Skill_Effect_Reaction`
+- `scripts/combat/ActionContext.gd` — add `reaction_depth: int = 0` (optional insurance)
+- `scripts/combat/tokens/RuntimeToken.gd` — add `TargetMode` enum
+- `DOCS/GDD_V2.md` — add container-template-instance model, stance/payload separation
+- `DOCS/Architecture.md` — update token system architecture
 
 ---
 
 ## The Bottom Line
 
-**The reaction system is not a new system. It's the existing token system executing existing mnemonics on a deferred trigger.**
+**The entire combat system reduces to one pattern:**
 
-- Tokens already have triggers, charges, and fire methods
-- Mnemonics already have effect steps with authored Power
-- SkillExecutor already creates tokens and executes effects
-- ActionPipeline already collects and fires reaction tokens
+> Container delivers templates. Templates become instances. Instances fire now or later.
 
-The only new code is:
-1. `Skill_Effect_ReactionGrant` — "grant a token"
-2. `RuntimeToken_Reaction` — "when triggered, execute a mnemonic"
+- **Instant** (damage, heal) → fire now, discard
+- **Persistent** (DoT, buff, debuff, ailment, reaction) → attach, fire later on trigger
 
-Everything else is composition. That's the GDD principle: triggers and payloads are independent. A DamagePayload is the same whether it fires instantly or reactively.
+**Reactions are not a separate system.** They are persistent tokens whose payload is external. The same factory (`SkillExecutor`), the same pipeline (`ActionPipeline`), the same token lifecycle (`ActiveTokens`).
 
-**The user's insight — "COUNTER is a mnemonic" — collapses the entire problem.** Reactions don't need a new damage formula. They use the same formula as everything else. The token is just a deferred execution trigger.
+**The user's insight — "the skill doesn't give a shit whether it's a reaction, buff or debuff" — is correct.** The mnemonic is a dumb container. The effect template determines the behavior. The token is the runtime instance. That's the whole architecture.
+
+**The only new code:**
+1. `Skill_Effect_Reaction` — "grant a reaction token"
+2. `RuntimeToken_Reaction` — "when triggered, execute payload mnemonic"
+
+Everything else is composition. Same factory, same pipeline, same tokens.
 
 ---
 
-## Next Step Recommendation
+## Next Step
 
-**Write a formal implementation plan.** This document is the design. Now turn it into tasks:
-1. Create `Skill_Effect_ReactionGrant`
-2. Create `RuntimeToken_Reaction`
-3. Extend `SkillExecutor`
-4. Author COUNTER STANCE + COUNTER STRIKE `.tres`
-5. Equip to test character
-6. Run combat, verify counter fires
-
-One reaction. End-to-end. Then generalize to HAMEDO, VIGIL, FOLLOW UP.
+**Write an implementation plan.** One reaction end-to-end (COUNTER). Prove the pipeline. Then generalize.
 
 **The pipeline is ready. The design is ready. Let's build it.**
