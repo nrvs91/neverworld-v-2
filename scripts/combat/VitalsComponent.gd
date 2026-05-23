@@ -44,6 +44,10 @@ func take_damage(amount: int) -> void:
 		Log.info("HP reached zero")
 	vitals_changed.emit()
 
+func heal(amount: int) -> void:
+	cur_hp = min(cur_hp + amount, max_hp)
+	vitals_changed.emit()
+
 func spend_ap(amount: int) -> void:
 	cur_ap -= amount
 	vitals_changed.emit()

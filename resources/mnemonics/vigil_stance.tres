@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="MnemonicResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
+[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Vigil.gd" id="3_vigil"]
+[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Resource" path="res://resources/mnemonics/targeting_self.tres" id="5_self"]
+
+[sub_resource type="Resource" id="Resource_vigil"]
+script = ExtResource("3_vigil")
+power = 15
+
+[sub_resource type="Resource" id="Resource_grant"]
+script = ExtResource("2_grant")
+token = SubResource("Resource_vigil")
+amount = 2
+
+[resource]
+script = ExtResource("4_mnemonic")
+mnemonic_name = "Vigil Stance"
+targeting = ExtResource("5_self")
+effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

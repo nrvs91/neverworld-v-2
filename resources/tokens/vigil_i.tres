@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RuntimeToken_Vigil" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Vigil.gd" id="1_vigil"]
+
+[resource]
+script = ExtResource("1_vigil")
+power = 15
