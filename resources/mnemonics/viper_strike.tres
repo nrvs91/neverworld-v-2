@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://bevbhr88aabfj"]
 
 [ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_n4wrn"]
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
-[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="4_grant"]
-[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Poison.gd" id="5_poison"]
+[ext_resource type="Script" uid="uid://drcvu0qn608jt" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
+[ext_resource type="Script" uid="uid://bqwo4712edpli" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
+[ext_resource type="Script" uid="uid://buh8rpxl1kj84" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="4_grant"]
+[ext_resource type="Script" uid="uid://dhdkuku3cjs5b" path="res://scripts/combat/tokens/RuntimeToken_Poison.gd" id="5_poison"]
 [ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="6_wtefk"]
 [ext_resource type="Resource" path="res://resources/mnemonics/targeting_single_enemy.tres" id="7_target"]
 
@@ -23,9 +23,9 @@ script = ExtResource("5_poison")
 
 [sub_resource type="Resource" id="Resource_grant"]
 script = ExtResource("4_grant")
-needs_previous_hit = true
 token = SubResource("Resource_poison")
 amount = 2
+needs_previous_hit = true
 
 [resource]
 script = ExtResource("6_wtefk")

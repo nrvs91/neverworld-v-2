@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://cbkgtwihvevg2"]
 
 [ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_537wx"]
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
-[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
+[ext_resource type="Script" uid="uid://drcvu0qn608jt" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
+[ext_resource type="Script" uid="uid://bqwo4712edpli" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
 [ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_u5tj5"]
 [ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="5_8gwnu"]
 

@@ -1,22 +1,28 @@
-[gd_resource type="Resource" script_class="MnemonicResource" format=3]
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://cp5soyo7q7xj8"]
 
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
-[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Counter.gd" id="3_counter"]
-[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
-[ext_resource type="Resource" path="res://resources/mnemonics/targeting_self.tres" id="5_self"]
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://buh8rpxl1kj84" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
+[ext_resource type="Script" uid="uid://wc1i308m1wur" path="res://scripts/combat/tokens/RuntimeToken_Counter.gd" id="3_counter"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="5_qgfp7"]
 
-[sub_resource type="Resource" id="Resource_counter"]
+[sub_resource type="Resource" id="Resource_xh22d"]
 script = ExtResource("3_counter")
-power = 15
+metadata/_custom_type_script = "uid://wc1i308m1wur"
 
 [sub_resource type="Resource" id="Resource_grant"]
 script = ExtResource("2_grant")
-token = SubResource("Resource_counter")
+token = SubResource("Resource_xh22d")
 amount = 2
+
+[sub_resource type="Resource" id="Resource_2k065"]
+script = ExtResource("5_qgfp7")
+shape = 1
+filter = 1
+metadata/_custom_type_script = "uid://c0nmnx3d2582y"
 
 [resource]
 script = ExtResource("4_mnemonic")
 mnemonic_name = "Counter Stance"
-targeting = ExtResource("5_self")
+targeting = SubResource("Resource_2k065")
 effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

@@ -1,14 +1,13 @@
-[gd_resource type="Resource" script_class="MnemonicResource" format=3]
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://bei7u38wuqejm"]
 
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
-[ext_resource type="Script" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
-[ext_resource type="Script" path="res://scripts/combat/tokens/RuntimeToken_Vigil.gd" id="3_vigil"]
-[ext_resource type="Script" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
-[ext_resource type="Resource" path="res://resources/mnemonics/targeting_self.tres" id="5_self"]
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://buh8rpxl1kj84" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
+[ext_resource type="Script" uid="uid://cyp68t16p77gp" path="res://scripts/combat/tokens/RuntimeToken_Vigil.gd" id="3_vigil"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Resource" uid="uid://bsauqqvhcjq0x" path="res://resources/mnemonics/targeting_self.tres" id="5_self"]
 
 [sub_resource type="Resource" id="Resource_vigil"]
 script = ExtResource("3_vigil")
-power = 15
 
 [sub_resource type="Resource" id="Resource_grant"]
 script = ExtResource("2_grant")
