@@ -220,43 +220,99 @@ CombatStart state
 
 ## Token System
 
-The token system models all combat effects — damage, DoT, buffs, debuffs, marks, reactions — as first-class runtime objects. Every effect flows through a unified token lifecycle.
+The token system models all combat effects — damage, DoT, buffs, debuffs, reactions, finishers — as first-class runtime objects. Every effect flows through a unified token lifecycle.
+
+### RuntimeToken
+
+`RuntimeToken` extends `Resource`. Each instance carries:
+- **token_type** — string key for deduplication and UI display (`"POISON"`, `"EMPOWER"`, etc.)
+- **trigger** — when the token fires (see table below)
+- **source** / **owner** — the initiating and receiving `CombatCharacter`
+- **opposes** — if set, adding this token cancels one existing instance of that type rather than stacking
+- **skip_first_tick** — if true, the first ON_TURN_END tick is a no-op (grants self-buffs a free cast turn)
+
+**Trigger enum:**
+
+| Trigger | When it fires |
+|---------|--------------|
+| `INSTANT` | Immediately on creation — fires and discards, never stored in ActiveTokens |
+| `ON_TURN_START` | Start of the owner's turn — DoT ticks, CC expiry |
+| `ON_TURN_END` | End of the owner's turn — buff/debuff expiry |
+| `ON_DAMAGE_TAKEN` | POST-pass — owner was the damage target this action |
+| `ON_ALLY_HIT` | POST-pass — an ally on the same team took damage this action |
+| `PRE_EXECUTION` | PRE-pass — fires before the primary action resolves |
+
+### Quantity Model
+
+Tokens use a **quantity-as-duration** model — no charges counter. "3 POISON" means three separate `RuntimeToken_Poison` instances in `ActiveTokens`. Each tick consumes one instance. 3 POISON → 3 ticks → 3 turns of DoT.
+
+The same model applies to buffs and debuffs: 3 EMPOWER = 3 instances, one expires per TurnEnd. The count visible in the UI is a live instance count, not a counter field.
 
 ### RuntimeToken Hierarchy
 
-Tokens are `RefCounted` instances spawned by `SkillExecutor` from mnemonic effect data. Each token carries:
-- **token_type**: Display/deduplication key (e.g. `"POISON"`, `"BURN"`, `"DAMAGE"`)
-- **trigger**: When the token fires — `INSTANT`, `ON_TURN_START`, `ON_DAMAGE_TAKEN`, `ON_ALLY_HIT`, `PRE_EXECUTION`
-- **charges**: Decrement counter; token expires when charges ≤ 0
-- **source** / **owner**: The initiator and recipient `CombatCharacter`
+```
+RuntimeToken (Resource)
+  ├── RuntimeToken_Damage     — INSTANT: hit roll, crit, resist pipeline; standard attack damage
+  ├── RuntimeToken_Envenom    — INSTANT: consume_all(type), damage = count × power_per_token
+  ├── RuntimeToken_Poison     — ON_TURN_START: Nature DoT tick
+  ├── RuntimeToken_Empower    — ON_TURN_END: ×1.5 damage multiplier; opposes WEAKEN; skip_first_tick
+  ├── RuntimeToken_Weaken     — ON_TURN_END: ×0.75 damage multiplier; opposes EMPOWER
+  ├── RuntimeToken_Stun       — consumed by CombatFSM at TurnStart to skip AP gain and ACTION_SELECT
+  ├── RuntimeToken_Counter    — ON_DAMAGE_TAKEN: retaliates against attacker
+  └── RuntimeToken_Vigil      — ON_ALLY_HIT: heals the ally that took damage
+```
+
+### Passive Hooks
+
+Tokens can expose passive effects polled inline during damage resolution without needing a trigger window:
+
+- `get_damage_multiplier() -> float` — polled by `ActiveTokens.get_damage_multiplier()` inside `RuntimeToken_Damage.fire()`, after resistance, before finalising. Returns 1.0 by default. One modifier applied per token type — quantity is duration, not magnitude.
+
+### Tick Timing
+
+| Token | Trigger | Notes |
+|-------|---------|-------|
+| DoT (POISON, BURN, BLEED) | ON_TURN_START | One instance ticked and consumed at start of the affected actor's own turn |
+| STUN | — | Consumed by `CombatFSM._enter_turn_start()` before AP gain; DoT ticks still fire first |
+| Buff (EMPOWER) | ON_TURN_END | `skip_first_tick = true` — cast turn is free; 3 tokens = 3 boosted attacks |
+| Debuff (WEAKEN) | ON_TURN_END | No skip needed — ticks at end of the *target's* turn, not the caster's |
+
+### Mutual Cancellation
+
+`RuntimeToken.opposes` — when set, `ActiveTokens.add_token()` removes one existing instance of the opposing type rather than stacking. EMPOWER ↔ WEAKEN: the two can never coexist on the same actor.
+
+### Passive vs Reaction
+
+Not every token that responds to combat is a "reaction." PRE/POST passes are for tokens that need a before/after window around the primary action. Everything else is passive state read inline.
+
+| Token | Type | Resolution point |
+|-------|------|-----------------|
+| **EMPOWER / WEAKEN** | Passive | `RuntimeToken_Damage.fire()` — multiplier polled after resistance calc |
+| **COVER / INTERCEPT** | Passive (future) | `RuntimeToken_Damage.fire()` — target redirect before damage calc |
+| **BRACE / Shield** | Passive (future) | `RuntimeToken_Damage.fire()` — damage modifier during calc |
+| **COUNTER** | POST reaction | ActionPipeline post-pass — retaliates after primary lands |
+| **VIGIL** | POST reaction | ActionPipeline post-pass — heals damaged ally after primary resolves |
+| **HAMEDO** | PRE reaction (future) | ActionPipeline pre-pass — may down attacker, cancel action |
+| **PREMONITION** | PRE reaction (future) | ActionPipeline pre-pass — sets `context.negated = true` |
+| **FOLLOW UP** | POST reaction (future) | ActionPipeline post-pass — fires after ally hits |
+
+### ActiveTokens
+
+`ActiveTokens` is a `Node` on every `CombatCharacter`. It owns the live token list and exposes:
 
 ```
-RuntimeToken (base)
-  ├── RuntimeToken_Damage   ← INSTANT — hit/crit/resist pipeline, applies damage, emits action_executed
-  ├── RuntimeToken_DoT      ← ON_TURN_START — ticks per GDD formula, emits dot_ticked
-  └── (future) RuntimeToken_Buff, RuntimeToken_Ailment, RuntimeToken_Mark
+add_token(token)              — adds token; handles mutual cancellation; emits token_added
+remove_token(token)           — emits token_removed
+tick_turn_start()             — fires + consumes one ON_TURN_START token per type
+tick_turn_end()               — fires + consumes one ON_TURN_END token per type; respects skip_first_tick
+consume_if_present(type)      — removes one token of type; returns bool (STUN check)
+consume_all(type) -> int      — removes all of type; returns count (ENVENOM detonation)
+has_token(type) -> bool       — presence check without consuming (ActionMenu preconditions)
+collect_triggers(ctx, trig)   — one token per type whose check_trigger passes (reaction dispatch)
+get_damage_multiplier()       — multiplies all non-1.0 passive modifiers, one per type
+get_display_text()            — "POISON×3 EMPOWER×1" format for card UI
+flush()                       — clears all tokens at end of combat
 ```
-
-**Two dispatch paths:**
-
-- **INSTANT** (`RuntimeToken_Damage`): `fire(context)` runs immediately during mnemonic resolution. Result written to `ActionContext` via `record_step()`. Token does not persist.
-- **Persistent** (`RuntimeToken_DoT`, future): Added to `CombatCharacter.tokens` (`ActiveTokens` container). `tick()` called each turn. Charges decrement; token auto-expires at 0.
-
-**Passive vs Reaction:**
-
-Not every token that responds to combat activity is a "reaction." The pipeline's PRE/POST passes are for tokens that genuinely need a **before/after window** around the primary action. Everything else is **passive state** that damage resolution reads inline.
-
-| Token | Type | Where It Lives |
-|---|---|---|
-| **COVER / INTERCEPT** | Passive | `RuntimeToken_Damage.fire()` — target resolution step. Redirect effects from protectee to protector. |
-| **BRACE / Shield** | Passive | `RuntimeToken_Damage.fire()` — damage calc step. "Reduce damage by X%" modifies the number inline. |
-| **COUNTER** | POST reaction | ActionPipeline post-pass. "If you hit me, I hit back" — needs primary to resolve first. |
-| **HAMEDO** | PRE reaction | ActionPipeline pre-pass. "Hit first before they hit you" — may kill attacker to cancel action. |
-| **PREMONITION** | PRE reaction | ActionPipeline pre-pass. Nullifies incoming spell; sets `context.negated = true`. |
-| **VIGIL** | POST reaction | ActionPipeline post-pass. "When ally takes damage, heal them" — needs primary to resolve. |
-| **FOLLOW UP** | POST reaction | ActionPipeline post-pass. "When ally hits enemy, I hit too" — same window as VIGIL. |
-
-**Rule:** If the effect can be described as "modify how Z works" or "redirect from A to B," it's passive state. If it's "when X happens, do Y," it's a reaction that belongs in a pass.
 
 ### Action Resolution Flow
 
@@ -265,33 +321,33 @@ CombatFSM._enter_action_execution()
   └── ActionPipeline.run(mnemonic, attacker, target, actors)
         ├── Create ActionContext
         ├── Emit action_announced → hold 0.5s for presentation
-        ├── PRE-PASS: iterate all actors' tokens for PRE_EXECUTION triggers
-        │     └── Each reaction fires with fresh context (trigger_context → primary)
+        ├── PRE-PASS: collect + fire PRE_EXECUTION tokens across all actors
+        │     └── Each reaction fires with its own fresh ActionContext
         ├── VALIDATE: source alive? AP/MP sufficient? negated?
         ├── Spend AP/MP (only if validation passes)
-        ├── SkillExecutor.execute(context)  ← primary action
+        ├── SkillExecutor.execute(context) — primary action
         │     └── For each effect in mnemonic.effect_steps:
         │           ├── Check needs_previous_hit vs context.any_hit
-        │           ├── _create_token(effect, attacker, target)
-        │           ├── INSTANT  → token.fire(context)
-        │           └── Persistent → target.tokens.add_token(token)
+        │           ├── Skill_Effect_Instant → duplicate token, fire(context), discard
+        │           └── Skill_Effect_Grant   → duplicate token N times, add to target.tokens
         ├── Spend hp_cost_percent (if any)
+        ├── Brief pause (0.4s) for damage numbers to settle
         ├── Check primary target downed
-        ├── POST-PASS: iterate all actors' tokens for ON_DAMAGE_TAKEN / ON_ALLY_HIT
-        │     └── Each reaction fires with fresh context (trigger_context → primary)
+        ├── POST-PASS: collect + fire ON_DAMAGE_TAKEN / ON_ALLY_HIT tokens
+        │     └── Announce reaction, 0.5s pause, fire with fresh ActionContext
         ├── Emit action_resolved(context)
         └── Emit pipeline_complete → FSM transitions to TURN_END
 ```
 
 **Key rules:**
-- Validation happens **after** pre-pass, **before** resource spend. Pre-reactions (HAMEDO) can down the attacker; if so, action is `cancelled` — no AP/MP spent.
-- If a PRE reaction negates the action (PREMONITION), action is `negated` — AP/MP **are** spent.
-- Reactions fire with their own clean `ActionContext`. `trigger_context` points to the primary action's context so reactions can read `source`, `any_hit`, `total_damage`, etc.
-- Post-queue is built from the primary context only. Reaction attacks do not trigger further reactions — one level deep per GDD spec.
+- Validation happens after pre-pass, before resource spend. Pre-reactions can down the attacker; if so, action is `cancelled` — no AP/MP spent.
+- If a PRE reaction negates the action, action is `negated` — AP/MP **are** spent.
+- Reactions fire with their own clean `ActionContext`. `trigger_context` points back to the primary context.
+- Post-queue is built from the primary context only. Reaction attacks do not trigger further reactions.
 
 ### DoT Tick Formulas
 
-Fixed per `dot_tag` — not authored per instance:
+Fixed per DoT type — not authored per instance:
 
 ```
 POISON: (max_hp × 10% + max_mp × 10%) × resist_multiplier
@@ -299,9 +355,7 @@ BURN:   max_hp × 10% × resist_multiplier
 BLEED:  max_hp × 10% × resist_multiplier
 ```
 
-IMMUNE targets (resist_multiplier == 0): tick skipped silently, charges still decrement.
-
-DoT stacking: re-application extends existing token charges (capped at 9) rather than creating a duplicate.
+IMMUNE targets: tick resolves to 0 damage; token instance is still consumed.
 
 ### ActionContext — Execution Snapshot
 
@@ -311,10 +365,10 @@ Created by `ActionPipeline` before any effects resolve. Reactions get their own 
 ActionContext
   ├── mnemonic, source, target             ← set by ActionPipeline
   ├── step_results: Array                  ← {hit, damage, is_crit} per effect step
-  ├── tokens_applied: Array                ← persistent tokens queued this execution
-  ├── total_damage, any_hit, any_crit      ← rolling totals; any_hit only set by INSTANT hits
+  ├── tokens_applied: Array                ← persistent tokens added this execution
+  ├── total_damage, any_hit, any_crit      ← rolling totals updated by record_step()
   ├── trigger_context: ActionContext       ← set on reaction contexts; points to primary action
-  ├── negated: bool                        ← set by PRE reaction (e.g. PREMONITION)
+  ├── negated: bool                        ← set by PRE reaction
   ├── cancelled: bool                      ← set by ActionPipeline when validation fails
   ├── pre_queue: Array                     ← RuntimeTokens collected during pre-pass
   └── post_queue: Array                    ← RuntimeTokens collected during post-pass
@@ -324,7 +378,7 @@ ActionContext
 
 ## Skill Data Layer
 
-Skills are authored as `.tres` resources. No skill logic lives in code — only data.
+Skills are authored as `.tres` resources. All behaviour lives in token subclasses — effect classes are dispatch mechanisms only.
 
 ### MnemonicResource
 
@@ -334,25 +388,22 @@ One skill's complete definition:
 MnemonicResource
   ├── mnemonic_name, rank, is_melee, merge_display
   ├── ap_cost, mp_cost, hp_cost_percent
-  ├── targeting: TargetingData              ← shape (SINGLE/ALL/SELF) + filter (HAS_DOT, IS_DOWNED)
-  └── effect_steps: Array[Skill_Effect_Base] ← ordered list; SkillExecutor iterates in order
+  ├── requires_token_on_enemy: String     ← if set, ActionMenu greys skill unless an active enemy holds this token
+  ├── targeting: TargetingData            ← shape (SINGLE/ALL/SELF) + filter (HAS_DOT, IS_DOWNED, etc.)
+  └── effect_steps: Array[Skill_Effect_Base]
 ```
 
 ### Skill_Effect_Base Hierarchy
 
 ```
 Skill_Effect_Base (Resource)
-  ├── chance_tier: ChanceTier    ← CERTAIN/HIGH(75%)/MEDIUM(50%)/LOW(25%)
-  ├── needs_previous_hit: bool   ← skip if prior step missed
-  ├── true_strike: bool          ← bypass hit roll entirely
-  ├── Skill_Effect_Damage        ← power, damage_type, crit_chance, inherit_from_weapon
-  └── Skill_Effect_DoT           ← dot_tag (POISON/BURN/BLEED), charges
+  ├── needs_previous_hit: bool   ← skip this step if the prior step missed
+  ├── Skill_Effect_Instant       ← token: RuntimeToken — duplicate, set source/owner, call fire() immediately
+  ├── Skill_Effect_Grant         ← token: RuntimeToken, amount: int — add N instances to target.tokens
+  └── Skill_Effect_Remove        ← token_type: String — remove matching tokens (stub, not yet wired)
 ```
 
-**ChanceTier semantics by effect type:**
-- Physical damage: scales attacker HIT in `clamp((HIT × tier%) / DODGE, 5%, 95%)`
-- Magical damage / heals / buffs: ignored — always connects
-- Ailments (future): raw application probability before resistance
+Effect classes carry no behaviour of their own. `Skill_Effect_Instant` fires the token immediately and discards it — used for damage, finishers, and instant heals. `Skill_Effect_Grant` installs persistent token instances into `ActiveTokens` — used for DoTs, buffs, debuffs, reactions, and ailments. The token's own `fire()` or `tick()` handles everything else.
 
 ---
 
@@ -381,10 +432,10 @@ COMBAT_START → TURN_START ←────────────────�
 | **TURN_END** | Consume CT. Emit `turn_ended`. Wait for presentation. Check combat end. Loop to TURN_START. |
 | **COMBAT_END** | Emit `combat_ended(player_won)`. Suspend. |
 
-**Known gaps (to address before they become load-bearing):**
-- `TargetingData.shape` is authored but not yet consumed by SkillExecutor or CombatUIFSM
-- Hardcoded `create_timer()` delays stand in for a `presentation_finished` signal that doesn't exist yet
-- Reaction token subclasses (COUNTER, HAMEDO, PREMONITION, VIGIL, FOLLOW UP) are not yet implemented — pipeline infrastructure is wired, queues are always empty
+**Open gaps:**
+- `TargetingData.shape` SELF and SINGLE are wired. ALL (multi-target) is not yet consumed by `SkillExecutor`.
+- Hardcoded `create_timer()` delays stand in for a `presentation_finished` signal — sufficient until presentation polish pass.
+- TURN_START state does not yet tick DoT/HoT for ALL actors; it only ticks the active actor's tokens. Party HoT (VIGIL heals) relies on the POST-pass in ActionPipeline, not TurnStart.
 
 ---
 

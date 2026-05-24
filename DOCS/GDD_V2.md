@@ -52,32 +52,17 @@ Each effect step is its own resource — a self-contained component that knows w
 
 #### Effect Vocabulary
 
-**Mnemonic effects** — stat-scaling, full pipeline:
+Effect classes are **dispatch mechanisms only** — they carry no behaviour. All logic lives in the RuntimeToken subclass that each effect references. There are three effect types:
 
 | Effect | What it does |
 |--------|-------------|
-| `Skill_Effect_Damage` | Deal damage. Reads Power + AtkStat vs DefStat. Full pipeline (resist, buff/debuff, crit). |
-| `Skill_Effect_Healing` | Restore HP. Reads HealPower × ScalingStat. No resist or crit. |
-| `Skill_Effect_Buff` | Apply a buff token to a target. Stackable flag for effects like MOMENTUM. |
-| `Skill_Effect_Debuff` | Apply a debuff token to the target. |
-| `Skill_Effect_DoT` | Apply a DoT token (BURN, POISON, BLEED). Ticks on target's TurnStart. |
-| `Skill_Effect_HoT` | Apply a HoT token (REGEN, VIVIFY). Ticks on recipient's TurnStart. |
-| `Skill_Effect_Ailment` | Apply a CC ailment (FREEZE, WINDED, PETRIFY). Chance-gated, resistance-blocked. |
-| `Skill_Effect_Etc` | Apply a special token — Stance, Trigger, or Mark. Type set per effect instance. |
-| `Skill_Effect_ModifyAP` | Drain or restore AP. Positive = restore, negative = drain. |
-| `Skill_Effect_Cleanse` | Remove active tokens from the target by type (DoTs, debuffs, ailments). |
-| `Skill_Effect_Convert` | Convert one active token type to another on the target. |
-| `Skill_Effect_Transfer` | Move tokens from one combatant to another. |
+| `Skill_Effect_Instant` | Duplicate the referenced token blueprint, set source/owner, call `fire(context)` immediately. Used for damage, finishers, and instant heals. Token is discarded after firing — never stored. |
+| `Skill_Effect_Grant` | Duplicate the referenced token blueprint `amount` times, add each instance to `target.tokens`. Used for DoTs, buffs, debuffs, ailments, reactions, marks — anything persistent. |
+| `Skill_Effect_Remove` | Remove active tokens of a given type from the target. Used for cleanse effects. |
 
-**Item effects** — fixed values, no stat scaling, no crit, always resolve:
+The behaviour of any given effect is entirely determined by the `RuntimeToken` subclass attached to it. A `Skill_Effect_Grant` that references `RuntimeToken_Poison` applies a DoT. The same `Skill_Effect_Grant` referencing `RuntimeToken_Empower` applies a damage buff. The effect class doesn't care — it only knows how to dispatch.
 
-| Effect | What it does |
-|--------|-------------|
-| `Item_Effect_Damage` | Fixed damage. Bypasses stat scaling entirely. |
-| `Item_Effect_RestoreHP` | Fixed HP restore. |
-| `Item_Effect_RestoreMP` | Fixed MP restore. |
-
-Items and mnemonics share the same execution pipeline — the distinction is in the subclass, not the system.
+Items and mnemonics share the same execution pipeline and effect classes. The distinction: item effects use flat fixed values (no stat scaling, no crit); mnemonic token classes use the full formula.
 
 #### Damage Formula
 
@@ -495,40 +480,43 @@ The core combat hook: **ripple manipulation.** Stack them, trigger them, strip t
 
 ### Token Architecture
 
-Every combat effect — from a basic sword slash to a three-turn BURN to a reactive counter stance — is a **token.** Tokens are self-resolving entities. They are created from a blueprint (the skill's authored data), attached to a target, and they handle their own lifecycle from there. The combat system doesn't need to know what kind of token it's dealing with — it just creates them and lets them run.
+Every combat effect — from a basic sword slash to a three-turn BURN to a reactive counter stance — is a **token.** Tokens are self-resolving objects. They are created from a blueprint (the skill's authored data), attached to a target, and handle their own lifecycle from there. The combat system doesn't need to know what kind of token it's dealing with — it creates them and lets them run.
 
-A token has five properties:
+A token has four properties:
 
 - **Owner** — the character carrying this token (who it's attached to)
 - **Source** — the character who created it (matters for damage scaling)
-- **Trigger** — when this token fires (Instant, OnTurnStart, OnDamageTaken, etc.)
-- **Payload** — what it does when it fires (deal damage, heal, buff a stat, reduce incoming damage)
-- **Charges** — how many times it fires before expiring
+- **Trigger** — when this token fires (Instant, OnTurnStart, OnTurnEnd, OnDamageTaken, etc.)
+- **token_type** — string key used for deduplication, display, and mutual cancellation
 
-**The trigger determines the token's lifetime.** This is the core insight. An instant damage skill and a three-turn BURN are the same architecture — they differ only in trigger and charge count:
+**Quantity = duration.** There is no charges counter. "3 POISON" means three separate POISON token instances on the target. Each tick or use consumes one instance. 3 POISON → 3 ticks → 3 turns. 3 EMPOWER → 3 turns of damage buff. The count visible in the UI is always a live instance count.
 
-| Effect | Trigger | Charges | What Happens |
-|--------|---------|---------|-------------|
-| Sword slash | Instant | 1 | Created, fires immediately, expires |
-| BURN (3 turns) | OnTurnStart | 3 | Ticks at the start of the owner's turn, −1 charge per tick |
-| EMPOWER (2 turns) | OnTurnStart | 2 | Buffs a stat while active, ticks down each turn |
-| Counter Strike | POST reaction | 1 | Waits. After the primary action resolves, fires its payload (a damage effect), then expires |
-| Vigil | POST reaction | 3 | After primary resolves, heals the ally that took damage. 3 charges = 3 reactions |
-| Brace | Passive | 1 | Checked inline during damage calc. Reduces incoming damage by 40%, then expires |
-| KEEN | OnNextPhysHit | 1 | Guarantees a crit on the next physical hit, consumed on use |
-| COVERED | Passive (paired) | N | Checked inline during damage calc. Effects aimed at this actor resolve on their protector instead. One charge consumed per redirect. Paired with COVERING on the protector. |
+**The trigger determines the token's lifetime:**
 
-**Charges = duration for ticking effects.** 3 charges on a DoT means 3 ticks — 3 turns. 3 charges on a reactive stance means 3 reactions before it expires. The number always means the same thing: how many times this token fires.
+| Effect | Trigger | Quantity | What Happens |
+|--------|---------|----------|-------------|
+| Sword slash | INSTANT | 1 | Created, fires immediately, discarded |
+| BURN (3 turns) | ON_TURN_START | 3 | One instance ticked and consumed at start of owner's turn |
+| EMPOWER (3 turns) | ON_TURN_END | 3 | Passive multiplier (×1.5) read during damage calc; one instance expires at end of owner's TurnEnd. Cast turn is free — 3 tokens = 3 boosted attacks |
+| WEAKEN (3 turns) | ON_TURN_END | 3 | Passive multiplier (×0.75); ticks at end of *target's* turn |
+| STUN | — | 1 | Consumed by CombatFSM at TurnStart; AP gain and action are skipped |
+| COUNTER | ON_DAMAGE_TAKEN | N | POST-pass reaction — retaliates against attacker after taking damage |
+| VIGIL | ON_ALLY_HIT | N | POST-pass reaction — heals a damaged ally after primary resolves |
+| ENVENOM | INSTANT | 1 | Consumes all POISON on target; damage = count × power_per_token |
+| Brace | Passive (future) | 1 | Checked inline during damage calc — reduces incoming damage, then expires |
+| KEEN | Passive (future) | 1 | Guarantees crit on next physical hit, consumed on use |
 
-**Tokens are objects, not counters.** A BURN token is a discrete thing attached to a character. It can be transferred between combatants by a transfer skill. It can be cleansed. It ticks independently.
+**Tokens are objects, not counters.** A BURN token is a discrete thing attached to a character. It can be transferred, cleansed, or detonated.
 
-**Composition:** the trigger and the payload are independent. A `DamagePayload` is the same component whether it fires instantly (sword slash), on a timer (BURN tick), or reactively (Counter Strike). A `HealPayload` is the same whether it fires instantly (Flash Heal) or reactively (Vigil). New token types = new trigger + existing payload. The resolution logic is written once per payload type.
+**Passive vs Reaction:** Not every token that responds to combat needs a trigger window. Passive tokens (EMPOWER, WEAKEN, BRACE) are polled inline during damage resolution. Reaction tokens (COUNTER, VIGIL) need the primary action to fully resolve first — they belong in the PRE or POST pass. The rule: if it modifies *how* something works, it's passive. If it fires *because* something happened, it's a reaction.
 
-**ActionPipeline is the orchestrator, not a resolver.** It announces the action, runs the PRE-pass, validates execution, calls `SkillExecutor.execute(context)`, runs the POST-pass, and emits `action_resolved(context)`. It never calculates damage or resolves effects itself. The tokens resolve themselves. `CombatCalculator` is a pure utility that payload components call when they need math — it doesn't drive the flow.
+**Mutual cancellation:** tokens can declare an `opposes` type. Applying EMPOWER to a character who has WEAKEN cancels one WEAKEN instance instead of stacking — the two can never coexist.
 
-**Multi-step skills and conditional chaining:** A mnemonic's effect list is an ordered sequence of steps. Each step can read what the previous step did via a shared scratch pad (resolution context). This enables conditional effects — Poison Jab is two steps: (1) deal Pierce damage, (2) apply 3 Poison tokens *if step 1 hit*. The DoT step has `RequiresPreviousHit = true` — if the damage missed, no poison. The scratch pad tracks: did the last step hit, was it a crit, how many targets were hit. This is internal to a single skill use and discarded afterward — it is not token state.
+**ActionPipeline is the orchestrator, not a resolver.** It announces the action, runs the PRE-pass, validates execution, calls `SkillExecutor.execute(context)`, runs the POST-pass, and emits `action_resolved(context)`. It never calculates damage or resolves effects itself. The tokens resolve themselves. `CombatCalculator` is a pure utility that token classes call when they need math — it doesn't drive the flow.
 
-**Generator / Transfer / Detonator pattern:** Skills are designed as combo pieces. Every skill must have standalone value — combo payoff is the ceiling, not the floor. Full combo lines unlock gradually across progression (generator arrives before detonator in the unlock order).
+**Multi-step skills and conditional chaining:** A mnemonic's effect list is an ordered sequence of steps. Each step can read what the previous step did via a shared scratch pad (resolution context). This enables conditional effects — Viper Strike is two steps: (1) deal Pierce damage, (2) apply 3 POISON tokens *if step 1 hit*. The Grant step has `needs_previous_hit = true` — if the damage missed, no poison. The scratch pad is internal to a single skill use and discarded afterward — it is not token state.
+
+**Generator / Detonator pattern:** Skills are designed as combo pieces. Every skill must have standalone value — combo payoff is the ceiling, not the floor. Viper Strike generates POISON; Envenom detonates it for burst damage scaling with stack count. Full combo lines unlock gradually across progression.
 
 ### Status Effects Reference
 
@@ -563,9 +551,15 @@ This is separate from Hit/Dodge, which governs whether a physical skill connects
 
 `resistMult: WEAK = 2.0 / none = 1.0 / RESISTANT = 0.5 / IMMUNE = 0.0`
 
-**Special stackable buffs:**
-- **MOMENTUM** — +25% Phys.Atk per stack (physical only). Stacks consumed on next physical hit. Granted per enemy hit by CrimsonRhythm / BloodScent.
-- **KEEN** — guarantees crit on the next physical hit. PersistUntilConsumed. Applied by Stalk.
+**Buff / Debuff tick timing:**
+
+Buffs and debuffs expire at **TurnEnd** of the actor carrying them. DoTs and CC ailments expire at **TurnStart**. This split means:
+- A debuff applied to an enemy lands immediately on their next attack, then ticks down at the end of *their* turn — all authored duration is usable.
+- A self-buff cast on your own turn gets a **free cast turn**: the first TurnEnd tick is skipped. 3 EMPOWER tokens = 3 boosted attacks, not 2.
+
+**Special buffs (future):**
+- **MOMENTUM** — +25% Phys.Atk per stack (physical only). Stacks consumed on next physical hit. Granted per enemy hit.
+- **KEEN** — guarantees crit on the next physical hit. Consumed on use.
 
 **UseHitCount pattern:** Stackable buffs like MOMENTUM use a `UseHitCount` flag on the buff effect. When set, token count equals the number of targets actually hit by that skill cast — not a fixed authored number. CrimsonRhythm hitting 3 enemies grants 3 MOMENTUM stacks. Missing all enemies grants 0. This is the standard pattern for skills that reward hitting multiple targets.
 
