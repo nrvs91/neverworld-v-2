@@ -50,8 +50,14 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 	attacker.vitals.spend_ap(mnemonic.ap_cost)
 	attacker.vitals.spend_mp(mnemonic.mp_cost)
 
+	if mnemonic.is_melee:
+		await attacker.visuals.approach(target.get_parent().global_position)
+
 	# Primary action
 	SkillExecutor.execute(context)
+
+	if mnemonic.is_melee:
+		await attacker.visuals.recover()
 
 	# HP blood cost — paid after execution, not before (it's a price, not a prerequisite)
 	if mnemonic.hp_cost_percent > 0.0:
