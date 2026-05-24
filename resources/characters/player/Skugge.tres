@@ -6,13 +6,10 @@
 [ext_resource type="Script" uid="uid://ctf4nx0yni78o" path="res://scripts/characters/GrowthTable.gd" id="2_h48qx"]
 [ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_weqmv"]
 [ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="5_omsjp"]
-[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="6_4ppee"]
-[ext_resource type="Script" uid="uid://bqwo4712edpli" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="7b_damage"]
-[ext_resource type="Script" uid="uid://drcvu0qn608jt" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="7_instant"]
-[ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="8_styd4"]
 [ext_resource type="Resource" uid="uid://bevbhr88aabfj" path="res://resources/mnemonics/viper_strike.tres" id="9_4ppee"]
-[ext_resource type="Resource" uid="uid://cp5soyo7q7xj8" path="res://resources/mnemonics/counter_stance.tres" id="10_counter"]
-[ext_resource type="Resource" path="res://resources/mnemonics/vigil_stance.tres" id="11_vigil"]
+[ext_resource type="Resource" uid="uid://ept1xigi2lmb" path="res://resources/mnemonics/empower_stance.tres" id="12_empower"]
+[ext_resource type="Resource" uid="uid://btgvt5p21l5t7" path="res://resources/mnemonics/weaken_strike.tres" id="13_weaken"]
+[ext_resource type="Resource" uid="uid://kjnxi1nrn5ks" path="res://resources/mnemonics/stun_strike.tres" id="14_stun"]
 
 [sub_resource type="Resource" id="Resource_weqmv"]
 script = ExtResource("1_2vacv")
@@ -75,29 +72,12 @@ script = ExtResource("2_h48qx")
 levels = Array[ExtResource("1_2vacv")]([SubResource("Resource_weqmv"), SubResource("Resource_opvup"), SubResource("Resource_rex71"), SubResource("Resource_gyu77"), SubResource("Resource_omsjp")])
 metadata/_custom_type_script = "uid://ctf4nx0yni78o"
 
-[sub_resource type="Resource" id="Resource_dmg_uskrav"]
-script = ExtResource("7b_damage")
-power = 30
-
-[sub_resource type="Resource" id="Resource_affwj"]
-script = ExtResource("7_instant")
-token = SubResource("Resource_dmg_uskrav")
-
-[sub_resource type="Resource" id="Resource_pxmql"]
-script = ExtResource("8_styd4")
-
-[sub_resource type="Resource" id="Resource_eq13c"]
-script = ExtResource("5_omsjp")
-mnemonic_name = "Uskrav"
-targeting = SubResource("Resource_pxmql")
-effect_steps = Array[ExtResource("6_4ppee")]([SubResource("Resource_affwj")])
-
 [resource]
 script = ExtResource("1_n73al")
 character_portrait = ExtResource("1_h48qx")
 growth_table = SubResource("Resource_4ppee")
 allowed_gear = Array[int]([2, 8, 128, 4096, 8192, 16384, 32768, 65536, 131072])
-mnemonics = Array[ExtResource("5_omsjp")]([SubResource("Resource_eq13c"), ExtResource("9_4ppee"), ExtResource("10_counter"), ExtResource("11_vigil")])
+mnemonics = Array[ExtResource("5_omsjp")]([ExtResource("9_4ppee"), ExtResource("12_empower"), ExtResource("13_weaken"), ExtResource("14_stun")])
 MaxHP = 26
 MaxMP = 12
 MaxAP = 10

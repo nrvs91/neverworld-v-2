@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://btgvt5p21l5t7"]
+
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://buh8rpxl1kj84" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
+[ext_resource type="Script" uid="uid://5xy37rpwq2dk" path="res://scripts/combat/tokens/RuntimeToken_Weaken.gd" id="3_weaken"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Resource" path="res://resources/mnemonics/targeting_single_enemy.tres" id="5_target"]
+
+[sub_resource type="Resource" id="Resource_weaken"]
+script = ExtResource("3_weaken")
+
+[sub_resource type="Resource" id="Resource_grant"]
+script = ExtResource("2_grant")
+token = SubResource("Resource_weaken")
+amount = 3
+
+[resource]
+script = ExtResource("4_mnemonic")
+mnemonic_name = "Weaken"
+targeting = ExtResource("5_target")
+effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

@@ -44,10 +44,12 @@ func fire(context: ActionContext) -> void:
 	var resist_state := ResistanceType.State.NONE
 	if owner.resistance_profile != null:
 		resist_state = owner.resistance_profile.get_state(effective_type)
-	var final_damage: int = max(0, int(raw * CombatCalculator.resist_multiplier(resist_state)))
+	var damage_mult: float = source.tokens.get_damage_multiplier()
+	var final_damage: int = max(0, int(raw * CombatCalculator.resist_multiplier(resist_state) * damage_mult))
 
-	var summary := "%s->%s %d (crit:%s resist:%s)" % [source.character_name, owner.character_name,
-		final_damage, is_crit, ResistanceType.State.keys()[resist_state]]
+	var mult_str := "" if damage_mult == 1.0 else " mult:%.2f" % damage_mult
+	var summary := "%s->%s %d (crit:%s resist:%s%s)" % [source.character_name, owner.character_name,
+		final_damage, is_crit, ResistanceType.State.keys()[resist_state], mult_str]
 	Log.info("RuntimeToken_Damage", summary)
 
 	owner.vitals.take_damage(final_damage)

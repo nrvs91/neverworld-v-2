@@ -47,11 +47,13 @@ func _enter_combat_start() -> void:
 
 func _enter_turn_start() -> void:
 	_active_actor = TurnTracker.advance_to_next_turn(_actors)
-	# AP gain happens BEFORE token ticks — tokens may modify AP gain
-	_active_actor.vitals.gain_ap(1)
-	# Token tick order matters (DoT before HoT? Buffs before Debuffs?)
-	# Define when token system is built.
 	_active_actor.tokens.tick_turn_start()
+	if _active_actor.tokens.consume_if_present("STUN"):
+		Log.info("TurnStart — stunned", _active_actor.character_name)
+		CombatEvents.turn_started.emit(_active_actor)
+		_transition(State.TURN_END)
+		return
+	_active_actor.vitals.gain_ap(1)
 	Log.info("TurnStart", _active_actor.character_name)
 	Log.info("AP:", _active_actor.vitals.cur_ap)
 	CombatEvents.turn_started.emit(_active_actor)
@@ -85,6 +87,7 @@ func _enter_action_execution() -> void:
 	_transition(State.TURN_END)
 
 func _enter_turn_end() -> void:
+	_active_actor.tokens.tick_turn_end()
 	TurnTracker.consume_ct(_active_actor)
 	CombatEvents.turn_ended.emit(_active_actor)
 	# PLACEHOLDER: replace with await on animation_finished once real attack anims exist

@@ -9,8 +9,16 @@ signal token_removed(token: RuntimeToken)
 
 var _tokens: Array[RuntimeToken] = []
 
-## Append one token instance. No stacking — multiple tokens of the same type are allowed.
+## Append one token instance. If the token opposes an existing type, cancels one of those instead.
 func add_token(token: RuntimeToken) -> void:
+	if token.opposes != "":
+		for i in _tokens.size():
+			if _tokens[i].token_type == token.opposes:
+				var cancelled := _tokens[i]
+				_tokens.remove_at(i)
+				Log.info("ActiveTokens — cancelled", token.opposes + " by " + token.token_type)
+				token_removed.emit(cancelled)
+				return
 	_tokens.append(token)
 	Log.info("ActiveTokens — added", token.owner.character_name, token.token_type)
 	token_added.emit(token)
@@ -67,6 +75,57 @@ func collect_triggers(context: ActionContext, trigger: RuntimeToken.Trigger) -> 
 			continue
 		if token.check_trigger(context):
 			result.append(token)
+			seen_types.append(token.token_type)
+	return result
+
+## Fire ONE token per type with ON_TURN_END trigger, then remove it.
+## Called by CombatFSM at the end of the active actor's turn (expires buffs/debuffs).
+func tick_turn_end() -> void:
+	var fired_types: Array[String] = []
+	var to_tick: Array[RuntimeToken] = []
+
+	for token in _tokens:
+		if token.trigger != RuntimeToken.Trigger.ON_TURN_END:
+			continue
+		if token.token_type in fired_types:
+			continue
+		fired_types.append(token.token_type)
+		to_tick.append(token)
+
+	for token in to_tick:
+		if token.skip_first_tick:
+			token.skip_first_tick = false
+			Log.info("ActiveTokens — cast turn free", token.owner.character_name, token.token_type)
+			continue
+		var ctx := ActionContext.new()
+		token.tick(ctx)
+		_tokens.erase(token)
+		Log.info("ActiveTokens — expired", token.owner.character_name, token.token_type)
+		token_removed.emit(token)
+
+## Removes one token of the given type. Returns true if one was found.
+## Used by CombatFSM to consume STUN at turn start.
+func consume_if_present(type: String) -> bool:
+	for i in _tokens.size():
+		if _tokens[i].token_type == type:
+			var token := _tokens[i]
+			_tokens.remove_at(i)
+			Log.info("ActiveTokens — consumed", token.owner.character_name, type)
+			token_removed.emit(token)
+			return true
+	return false
+
+## Returns the combined damage multiplier from all active buff/debuff tokens.
+## One modifier applied per token type — quantity is duration, not magnitude.
+func get_damage_multiplier() -> float:
+	var seen_types: Array[String] = []
+	var result: float = 1.0
+	for token in _tokens:
+		if token.token_type in seen_types:
+			continue
+		var mult := token.get_damage_multiplier()
+		if mult != 1.0:
+			result *= mult
 			seen_types.append(token.token_type)
 	return result
 

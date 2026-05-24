@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://ept1xigi2lmb"]
+
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://buh8rpxl1kj84" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
+[ext_resource type="Script" uid="uid://du1mka7y4eytr" path="res://scripts/combat/tokens/RuntimeToken_Empower.gd" id="3_empower"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Resource" uid="uid://bsauqqvhcjq0x" path="res://resources/mnemonics/targeting_self.tres" id="5_self"]
+
+[sub_resource type="Resource" id="Resource_empower"]
+script = ExtResource("3_empower")
+
+[sub_resource type="Resource" id="Resource_grant"]
+script = ExtResource("2_grant")
+token = SubResource("Resource_empower")
+amount = 3
+
+[resource]
+script = ExtResource("4_mnemonic")
+mnemonic_name = "Empower"
+targeting = ExtResource("5_self")
+effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

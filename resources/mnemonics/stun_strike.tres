@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://kjnxi1nrn5ks"]
+
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://buh8rpxl1kj84" path="res://scripts/combat/skills/effects/Skill_Effect_Grant.gd" id="2_grant"]
+[ext_resource type="Script" uid="uid://lvi2xqjr3cet" path="res://scripts/combat/tokens/RuntimeToken_Stun.gd" id="3_stun"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Resource" path="res://resources/mnemonics/targeting_single_enemy.tres" id="5_target"]
+
+[sub_resource type="Resource" id="Resource_stun"]
+script = ExtResource("3_stun")
+
+[sub_resource type="Resource" id="Resource_grant"]
+script = ExtResource("2_grant")
+token = SubResource("Resource_stun")
+
+[resource]
+script = ExtResource("4_mnemonic")
+mnemonic_name = "Stun Strike"
+targeting = ExtResource("5_target")
+effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])
