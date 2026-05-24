@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/CombatAnchors.gd" id="1_anchors"]
+
+[node name="CombatAnchors" type="Node"]
+script = ExtResource("1_anchors")

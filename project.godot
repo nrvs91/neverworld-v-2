@@ -22,6 +22,7 @@ ExplorationEvents="*uid://b3kfhfuxcmp55"
 CombatEvents="*uid://b5fsf8prw34tw"
 PartyManager="*uid://chixfnmc51pve"
 GameManager="*uid://c630i4ag3u530"
+CombatAnchors="*res://scenes/combat/combat_anchors.tscn"
 
 [display]
 
