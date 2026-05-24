@@ -11,8 +11,8 @@
 
 | Token | Class | Trigger | Mechanic |
 |-------|-------|---------|---------|
-| **DAMAGE** | `RuntimeToken_Damage` | INSTANT | Standard attack. Hit roll (physical only), crit roll, resist multiplier, buff/debuff multiplier. `power` × AtkStat / (DefStat + 10) × variance. Logs `mult:` field when a multiplier is active. |
-| **ENVENOM** | `RuntimeToken_Envenom` | INSTANT | Finisher — consumes all tokens of `consume_type` on target, deals `count × power_per_token` into the standard damage formula. Greyed in ActionMenu unless target holds the required token (`requires_token_on_enemy`). Scales to ENVENOM II+ by changing `power_per_token` in the blueprint `.tres`. |
+| **DAMAGE** | `RuntimeToken_Damage` | INSTANT | Standard attack. Physical: hit roll + crit roll (5% base). Magical: always hits, cannot crit. Resist multiplier applied after calc. Buff/debuff multiplier applied last. Logs `mult:` field when a multiplier is active. |
+| **ENVENOM** | `RuntimeToken_Envenom` | INSTANT | Finisher — consumes all tokens of `consume_type` on target, deals `count × power_per_token` into the standard damage formula. Nature damage — always hits, cannot crit. Greyed in ActionMenu unless target holds the required token (`requires_token_on_enemy`). Scales to ENVENOM II+ by changing `power_per_token` in the blueprint `.tres`. |
 
 ### DoT Tokens
 
