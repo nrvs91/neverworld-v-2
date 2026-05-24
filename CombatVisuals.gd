@@ -24,6 +24,9 @@ func set_base_state(state: StringName) -> void:
 	Log.debug("CombatVisuals base state set:", state)
 
 func approach(target_global_pos: Vector3, duration: float = 0.2) -> void:
+	if _action_playing:
+		Log.warn("CombatVisuals — approach() called while action already playing")
+		return
 	_home = position
 	_action_playing = true
 	var delta := target_global_pos - global_position
@@ -35,6 +38,9 @@ func approach(target_global_pos: Vector3, duration: float = 0.2) -> void:
 	Log.debug("CombatVisuals — approached")
 
 func recover(duration: float = 0.2) -> void:
+	if not _action_playing:
+		Log.warn("CombatVisuals — recover() called without approach(), skipping")
+		return
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "position", _home, duration)
