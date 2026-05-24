@@ -17,7 +17,7 @@ func _init() -> void:
 func fire(context: ActionContext) -> void:
 	var is_phys: bool = _is_physical(damage_type)
 
-	var is_crit: bool = CombatCalculator.crit_roll(crit_chance)
+	var is_crit: bool = is_phys and CombatCalculator.crit_roll(crit_chance)
 
 	if is_phys and not is_crit and not true_strike:
 		var hit_stat: int = source.stats.stat(CharacterStats.Stat.Hit)
