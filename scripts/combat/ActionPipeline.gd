@@ -52,7 +52,7 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 
 	if mnemonic.is_melee:
 		# CombatCharacter sits inside a Slot node — the slot holds the stable world position
-		var target_slot_pos := target.get_parent().global_position
+		var target_slot_pos: Vector3 = target.get_parent().global_position
 		await attacker.visuals.approach(target_slot_pos)
 
 	# Primary action

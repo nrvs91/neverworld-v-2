@@ -1,4 +1,3 @@
-class_name CombatAnchors
 extends Node
 
 var player_party: Node3D
