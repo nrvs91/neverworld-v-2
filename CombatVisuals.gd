@@ -1,10 +1,11 @@
 class_name CombatVisuals
 extends Node3D
 
-@onready var sprite: AnimatedSprite3D = $AnimatedSprite3D #possible name change here
+@onready var sprite: AnimatedSprite3D = $AnimatedSprite3D
 
 var _base_state: StringName = &"Idle"
 var _action_playing: bool = false
+var _home: Vector3
 
 func setup(sprite_frames: SpriteFrames) -> void:
 	sprite.sprite_frames = sprite_frames
@@ -13,7 +14,7 @@ func setup(sprite_frames: SpriteFrames) -> void:
 	else:
 		var fallback := sprite_frames.get_animation_names()[0]
 		sprite.play(fallback)
-		Log.warn("CombatVi suals: no Idle animation, playing", fallback)
+		Log.warn("CombatVisuals: no Idle animation, playing", fallback)
 	Log.info("CombatVisuals setup")
 
 func set_base_state(state: StringName) -> void:
@@ -22,13 +23,26 @@ func set_base_state(state: StringName) -> void:
 		sprite.play(_base_state)
 	Log.debug("CombatVisuals base state set:", state)
 
-func approach(target_offset: Vector3, duration: float = 0.2) -> void: #this will be the "dash" from attacker to target in melee skills
-		Log.debug("CombatVisuals approach (stub)")
+func approach(target_global_pos: Vector3, duration: float = 0.2) -> void:
+	_home = position
+	_action_playing = true
+	var delta := target_global_pos - global_position
+	var destination := _home + delta * 0.7
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "position", destination, duration)
+	await tween.finished
+	Log.debug("CombatVisuals — approached")
 
-func recover(duration: float = 0.2) -> void: #this will be the "go back" from target to attackers position, altough maybe we can wrap this into a single function, GO>GOBACK kind of deal, like rewind?
-		Log.debug("CombatVisuals recover (stub)")
+func recover(duration: float = 0.2) -> void:
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "position", _home, duration)
+	await tween.finished
+	_action_playing = false
+	Log.debug("CombatVisuals — recovered")
 
-#SIGNALS
+# Animation signal hooks — called by AnimatedSprite3D frame signals when art exists
 func attack_to_motion_hold() -> void: pass
 func attack_to_strike_hold() -> void: pass
 func attack_to_recover_hold() -> void: pass
