@@ -129,6 +129,28 @@ func get_damage_multiplier() -> float:
 			seen_types.append(token.token_type)
 	return result
 
+## Returns true if at least one token of the given type is present.
+## Used by ActionMenu to check skill preconditions.
+func has_token(type: String) -> bool:
+	for token in _tokens:
+		if token.token_type == type:
+			return true
+	return false
+
+## Removes ALL tokens of the given type and returns how many were consumed.
+## Used by RuntimeToken_Envenom to detonate stacked tokens.
+func consume_all(type: String) -> int:
+	var count := 0
+	for i in range(_tokens.size() - 1, -1, -1):
+		if _tokens[i].token_type == type:
+			var token := _tokens[i]
+			_tokens.remove_at(i)
+			token_removed.emit(token)
+			count += 1
+	if count > 0:
+		Log.info("ActiveTokens — consumed all", type, count)
+	return count
+
 func flush() -> void:
 	_tokens.clear()
 	Log.info("ActiveTokens flushed")

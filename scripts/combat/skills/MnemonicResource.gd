@@ -13,3 +13,4 @@ const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effec
 @export var merge_display: bool = true
 @export var targeting: TargetingDataScript
 @export var effect_steps: Array[SkillEffectBase] = []
+@export var requires_token_on_enemy: String = ""

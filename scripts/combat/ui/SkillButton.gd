@@ -17,7 +17,7 @@ func _ready() -> void:
 
 ## Skills always cost exactly two resources: AP + either HP or MP.
 ## vitals is needed to calculate the real HP cost and to check affordability.
-func setup(m: MnemonicRes, vitals: VitalsComponent) -> void:
+func setup(m: MnemonicRes, vitals: VitalsComponent, precondition_met: bool = true) -> void:
 	mnemonic = m
 	_name_label.text = m.mnemonic_name
 	_cost_ap.text = str(m.ap_cost) + "AP"
@@ -37,7 +37,7 @@ func setup(m: MnemonicRes, vitals: VitalsComponent) -> void:
 	var can_afford: bool = vitals.cur_ap >= m.ap_cost \
 		and (hp_cost == 0 or vitals.cur_hp > hp_cost) \
 		and (m.mp_cost == 0 or vitals.cur_mp >= m.mp_cost)
-	modulate.a = 1.0 if can_afford else 0.4
+	modulate.a = 1.0 if (can_afford and precondition_met) else 0.4
 
 func set_selected(selected: bool) -> void:
 	if _background and _background.material:

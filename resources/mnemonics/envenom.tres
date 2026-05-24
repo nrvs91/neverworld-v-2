@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://cta281r5h2bh3"]
+
+[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
+[ext_resource type="Script" uid="uid://drcvu0qn608jt" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
+[ext_resource type="Script" uid="uid://ccalyaim6eaoh" path="res://scripts/combat/tokens/RuntimeToken_Envenom.gd" id="3_envenom"]
+[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
+[ext_resource type="Resource" path="res://resources/mnemonics/targeting_single_enemy.tres" id="5_target"]
+
+[sub_resource type="Resource" id="Resource_envenom"]
+script = ExtResource("3_envenom")
+
+[sub_resource type="Resource" id="Resource_instant"]
+script = ExtResource("2_instant")
+token = SubResource("Resource_envenom")
+
+[resource]
+script = ExtResource("4_mnemonic")
+mnemonic_name = "Envenom"
+targeting = ExtResource("5_target")
+effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_instant")])
+requires_token_on_enemy = "POISON"

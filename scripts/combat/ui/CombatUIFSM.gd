@@ -61,7 +61,10 @@ func _enter_player_menu() -> void:
 	player_bar.set_active(_active_actor)
 	var menu := player_bar.get_active_menu()
 	if menu != null:
-		menu.populate(_active_actor.mnemonics, [], _active_actor.vitals)
+		var enemies := _actors.filter(func(a: CombatCharacter) -> bool:
+			return not a.is_player_controlled and not a.vitals.is_downed()
+		)
+		menu.populate(_active_actor.mnemonics, [], _active_actor.vitals, enemies)
 	# info_panel: "A/D: switch menu   W/S: navigate   Enter: confirm"
 
 func _enter_player_targeting() -> void:

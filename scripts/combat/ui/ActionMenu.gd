@@ -26,7 +26,7 @@ func _ready() -> void:
 	_menus = [_skill_menu, _item_menu, _wait_menu, _run_menu]
 	_refresh_display()
 
-func populate(skills: Array[MnemonicRes], items: Array, vitals: VitalsComponent) -> void:
+func populate(skills: Array[MnemonicRes], items: Array, vitals: VitalsComponent, enemies: Array = []) -> void:
 	_skill_mnemonics = skills
 	for child in _skill_menu.get_children():
 		_skill_menu.remove_child(child)
@@ -34,7 +34,7 @@ func populate(skills: Array[MnemonicRes], items: Array, vitals: VitalsComponent)
 	for mnemonic in skills:
 		var btn := SKILL_BUTTON.instantiate() as SkillButton
 		_skill_menu.add_child(btn)
-		btn.setup(mnemonic, vitals)
+		btn.setup(mnemonic, vitals, _check_precondition(mnemonic, enemies))
 
 	for child in _item_menu.get_children():
 		_item_menu.remove_child(child)
@@ -77,8 +77,20 @@ func prev_item() -> void:
 	_refresh_display()
 
 func confirm() -> void:
+	if CATEGORIES[_category_index] == "ACT":
+		var items := _active_items()
+		if _item_index < items.size() and items[_item_index].modulate.a < 0.5:
+			return
 	action_chosen.emit(CATEGORIES[_category_index], _item_index)
 	Log.info("ActionMenu chosen", CATEGORIES[_category_index], _item_index)
+
+func _check_precondition(mnemonic: MnemonicRes, enemies: Array) -> bool:
+	if mnemonic.requires_token_on_enemy == "":
+		return true
+	for enemy in enemies:
+		if enemy.tokens.has_token(mnemonic.requires_token_on_enemy):
+			return true
+	return false
 
 func _active_items() -> Array:
 	var category := CATEGORIES[_category_index]
