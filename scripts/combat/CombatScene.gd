@@ -9,6 +9,12 @@ extends Node
 @onready var logic_fsm: CombatFSM = $CombatFSM
 @onready var ui_fsm: CombatUIFSM = $CombatUIFSM
 @onready var action_pipeline: ActionPipeline = $ActionPipeline
+@onready var _player_party_anchor: Marker3D = $Anchors/PlayerPartyAnchor
+@onready var _enemy_party_anchor: Marker3D = $Anchors/EnemyPartyAnchor
+@onready var _middle_anchor: Marker3D = $Anchors/MiddleAnchor
+
+func _exit_tree() -> void:
+	CombatAnchors.clear()
 
 func _clear_environment() -> void:
 	for child in environment_mount.get_children():
@@ -19,6 +25,7 @@ func initialize(composition: CombatConfig, environment: PackedScene, bgm: AudioS
 	_clear_environment()
 	player_spawner.initialize()
 	enemy_spawner.initialize(composition)
+	CombatAnchors.register(_player_party_anchor, _enemy_party_anchor, _middle_anchor)
 	if environment:
 		environment_mount.add_child(environment.instantiate())
 	if bgm:
