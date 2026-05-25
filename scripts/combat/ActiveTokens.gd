@@ -29,27 +29,8 @@ func remove_token(token: RuntimeToken) -> void:
 	Log.info("ActiveTokens — consumed", token.owner.character_name, token.token_type)
 	token_removed.emit(token)
 
-## Fire ONE token per type with ON_TURN_START trigger, then remove it.
-## One fresh ActionContext per token — no cross-contamination between ticks.
-## Called by CombatFSM at the start of the active actor's turn.
 func tick_turn_start() -> void:
-	var fired_types: Array[String] = []
-	var to_tick: Array[RuntimeToken] = []
-
-	for token in _tokens:
-		if token.trigger != RuntimeToken.Trigger.ON_TURN_START:
-			continue
-		if token.token_type in fired_types:
-			continue
-		fired_types.append(token.token_type)
-		to_tick.append(token)
-
-	for token in to_tick:
-		var ctx := ActionContext.new()
-		token.tick(ctx)
-		_tokens.erase(token)
-		Log.info("ActiveTokens — expired", token.owner.character_name, token.token_type)
-		token_removed.emit(token)
+	_tick_trigger(RuntimeToken.Trigger.ON_TURN_START)
 
 ## Returns display string for card UI. Counts instances per type. Format: "POISON×3 BURN×1"
 func get_display_text() -> String:
@@ -78,14 +59,15 @@ func collect_triggers(context: ActionContext, trigger: RuntimeToken.Trigger) -> 
 			seen_types.append(token.token_type)
 	return result
 
-## Fire ONE token per type with ON_TURN_END trigger, then remove it.
-## Called by CombatFSM at the end of the active actor's turn (expires buffs/debuffs).
 func tick_turn_end() -> void:
+	_tick_trigger(RuntimeToken.Trigger.ON_TURN_END)
+
+func _tick_trigger(trigger: RuntimeToken.Trigger) -> void:
 	var fired_types: Array[String] = []
 	var to_tick: Array[RuntimeToken] = []
 
 	for token in _tokens:
-		if token.trigger != RuntimeToken.Trigger.ON_TURN_END:
+		if token.trigger != trigger:
 			continue
 		if token.token_type in fired_types:
 			continue

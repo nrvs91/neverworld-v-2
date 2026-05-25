@@ -25,12 +25,6 @@ var negated: bool = false
 # Used for UI feedback — "cancelled" is distinct from "negated" (no resource cost).
 var cancelled: bool = false
 
-# Populated by ActionPipeline pre-pass. Holds RuntimeToken objects that fire before primary.
-var pre_queue: Array = []
-
-# Populated by ActionPipeline post-pass. Holds RuntimeToken objects that fire after primary.
-var post_queue: Array = []
-
 ## Called by INSTANT tokens (RuntimeToken_Damage) after resolving.
 ## any_hit is ONLY set here — persistent token attachment never touches it.
 func record_step(hit: bool, damage: int, is_crit: bool) -> void:

@@ -15,51 +15,25 @@ func _init() -> void:
 	trigger = Trigger.INSTANT
 
 func fire(context: ActionContext) -> void:
-	var is_phys: bool = _is_physical(damage_type)
-
-	var is_crit: bool = is_phys and CombatCalculator.crit_roll(crit_chance)
-
-	if is_phys and not is_crit and not true_strike:
-		var hit_stat: int = source.stats.stat(CharacterStats.Stat.Hit)
-		var dodge_stat: int = owner.stats.stat(CharacterStats.Stat.Dodge)
-		if not CombatCalculator.hit_roll(hit_stat, dodge_stat, chance_tier):
-			Log.info("RuntimeToken_Damage — missed", "%s->%s" % [source.character_name, owner.character_name])
-			CombatEvents.combat_text_shown.emit(owner, "MISS")
-			context.record_step(false, 0, false)
-			return
-
-	var effective_type: ResistanceType.DamageType = damage_type
-	if is_phys and inherit_from_weapon:
+	var effective_type := damage_type
+	if CombatCalculator.is_physical(damage_type) and inherit_from_weapon:
 		effective_type = _get_weapon_damage_type()
 
-	var atk_stat := CharacterStats.Stat.AtkPhys if is_phys else CharacterStats.Stat.AtkMag
-	var def_stat := CharacterStats.Stat.DefPhys if is_phys else CharacterStats.Stat.DefMag
-	var atk: int = source.stats.stat(atk_stat)
-	var def_val: int = owner.stats.stat(def_stat)
-	var raw: int = CombatCalculator.calc_damage(power, atk, def_val)
+	var result := CombatCalculator.resolve_hit(power, effective_type, crit_chance, chance_tier, source, owner, true_strike)
 
-	if is_crit:
-		raw *= 2
+	if not result.hit:
+		Log.info("RuntimeToken_Damage — missed", "%s->%s" % [source.character_name, owner.character_name])
+		CombatEvents.combat_text_shown.emit(owner, "MISS")
+		context.record_step(false, 0, false)
+		return
 
-	var resist_state := ResistanceType.State.NONE
-	if owner.resistance_profile != null:
-		resist_state = owner.resistance_profile.get_state(effective_type)
-	var damage_mult: float = source.tokens.get_damage_multiplier()
-	var final_damage: int = max(0, int(raw * CombatCalculator.resist_multiplier(resist_state) * damage_mult))
+	var mult_str := "" if result.multiplier == 1.0 else " mult:%.2f" % result.multiplier
+	Log.info("RuntimeToken_Damage", "%s->%s %d (crit:%s%s)" % [
+		source.character_name, owner.character_name, result.damage, result.is_crit, mult_str])
 
-	var mult_str := "" if damage_mult == 1.0 else " mult:%.2f" % damage_mult
-	var summary := "%s->%s %d (crit:%s resist:%s%s)" % [source.character_name, owner.character_name,
-		final_damage, is_crit, ResistanceType.State.keys()[resist_state], mult_str]
-	Log.info("RuntimeToken_Damage", summary)
-
-	owner.vitals.take_damage(final_damage)
-	CombatEvents.action_executed.emit(source, owner, final_damage)
-	context.record_step(true, final_damage, is_crit)
-
-static func _is_physical(dt: ResistanceType.DamageType) -> bool:
-	return dt == ResistanceType.DamageType.Slash \
-		or dt == ResistanceType.DamageType.Pierce \
-		or dt == ResistanceType.DamageType.Blunt
+	owner.vitals.take_damage(result.damage)
+	CombatEvents.action_executed.emit(source, owner, result.damage)
+	context.record_step(true, result.damage, result.is_crit)
 
 static func _get_weapon_damage_type() -> ResistanceType.DamageType:
 	# TODO: read from attacker's equipped weapon once gear system exists.
