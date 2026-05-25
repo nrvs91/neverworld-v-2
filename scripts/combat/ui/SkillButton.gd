@@ -9,6 +9,7 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 @onready var _background = $ButtonBackground
 
 var mnemonic: MnemonicRes = null
+var is_selected: bool = false
 
 func _ready() -> void:
 	super._ready()
@@ -40,5 +41,4 @@ func setup(m: MnemonicRes, vitals: VitalsComponent, precondition_met: bool = tru
 	modulate.a = 1.0 if (can_afford and precondition_met) else 0.4
 
 func set_selected(selected: bool) -> void:
-	if _background and _background.material:
-		_background.material.set_shader_parameter("is_selected", selected)
+	is_selected = selected

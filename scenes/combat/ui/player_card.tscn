@@ -10,11 +10,13 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_7lfqm"]
 
 [node name="PlayerCard" type="Control" unique_id=821400982]
-custom_minimum_size = Vector2(48.4, 38)
+custom_minimum_size = Vector2(49, 46)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 48.4
-offset_bottom = 38.0
+offset_left = 1.0
+offset_right = 50.0
+offset_bottom = 46.0
+pivot_offset = Vector2(-1, 0)
 script = ExtResource("1_cpw2j")
 
 [node name="VBox" type="VBoxContainer" parent="." unique_id=1084517473]
@@ -29,7 +31,6 @@ layout_mode = 2
 [node name="TokenLabel" type="Label" parent="VBox/TokenContainer" unique_id=999999001]
 layout_mode = 2
 theme_override_font_sizes/font_size = 5
-text = ""
 
 [node name="TopBar" type="HBoxContainer" parent="VBox" unique_id=1165859655]
 layout_mode = 2

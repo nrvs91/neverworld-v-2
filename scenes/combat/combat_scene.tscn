@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dd8q4s0qtb57f" path="res://scenes/combat/ui/player_card_bar.tscn" id="8_pcbar"]
 [ext_resource type="PackedScene" uid="uid://dm7mes58ahsmm" path="res://scenes/combat/targeting_cursor.tscn" id="10_tcrs"]
 [ext_resource type="Script" uid="uid://4xu4ue3arhty" path="res://scripts/combat/ui/CombatUIFSM.gd" id="11_uifs"]
-[ext_resource type="PackedScene" path="res://scenes/combat/components/action_pipeline.tscn" id="12_apline"]
+[ext_resource type="PackedScene" uid="uid://caq62feecj3si" path="res://scenes/combat/components/action_pipeline.tscn" id="12_apline"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fyyo7"]
 albedo_color = Color(0.44044712, 0.2400937, 0, 1)
@@ -121,6 +121,19 @@ script = ExtResource("6_abc12")
 
 [node name="CombatUIFSM" type="Node" parent="." unique_id=509966287]
 script = ExtResource("11_uifs")
+
+[node name="Anchors" type="Node" parent="." unique_id=2110894282]
+
+[node name="MiddleAnchor" type="Marker3D" parent="Anchors" unique_id=1873800844]
+gizmo_extents = 0.74
+
+[node name="PlayerPartyAnchor" type="Marker3D" parent="Anchors" unique_id=1412667334]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9602051, 0, 0)
+gizmo_extents = 0.74
+
+[node name="EnemyPartyAnchor" type="Marker3D" parent="Anchors" unique_id=356219754]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1884155, 0, 0)
+gizmo_extents = 0.74
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]
