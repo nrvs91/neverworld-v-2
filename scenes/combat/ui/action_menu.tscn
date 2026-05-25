@@ -6,6 +6,7 @@
 [ext_resource type="FontFile" uid="uid://o2uy7hru5bkh" path="res://assets/fonts/lunchds.ttf" id="4_db24s"]
 [ext_resource type="PackedScene" uid="uid://c5kvhoq4xspsx" path="res://run_button.tscn" id="6_t1vib"]
 [ext_resource type="PackedScene" uid="uid://ontrgrrbog26" path="res://wait_button.tscn" id="7_7m71r"]
+[ext_resource type="PackedScene" uid="uid://5meqratfgu6z" path="res://scenes/UI/ui_sound_component.tscn" id="8_ftgne"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_db24s"]
 
@@ -91,3 +92,5 @@ theme_override_constants/separation = 1
 
 [node name="RunButton" parent="ContentArea/RunMenu" unique_id=1591875827 instance=ExtResource("6_t1vib")]
 layout_mode = 2
+
+[node name="UISoundComponent" parent="." unique_id=1396640028 instance=ExtResource("8_ftgne")]

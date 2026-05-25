@@ -40,7 +40,7 @@ func _on_focus_out():
 func _start_breathing():
 	_breathe_tween = create_tween()
 	_breathe_tween.set_loops()
-	_breathe_tween.tween_interval(0.5)
+	_breathe_tween.tween_interval(0.25)
 	_breathe_tween.tween_method(_apply_progress, 1.0, 0.0, 2.0).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	_breathe_tween.tween_method(_apply_progress, 0.0, 1.0, 2.0).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 

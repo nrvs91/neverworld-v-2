@@ -11,6 +11,7 @@ const SKILL_BUTTON := preload("res://scenes/UI/skill_button.tscn")
 const ITEM_BUTTON := preload("res://scenes/UI/item_button.tscn")
 
 @onready var _menu_name: Label = $Frame/MenuName
+@onready var _sfx: UISoundComponent = $UISoundComponent
 @onready var _skill_menu: VBoxContainer = $ContentArea/SkillMenu
 @onready var _item_menu: VBoxContainer = $ContentArea/ItemMenu
 @onready var _wait_menu: VBoxContainer = $ContentArea/WaitMenu
@@ -24,6 +25,7 @@ var _skill_mnemonics: Array[MnemonicRes] = []
 
 func _ready() -> void:
 	_menus = [_skill_menu, _item_menu, _wait_menu, _run_menu]
+	_sfx.set_stream(&"nav", preload("res://assets/sound/ui/UI_Navigation.wav"))
 	_refresh_display()
 
 func populate(skills: Array[MnemonicRes], items: Array, vitals: VitalsComponent, enemies: Array = []) -> void:
@@ -55,11 +57,13 @@ func reset() -> void:
 func next_category() -> void:
 	_category_index = (_category_index + 1) % CATEGORIES.size()
 	_item_index = 0
+	_sfx.play_nav()
 	_refresh_display()
 
 func prev_category() -> void:
 	_category_index = (_category_index - 1 + CATEGORIES.size()) % CATEGORIES.size()
 	_item_index = 0
+	_sfx.play_nav()
 	_refresh_display()
 
 func next_item() -> void:
@@ -67,6 +71,7 @@ func next_item() -> void:
 	if items.is_empty():
 		return
 	_item_index = (_item_index + 1) % items.size()
+	_sfx.play_nav()
 	_refresh_display()
 
 func prev_item() -> void:
@@ -74,6 +79,7 @@ func prev_item() -> void:
 	if items.is_empty():
 		return
 	_item_index = (_item_index - 1 + items.size()) % items.size()
+	_sfx.play_nav()
 	_refresh_display()
 
 func confirm() -> void:
