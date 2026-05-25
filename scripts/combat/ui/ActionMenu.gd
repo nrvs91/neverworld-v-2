@@ -25,7 +25,6 @@ var _skill_mnemonics: Array[MnemonicRes] = []
 
 func _ready() -> void:
 	_menus = [_skill_menu, _item_menu, _wait_menu, _run_menu]
-	_sfx.set_stream(&"nav", preload("res://assets/sound/ui/UI_Navigation.wav"))
 	_refresh_display()
 
 func populate(skills: Array[MnemonicRes], items: Array, vitals: VitalsComponent, enemies: Array = []) -> void:
@@ -87,6 +86,7 @@ func confirm() -> void:
 		var items := _active_items()
 		if _item_index < items.size() and items[_item_index].modulate.a < 0.5:
 			return
+	_sfx.play_confirm()
 	action_chosen.emit(CATEGORIES[_category_index], _item_index)
 	Log.info("ActionMenu chosen", CATEGORIES[_category_index], _item_index)
 
