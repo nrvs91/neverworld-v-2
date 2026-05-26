@@ -1,12 +1,15 @@
 [gd_scene format=3 uid="uid://5meqratfgu60"]
 
 [ext_resource type="Script" uid="uid://chcd8g7g0ssh" path="res://scripts/ui/UISoundComponent.gd" id="1_mb1lk"]
-[ext_resource type="AudioStream" uid="uid://gybgsumfjcmt" path="res://assets/sound/ui/UI_Navigation.wav" id="2_cxsn7"]
-[ext_resource type="AudioStream" uid="uid://6r72yc6ikp51" path="res://assets/sound/ui/UI_Confirm.wav" id="3_c8up2"]
-[ext_resource type="AudioStream" uid="uid://cuio332yj2fmp" path="res://assets/sound/ui/UI_Cancel.wav" id="4_aqiar"]
+[ext_resource type="AudioStream" uid="uid://c34feoaeihu6v" path="res://assets/sound/ui/navi.wav" id="2_aqiar"]
+[ext_resource type="AudioStream" uid="uid://d0gm7xarrjju3" path="res://assets/sound/ui/UI_Back.wav" id="2_cxsn7"]
+[ext_resource type="AudioStream" uid="uid://3nq87uknd3s3" path="res://assets/sound/ui/confirm_style_5_echo_002.wav" id="3_e5c3b"]
+[ext_resource type="AudioStream" uid="uid://uynkhqdex7s8" path="res://assets/sound/ui/back_style_5_echo_003.wav" id="4_4kbdg"]
 
 [node name="UISoundComponent" type="Node" unique_id=1818501997]
 script = ExtResource("1_mb1lk")
-nav_stream = ExtResource("2_cxsn7")
-confirm_stream = ExtResource("3_c8up2")
-cancel_stream = ExtResource("4_aqiar")
+volume_db = -10.0
+nav_stream = ExtResource("2_aqiar")
+confirm_stream = ExtResource("3_e5c3b")
+cancel_stream = ExtResource("4_4kbdg")
+back_stream = ExtResource("2_cxsn7")

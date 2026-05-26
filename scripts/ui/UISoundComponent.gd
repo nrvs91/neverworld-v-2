@@ -1,6 +1,8 @@
 class_name UISoundComponent
 extends Node
 
+@export_range(-80.0, 6.0, 0.5) var volume_db: float = 0.0
+
 @export var nav_stream: AudioStream = null
 @export var confirm_stream: AudioStream = null
 @export var cancel_stream: AudioStream = null
@@ -63,6 +65,7 @@ func _ensure_player(key: StringName, stream: AudioStream) -> void:
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
 	player.bus = &"Master"
+	player.volume_db = volume_db
 	add_child(player)
 	_players[key] = player
 
