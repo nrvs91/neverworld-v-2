@@ -128,16 +128,17 @@ func _on_left_click(cell: GridCell) -> void:
 		Log.debug("GridTest: reachable cells", _reachable.size())
 
 func _on_right_click(cell: GridCell) -> void:
-	var targets := _grid_manager.get_cells_in_range(cell, 3, GridManager.TargetShape.CROSS)
+	# Simple single-cell highlight for now — targeting shapes will get proper
+	# treatment when the skill system integrates with the grid.
 	for c: GridCell in _cell_visuals:
 		var mat := (_cell_visuals[c] as MeshInstance3D).get_surface_override_material(0) as StandardMaterial3D
 		if c.is_impassable:
 			mat.albedo_color = CELL_COLORS.impassable
-		elif targets.has(c):
+		elif c == cell:
 			mat.albedo_color = CELL_COLORS.targeting
 		else:
 			mat.albedo_color = CELL_COLORS.normal
-	Log.debug("GridTest cross hits", targets.size(), "cells")
+	Log.debug("GridTest target cell", cell.coords())
 
 func _move_unit_to(target_cell: GridCell) -> void:
 	var path := Pathfinder.find_path(_grid_manager, _unit_cell, target_cell)

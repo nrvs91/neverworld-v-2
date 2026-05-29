@@ -109,14 +109,12 @@ static func facing_relation(unit_facing: Facing, from_cell: GridCell, to_cell: G
 
 # --- Targeting Shapes ---
 
-enum TargetShape { SINGLE, AREA, CROSS }
+enum TargetShape { SINGLE, AREA }
 
 func get_cells_in_range(origin: GridCell, range_cells: int, shape: TargetShape, facing: Facing = Facing.SOUTH) -> Array[GridCell]:
 	match shape:
 		TargetShape.SINGLE, TargetShape.AREA:
 			return _targets_radial(origin, range_cells)
-		TargetShape.CROSS:
-			return _targets_cross(origin, range_cells)
 	return []
 
 func _targets_radial(origin: GridCell, range_cells: int) -> Array[GridCell]:
@@ -131,11 +129,4 @@ func _targets_radial(origin: GridCell, range_cells: int) -> Array[GridCell]:
 					result.append(cell)
 	return result
 
-func _targets_cross(origin: GridCell, range_cells: int) -> Array[GridCell]:
-	var result: Array[GridCell] = []
-	for i in range(1, range_cells + 1):
-		for offset in [Vector2i(i, 0), Vector2i(-i, 0), Vector2i(0, i), Vector2i(0, -i)]:
-			var cell := get_cell(origin.col + offset.x, origin.row + offset.y)
-			if cell:
-				result.append(cell)
-	return result
+
