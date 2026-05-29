@@ -66,13 +66,14 @@ extends Resource
 
 var col: int = 0
 var row: int = 0
-var height: int = 0
+var height: int = 0       # mechanical tier — combat calculations only (hit bonus/penalty, melee range)
+var snap_y: float = 0.0   # visual Y — actual world position the character stands at
 var movement_cost: int = 1  # 1 = normal terrain, 2 = difficult terrain
 var is_impassable: bool = false
 var occupant: Node = null   # typed as CombatCharacter once combat integrates
 
-func world_position(cell_size: float, height_step: float) -> Vector3:
-	return Vector3(col * cell_size, height * height_step, row * cell_size)
+func world_position(cell_size: float) -> Vector3:
+	return Vector3(col * cell_size, snap_y, row * cell_size)
 
 func coords() -> Vector2i:
 	return Vector2i(col, row)
@@ -121,6 +122,7 @@ func build_grid() -> void:
 			var cell := GridCell.new()
 			cell.col = c
 			cell.row = r
+			cell.snap_y = cell.height * height_step  # default — override per-cell for organic terrain
 			column.append(cell)
 		_cells.append(column)
 	Log.info("GridManager: built", cols, "x", rows)
@@ -388,9 +390,12 @@ func _on_grid_built() -> void:
 	_spawn_test_unit()
 
 func _apply_test_layout() -> void:
-	_grid_manager.get_cell(3, 3).height = 1
-	_grid_manager.get_cell(4, 3).height = 1
-	_grid_manager.get_cell(4, 4).height = 2
+	# height = mechanical tier, snap_y = visual position (set both explicitly here)
+	var h1 := _grid_manager.height_step * 1.0
+	var h2 := _grid_manager.height_step * 2.0
+	_grid_manager.get_cell(3, 3).height = 1; _grid_manager.get_cell(3, 3).snap_y = h1
+	_grid_manager.get_cell(4, 3).height = 1; _grid_manager.get_cell(4, 3).snap_y = h1
+	_grid_manager.get_cell(4, 4).height = 2; _grid_manager.get_cell(4, 4).snap_y = h2
 	_grid_manager.get_cell(5, 2).movement_cost = 2
 	_grid_manager.get_cell(5, 3).movement_cost = 2
 	_grid_manager.get_cell(2, 2).is_impassable = true
@@ -417,7 +422,7 @@ func _build_cell_visuals() -> void:
 			shape.shape = box_shape
 			body.add_child(mesh_inst)
 			body.add_child(shape)
-			body.position = cell.world_position(_grid_manager.cell_size, _grid_manager.height_step)
+			body.position = cell.world_position(_grid_manager.cell_size)
 			add_child(body)
 			_cell_visuals[cell] = mesh_inst
 
@@ -444,7 +449,7 @@ func _spawn_test_unit() -> void:
 	var start := _grid_manager.get_cell(0, 0)
 	_grid_manager.set_occupant(start, _selected_unit)
 	_unit_cell = start
-	_selected_unit.position = start.world_position(_grid_manager.cell_size, _grid_manager.height_step)
+	_selected_unit.position = start.world_position(_grid_manager.cell_size)
 	Log.info("GridTest: unit spawned at", start.coords())
 ```
 
@@ -572,7 +577,7 @@ func _move_unit_to(target_cell: GridCell) -> void:
 	_grid_manager.clear_occupant(_unit_cell)
 	_unit_cell = target_cell
 	_grid_manager.set_occupant(_unit_cell, _selected_unit)
-	_selected_unit.position = _unit_cell.world_position(_grid_manager.cell_size, _grid_manager.height_step)
+	_selected_unit.position = _unit_cell.world_position(_grid_manager.cell_size)
 
 	_reachable.clear()
 	_refresh_visuals()

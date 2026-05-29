@@ -60,11 +60,19 @@ extends Resource
 
 var col: int
 var row: int
-var height: int          # elevation — used for snapping and mechanical calculations
-var movement_cost: int   # 1 = normal, 2 = difficult terrain
-var is_impassable: bool  # walls, cliffs, obstacles
-var occupant: CombatCharacter
+var height: int = 0       # mechanical tier — combat calculations only (hit bonus/penalty, melee range)
+var snap_y: float = 0.0   # visual Y — actual world position the character stands at
+var movement_cost: int = 1  # 1 = normal, 2 = difficult terrain
+var is_impassable: bool = false
+var occupant: Node = null
+
+func world_position(cell_size: float) -> Vector3:
+    return Vector3(col * cell_size, snap_y, row * cell_size)
 ```
+
+`height` and `snap_y` are intentionally separate. `height` is a discrete integer tier (0, 1, 2) used only for combat calculations — hit bonuses, penalties, melee range checks. `snap_y` is the float Y coordinate the character actually stands at, authored to match the visual mesh. By default `snap_y` is initialized to `height * height_step` by GridManager, but can be overridden per-cell for organic terrain.
+
+This means the 3D mesh is entirely independent. Sculpt whatever geometry you want in Blender, import it, then author the grid on top: set `height` tiers for mechanical meaning, nudge `snap_y` per cell until characters look right against the actual surface. The two are never coupled.
 
 No per-tile stat bonuses. The grid carries position, not personality. Terrain costs 1× or 2× movement CT to enter. That's the full vocabulary.
 
