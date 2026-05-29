@@ -137,7 +137,7 @@ func _on_right_click(cell: GridCell) -> void:
 			mat.albedo_color = CELL_COLORS.targeting
 		else:
 			mat.albedo_color = CELL_COLORS.normal
-	Log.debug("GridTest: cross range 3 from", cell.coords(), "hits", targets.size(), "cells")
+	Log.debug("GridTest cross hits", targets.size(), "cells")
 
 func _move_unit_to(target_cell: GridCell) -> void:
 	var path := Pathfinder.find_path(_grid_manager, _unit_cell, target_cell)
@@ -156,9 +156,7 @@ func _move_unit_to(target_cell: GridCell) -> void:
 	_reachable.clear()
 	_refresh_visuals()
 
-	Log.info("GridTest: moved to", target_cell.coords(),
-		"| CT spent:", ct_spent,
-		"| facing:", GridManager.Facing.keys()[_unit_facing])
+	Log.info("GridTest moved to", target_cell.coords(), ct_spent)
 
 func _refresh_visuals() -> void:
 	for cell: GridCell in _cell_visuals:

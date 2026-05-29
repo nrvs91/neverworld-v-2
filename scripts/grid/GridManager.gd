@@ -27,7 +27,7 @@ func build_grid() -> void:
 			cell.snap_y = cell.height * height_step  # default — override per-cell for organic terrain
 			column.append(cell)
 		_cells.append(column)
-	Log.info("GridManager: built", cols, "x", rows)
+	Log.info("GridManager built", cols, rows)
 	grid_built.emit()
 
 func get_cell(col: int, row: int) -> GridCell:
