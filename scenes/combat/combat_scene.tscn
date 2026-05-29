@@ -114,6 +114,8 @@ grow_vertical = 2
 
 [node name="TargetingCursor" parent="." unique_id=218799812 instance=ExtResource("10_tcrs")]
 
+[node name="VFXContainer" type="Node3D" parent="." unique_id=360954476]
+
 [node name="ActionPipeline" parent="." unique_id=111111111 instance=ExtResource("12_apline")]
 
 [node name="CombatFSM" type="Node" parent="." unique_id=999999999]

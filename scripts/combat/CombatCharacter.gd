@@ -8,6 +8,8 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 @onready var tokens: ActiveTokens = $ActiveTokens
 @onready var visuals: CombatVisuals = $CombatVisuals
 @onready var sfx: CombatSFXComponent = $CombatSFXComponent
+@onready var presenter: SkillPresenter = $SkillPresenter
+@onready var anim_player: AnimationPlayer = $AnimationPlayer
 
 var character_name: String = ""
 var is_player_controlled: bool = false

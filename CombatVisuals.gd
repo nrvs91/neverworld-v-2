@@ -23,6 +23,9 @@ func set_base_state(state: StringName) -> void:
 		sprite.play(_base_state)
 	Log.debug("CombatVisuals base state set:", state)
 
+# NOTE: tween duration and AnimationPlayer keyframe gap must match.
+# attack_skeleton has on_dash at 0.25s and on_impact at 0.5s → 0.25s gap.
+# If you change this duration, change the keyframe spacing too.
 func approach(target_global_pos: Vector3, duration: float = 0.2) -> void:
 	if _action_playing:
 		Log.warn("CombatVisuals — approach() called while action already playing")

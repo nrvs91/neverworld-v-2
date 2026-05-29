@@ -7,6 +7,7 @@
 [ext_resource type="SpriteFrames" uid="uid://xlgrfjdv24t" path="res://resources/characters/player/SkuggeAnimations.tres" id="2_weqmv"]
 [ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="5_omsjp"]
 [ext_resource type="Resource" uid="uid://bevbhr88aabfj" path="res://resources/mnemonics/viper_strike.tres" id="9_4ppee"]
+[ext_resource type="Resource" uid="uid://cbkgtwihvevg2" path="res://resources/mnemonics/uskrav_tergo_lupi.tres" id="9_w04d5"]
 [ext_resource type="Resource" uid="uid://ept1xigi2lmb" path="res://resources/mnemonics/empower_stance.tres" id="12_empower"]
 [ext_resource type="Resource" uid="uid://cta281r5h2bh3" path="res://resources/mnemonics/envenom.tres" id="15_envenom"]
 
@@ -76,7 +77,7 @@ script = ExtResource("1_n73al")
 character_portrait = ExtResource("1_h48qx")
 growth_table = SubResource("Resource_4ppee")
 allowed_gear = Array[int]([2, 8, 128, 4096, 8192, 16384, 32768, 65536, 131072])
-mnemonics = Array[ExtResource("5_omsjp")]([ExtResource("9_4ppee"), ExtResource("12_empower"), ExtResource("15_envenom")])
+mnemonics = Array[ExtResource("5_omsjp")]([ExtResource("9_w04d5"), ExtResource("9_4ppee"), ExtResource("12_empower"), ExtResource("15_envenom")])
 MaxHP = 26
 MaxMP = 12
 MaxAP = 10

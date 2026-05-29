@@ -3,6 +3,7 @@ extends Resource
 
 const TargetingDataScript = preload("res://scripts/combat/skills/TargetingData.gd")
 const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effect_Base.gd")
+const SkillPresentationDataScript = preload("res://scripts/combat/SkillPresentationData.gd")
 
 @export var mnemonic_name: String = ""
 @export var ap_cost: int = 1
@@ -14,3 +15,4 @@ const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effec
 @export var targeting: TargetingDataScript
 @export var effect_steps: Array[SkillEffectBase] = []
 @export var requires_token_on_enemy: String = ""
+@export var presentation: SkillPresentationDataScript = null

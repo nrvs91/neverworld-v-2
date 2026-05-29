@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="SkillPresentationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/SkillPresentationData.gd" id="1_spd"]
+[ext_resource type="PackedScene" path="res://scenes/combat/vfx/vfx_hit_spark.tscn" id="2_hit"]
+
+[resource]
+script = ExtResource("1_spd")
+on_target_vfx = ExtResource("2_hit")

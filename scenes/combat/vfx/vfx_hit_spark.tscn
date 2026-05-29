@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://c5yl1qnxaxox2"]
+
+[ext_resource type="Script" uid="uid://b1sln3k6b2aa2" path="res://scenes/combat/vfx/vfx_hit_spark.gd" id="1_hs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spark"]
+transparency = 1
+vertex_color_use_as_albedo = true
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_spark"]
+material = SubResource("StandardMaterial3D_spark")
+size = Vector2(0.08, 0.08)
+
+[node name="VFXHitSpark" type="CPUParticles3D" unique_id=1261726654]
+emitting = false
+amount = 16
+lifetime = 0.5
+one_shot = true
+explosiveness = 0.9
+mesh = SubResource("QuadMesh_spark")
+direction = Vector3(0, 1, 0)
+spread = 60.0
+initial_velocity_min = 1.5
+initial_velocity_max = 5.0
+scale_amount_min = 0.5
+color = Color(1, 0.85, 0.3, 1)
+script = ExtResource("1_hs")
