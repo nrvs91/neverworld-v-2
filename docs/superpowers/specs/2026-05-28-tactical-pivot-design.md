@@ -165,7 +165,7 @@ Every mnemonic `.tres` file has its `ap_cost` field renamed to `ct_cost`. Same a
 ### Spatial Targeting
 `TargetingData` gains two new fields:
 - `range: int` — maximum cell distance from the caster
-- `shape: TargetShape` — SINGLE, LINE, CONE, CROSS, AREA
+- `shape: TargetShape` — SINGLE, LINE, CONE, AREA
 
 The GridManager computes valid target cells and communicates them for UI highlighting. The existing effect pipeline (PRE-pass, execution, POST-pass) is untouched.
 

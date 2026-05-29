@@ -616,14 +616,12 @@ git commit -m "feat: unit movement with CT cost tracking and facing update"
 
 Append inside the `GridManager` class after the `facing_relation()` method:
 ```gdscript
-enum TargetShape { SINGLE, AREA, CROSS, LINE, CONE }
+enum TargetShape { SINGLE, AREA, LINE, CONE }
 
 func get_cells_in_range(origin: GridCell, range_cells: int, shape: TargetShape, facing: Facing) -> Array[GridCell]:
 	match shape:
 		TargetShape.SINGLE, TargetShape.AREA:
 			return _targets_radial(origin, range_cells)
-		TargetShape.CROSS:
-			return _targets_cross(origin, range_cells)
 		TargetShape.LINE:
 			return _targets_line(origin, range_cells, facing)
 		TargetShape.CONE:
@@ -640,15 +638,6 @@ func _targets_radial(origin: GridCell, range_cells: int) -> Array[GridCell]:
 				var cell := get_cell(c, r)
 				if cell:
 					result.append(cell)
-	return result
-
-func _targets_cross(origin: GridCell, range_cells: int) -> Array[GridCell]:
-	var result: Array[GridCell] = []
-	for i in range(1, range_cells + 1):
-		for offset in [Vector2i(i, 0), Vector2i(-i, 0), Vector2i(0, i), Vector2i(0, -i)]:
-			var cell := get_cell(origin.col + offset.x, origin.row + offset.y)
-			if cell:
-				result.append(cell)
 	return result
 
 func _targets_line(origin: GridCell, range_cells: int, facing: Facing) -> Array[GridCell]:
@@ -734,7 +723,7 @@ The grid phase is done when all of the following hold in the running test scene:
 - [ ] Clicking a green cell moves the unit there — Log confirms CT spent and facing
 - [ ] Difficult terrain cells (movement_cost = 2) cost double CT — verify in Log
 - [ ] Unit at elevated cell snaps to correct Y height
-- [ ] Right-click shows orange cone targeting from that cell based on unit's current facing
+- [ ] Right-click shows orange cone targeting from that cell based on unit's current facing (SINGLE, AREA, LINE, CONE — CROSS deferred to targeting profile design)
 - [ ] Moving unit in different directions changes the cone orientation on right-click
 
 When this milestone is reached, move to Plan 2: Combat Integration — bending `ActionContext`, `CombatCharacter`, `TurnTracker`, and `CombatCalculator` to the grid.
