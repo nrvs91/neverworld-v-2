@@ -17,6 +17,11 @@ const COMBAT_SCENE: PackedScene = preload("res://scenes/combat/combat_scene.tscn
 const PLAYER_SCENE: PackedScene = preload("res://scenes/characters/player_exploration.tscn")
 
 func _ready() -> void:
+	# Skip auto-start when running isolated test scenes
+	if get_tree().current_scene != null and get_tree().current_scene.name == "GridTest":
+		Log.info("GameManager: test scene detected, skipping auto-start")
+		return
+
 	ExplorationEvents.zone_exit_requested.connect(_on_zone_exit_requested)
 	CombatEvents.encounter_triggered.connect(_on_encounter_triggered)
 	CombatEvents.combat_ended.connect(_on_combat_ended)
