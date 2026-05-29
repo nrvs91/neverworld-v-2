@@ -70,7 +70,7 @@ func world_position(cell_size: float) -> Vector3:
     return Vector3(col * cell_size, snap_y, row * cell_size)
 ```
 
-`height` and `snap_y` are intentionally separate. `height` is a discrete integer tier (0, 1, 2) used only for combat calculations — hit bonuses, penalties, melee range checks. `snap_y` is the float Y coordinate the character actually stands at, authored to match the visual mesh. By default `snap_y` is initialized to `height * height_step` by GridManager, but can be overridden per-cell for organic terrain.
+`height` and `snap_y` are intentionally separate. `height` is a discrete integer tier (0, 1, 2) used for combat calculations (hit bonuses, penalties, melee range checks) and movement constraints — a unit cannot move to a neighbor cell if the height delta exceeds `MAX_MOVE_HEIGHT_DELTA` (default 1). Cliffs and large elevation changes are expressed as large height gaps, not impassable flags. `snap_y` is the float Y coordinate the character actually stands at, authored to match the visual mesh. By default `snap_y` is initialized to `height * height_step` by GridManager, but can be overridden per-cell for organic terrain.
 
 This means the 3D mesh is entirely independent. Sculpt whatever geometry you want in Blender, import it, then author the grid on top: set `height` tiers for mechanical meaning, nudge `snap_y` per cell until characters look right against the actual surface. The two are never coupled.
 
