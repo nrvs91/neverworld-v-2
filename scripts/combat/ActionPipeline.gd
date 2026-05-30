@@ -3,7 +3,7 @@ extends Node
 
 signal pipeline_complete
 
-@export var vfx_container: Node3D  # wire to VFXContainer in combat_scene.tscn inspector
+@onready var _vfx_container: Node3D = get_parent().get_node("VFXContainer")
 
 const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 
@@ -40,7 +40,7 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 	attacker.vitals.spend_mp(mnemonic.mp_cost)
 
 	var target_pos: Vector3 = target.get_parent().global_position
-	attacker.presenter.configure(mnemonic.presentation, target_pos, vfx_container)
+	attacker.presenter.configure(mnemonic.presentation, target_pos, _vfx_container)
 	attacker.presenter.impact_triggered.connect(_on_impact.bind(context), CONNECT_ONE_SHOT)
 	attacker.anim_player.play("attack_skeleton")
 	await attacker.anim_player.animation_finished
