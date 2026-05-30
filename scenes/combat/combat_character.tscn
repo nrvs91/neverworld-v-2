@@ -6,6 +6,86 @@
 [ext_resource type="PackedScene" uid="uid://bd7enjie0adp0" path="res://scenes/combat/components/combat_visuals.tscn" id="4_jdvnq"]
 [ext_resource type="PackedScene" uid="uid://b6km2wpo0tfrr" path="res://scenes/combat/components/combat_sfx_component.tscn" id="5_driwo"]
 [ext_resource type="PackedScene" uid="uid://cgjxj5ikutd7s" path="res://scenes/combat/components/stats_component.tscn" id="6_8x2pj"]
+[ext_resource type="PackedScene" uid="uid://y7j67x7v1xub7" path="res://scenes/combat/components/skill_presenter.tscn" id="7_pres1"]
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.001
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{"args": [], "method": &"start_approach"}]
+}
+
+[sub_resource type="Animation" id="Animation_attack"]
+resource_name = "attack_skeleton"
+length = 0.7
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"values": [{"args": [], "method": &"start_approach"}]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.25),
+"transitions": PackedFloat32Array(1),
+"values": [{"args": [], "method": &"spawn_target_vfx"}]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.25),
+"transitions": PackedFloat32Array(1),
+"values": [{"args": [], "method": &"play_impact_sfx"}]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.25),
+"transitions": PackedFloat32Array(1),
+"values": [{"args": [], "method": &"trigger_damage"}]
+}
+tracks/4/type = "method"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath(".")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{"args": [], "method": &"start_recover"}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"attack_skeleton": SubResource("Animation_attack")
+}
 
 [node name="CombatCharacter" type="Node3D" unique_id=1740194572]
 script = ExtResource("1_m4757")
@@ -19,3 +99,10 @@ script = ExtResource("1_m4757")
 [node name="CombatVisuals" parent="." unique_id=928173393 instance=ExtResource("4_jdvnq")]
 
 [node name="CombatSFXComponent" parent="." unique_id=1268131957 instance=ExtResource("5_driwo")]
+
+[node name="SkillPresenter" parent="." unique_id=1769178519 node_paths=PackedStringArray("visuals") instance=ExtResource("7_pres1")]
+visuals = NodePath("../CombatVisuals")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1546535894]
+root_node = NodePath("../SkillPresenter")
+libraries/ = SubResource("AnimationLibrary_main")
