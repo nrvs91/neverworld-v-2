@@ -1,5 +1,9 @@
 [gd_scene format=3]
 
+[sub_resource type="SphereMesh" id="SphereMesh_1"]
+radius = 0.03
+height = 0.06
+
 [node name="VFXHitSpark" type="CPUParticles3D"]
 amount = 8
 lifetime = 0.4
@@ -8,5 +12,6 @@ explosiveness = 1.0
 emitting = true
 initial_velocity_min = 1.0
 initial_velocity_max = 3.0
+draw_pass_1 = SubResource("SphereMesh_1")
 
 [connection signal="finished" from="." to="." method="queue_free"]
