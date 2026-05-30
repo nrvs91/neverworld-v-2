@@ -20,15 +20,15 @@ func spawn_self_vfx() -> void:
 	if _data == null or _data.on_self_vfx == null:
 		return
 	var vfx: Node3D = _data.on_self_vfx.instantiate()
-	vfx.global_position = visuals.global_position
 	_vfx_container.add_child(vfx)
+	vfx.global_position = visuals.global_position
 
 func spawn_target_vfx() -> void:
 	if _data == null or _data.on_target_vfx == null:
 		return
 	var vfx: Node3D = _data.on_target_vfx.instantiate()
-	vfx.global_position = _target_pos
 	_vfx_container.add_child(vfx)
+	vfx.global_position = _target_pos
 
 func play_cast_sfx() -> void:
 	if _data == null or _data.cast_sfx == null:
