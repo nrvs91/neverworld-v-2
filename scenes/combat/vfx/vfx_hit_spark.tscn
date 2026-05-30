@@ -1,23 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://b5t2jd6hj2fd8"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
-shading_mode = 2
-albedo_color = Color(1, 0.8, 0.1, 1)
+[sub_resource type="QuadMesh" id="QuadMesh_x0tpa"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_1"]
-material = SubResource("StandardMaterial3D_1")
-radius = 0.08
-height = 0.16
-
-[node name="VFXHitSpark" type="CPUParticles3D"]
+[node name="VFXHitSpark" type="CPUParticles3D" unique_id=1583982698]
+emitting = false
 amount = 12
 lifetime = 0.4
 one_shot = true
 explosiveness = 1.0
-emitting = true
+mesh = SubResource("QuadMesh_x0tpa")
+spread = 60.0
 initial_velocity_min = 2.0
 initial_velocity_max = 5.0
-spread = 60.0
-draw_pass_1 = SubResource("SphereMesh_1")
 
 [connection signal="finished" from="." to="." method="queue_free"]
