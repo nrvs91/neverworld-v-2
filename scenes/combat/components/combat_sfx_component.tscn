@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://b6km2wpo0tfrr"]
-
-[ext_resource type="Script" uid="uid://cdqjanaitt4qw" path="res://CombatSFXComponent.gd" id="1_ho2a2"]
-
-[node name="CombatSFXComponent" type="Node" unique_id=1268131957]
-script = ExtResource("1_ho2a2")
