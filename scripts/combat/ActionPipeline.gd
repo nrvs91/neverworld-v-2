@@ -3,6 +3,8 @@ extends Node
 
 signal pipeline_complete
 
+@onready var _vfx_container: Node3D = get_parent().get_node("VFXContainer")
+
 const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 
 func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharacter, actors: Array) -> void:
@@ -37,14 +39,11 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 	attacker.vitals.spend_ap(mnemonic.ap_cost)
 	attacker.vitals.spend_mp(mnemonic.mp_cost)
 
-	if mnemonic.is_melee:
-		var target_slot_pos: Vector3 = target.get_parent().global_position
-		await attacker.visuals.approach(target_slot_pos)
-
-	SkillExecutor.execute(context)
-
-	if mnemonic.is_melee:
-		await attacker.visuals.recover()
+	var target_pos: Vector3 = target.get_parent().global_position
+	attacker.presenter.configure(mnemonic.presentation, target_pos, _vfx_container)
+	attacker.presenter.impact_triggered.connect(_on_impact.bind(context), CONNECT_ONE_SHOT)
+	attacker.anim_player.play("attack_skeleton")
+	await attacker.anim_player.animation_finished
 
 	if mnemonic.hp_cost_percent > 0.0:
 		attacker.vitals.spend_hp_percent(mnemonic.hp_cost_percent)
@@ -67,6 +66,11 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, target: CombatCharact
 		attacker.character_name, context.target.character_name, context.total_damage])
 	CombatEvents.action_resolved.emit(context)
 	pipeline_complete.emit()
+
+func _on_impact(context: ActionContext) -> void:
+	SkillExecutor.execute(context)
+	CombatEvents.action_executed.emit(context.source, context.target, context.total_damage)
+
 
 func _run_reaction_pass(tokens: Array, context: ActionContext, announce: bool) -> void:
 	for token in tokens:

@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://y7j67x7v1xub7"]
+
+[ext_resource type="Script" uid="uid://cf0p5s52hsrsw" path="res://scripts/combat/SkillPresenter.gd" id="1_pres1"]
+
+[node name="SkillPresenter" type="Node" unique_id=1022853507]
+script = ExtResource("1_pres1")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1146033669]

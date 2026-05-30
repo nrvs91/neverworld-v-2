@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SkillPresentationData" format=3]
+
+[ext_resource type="Script" uid="uid://bjscept6bolj3" path="res://scripts/combat/SkillPresentationData.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/combat/vfx/vfx_hit_spark.tscn" id="2_vfx"]
+[ext_resource type="AudioStream" uid="uid://cpnf3q8grjd6i" path="res://assets/sound/sfx/Damage.wav" id="3_sfx"]
+
+[resource]
+script = ExtResource("1_script")
+on_target_vfx = ExtResource("2_vfx")
+impact_sfx = ExtResource("3_sfx")

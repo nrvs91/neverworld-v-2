@@ -135,6 +135,8 @@ gizmo_extents = 0.74
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1884155, 0, 0)
 gizmo_extents = 0.74
 
+[node name="VFXContainer" type="Node3D" parent="."]
+
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]
 [editable path="CombatUI/EnemyCardBar"]

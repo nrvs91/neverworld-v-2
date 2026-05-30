@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[node name="VFXHitSpark" type="CPUParticles3D"]
+amount = 8
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+emitting = true
+initial_velocity_min = 1.0
+initial_velocity_max = 3.0
+
+[connection signal="finished" from="." to="." method="queue_free"]
