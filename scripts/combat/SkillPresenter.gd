@@ -15,9 +15,11 @@ func configure(data: SkillPresentationData, target_pos: Vector3, vfx_container: 
 	_data = data
 	_target_pos = target_pos
 	_vfx_container = vfx_container
+	Log.debug("SkillPresenter.configure", "data=%s" % str(data), "vfx_container=%s" % str(vfx_container))
 
 func spawn_self_vfx() -> void:
 	if _data == null or _data.on_self_vfx == null:
+		Log.warn("SkillPresenter.spawn_self_vfx — skipped", "data=%s" % str(_data))
 		return
 	var vfx: Node3D = _data.on_self_vfx.instantiate()
 	_vfx_container.add_child(vfx)
@@ -25,10 +27,12 @@ func spawn_self_vfx() -> void:
 
 func spawn_target_vfx() -> void:
 	if _data == null or _data.on_target_vfx == null:
+		Log.warn("SkillPresenter.spawn_target_vfx — skipped", "data=%s" % str(_data), "on_target_vfx=%s" % str(_data.on_target_vfx if _data else null))
 		return
 	var vfx: Node3D = _data.on_target_vfx.instantiate()
 	_vfx_container.add_child(vfx)
 	vfx.global_position = _target_pos
+	Log.debug("SkillPresenter — spawned target VFX at", _target_pos)
 
 func play_cast_sfx() -> void:
 	if _data == null or _data.cast_sfx == null:
