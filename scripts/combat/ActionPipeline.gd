@@ -42,7 +42,7 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, targets: Array[Combat
 	if total_generation > 0:
 		attacker.vitals.gain_ap(total_generation)
 
-	Log.info("ActionPipeline — AP cost:", effective_cost, "generated:", total_generation, "total:", attacker.vitals.cur_ap)
+	Log.info("ActionPipeline — AP cost: %d, generated: %d, total: %d" % [effective_cost, total_generation, attacker.vitals.cur_ap])
 
 	SkillExecutor.execute(context)
 	CombatEvents.action_executed.emit(context.source, context.targets, context.total_damage, context.mnemonic)
