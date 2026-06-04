@@ -2,6 +2,7 @@ class_name CombatCharacter
 extends Node3D
 
 const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+const BasicAttack = preload("res://resources/mnemonics/basic_attack/basic_attack.tres")
 
 @onready var vitals: VitalsComponent = $VitalsComponent
 @onready var stats: StatsComponent = $StatsComponent
@@ -21,7 +22,7 @@ func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	stats.setup(computed)
 	visual.setup(vitals, data.character_sprite)
 	character_name = data.character_name
-	mnemonics = data.mnemonics
+	mnemonics = [BasicAttack.duplicate()] + data.mnemonics
 	resistance_profile = ResistanceProfile.new()
 	Log.info("character ready", data.character_name)
 
@@ -34,7 +35,9 @@ func initialize_enemy(data: EnemyData) -> void:
 	character_name = data.character_name
 	resistance_profile = data.resistance_profile if data.resistance_profile != null else ResistanceProfile.new()
 	if data.basic_attack:
-		mnemonics = [data.basic_attack]
+		mnemonics = [BasicAttack.duplicate(), data.basic_attack]
+	else:
+		mnemonics = [BasicAttack.duplicate()]
 	ai_behavior = AIBehaviorComponent.new()
 	ai_behavior.name = "AIBehaviorComponent"
 	add_child(ai_behavior)
