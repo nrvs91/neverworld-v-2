@@ -23,12 +23,12 @@ func setup(max_hp_val: int, max_mp_val: int) -> void:
 	max_mp = max_mp_val
 	cur_hp = max_hp_val
 	cur_mp = max_mp_val
-	cur_ap = 3
+	cur_ap = 0
 	cur_ct = 0.0
 	Log.debug("VitalsComponent setup")
 
 func reset() -> void:
-	cur_ap = 3
+	cur_ap = 0
 	Log.debug("VitalsComponent reset")
 
 func is_downed() -> bool:

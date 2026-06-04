@@ -53,9 +53,7 @@ func _enter_turn_start() -> void:
 		CombatEvents.turn_started.emit(_active_actor)
 		_transition(State.TURN_END)
 		return
-	_active_actor.vitals.gain_ap(1)
 	Log.info("TurnStart", _active_actor.character_name)
-	Log.info("AP:", _active_actor.vitals.cur_ap)
 	CombatEvents.turn_started.emit(_active_actor)
 	_transition(State.ACTION_SELECT)
 

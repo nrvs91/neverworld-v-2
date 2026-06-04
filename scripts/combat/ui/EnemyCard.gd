@@ -16,6 +16,7 @@ func setup(actor: CombatCharacter) -> void:
 	hp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxHP)
 	mp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxMP)
 	ap_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxAP)
+	ap_bar.visible = false
 	actor.vitals.vitals_changed.connect(refresh_vitals)
 	actor.tokens.token_added.connect(_refresh_token_display)
 	actor.tokens.token_removed.connect(_refresh_token_display)
@@ -26,7 +27,6 @@ func refresh_vitals() -> void:
 		return
 	hp_bar.value = _actor.vitals.cur_hp
 	mp_bar.value = _actor.vitals.cur_mp
-	ap_bar.value = _actor.vitals.cur_ap
 
 func _refresh_token_display(_token = null) -> void:
 	_token_label.text = _actor.tokens.get_display_text()
