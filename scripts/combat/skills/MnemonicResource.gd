@@ -12,6 +12,7 @@ const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effec
 @export var mp_cost: int = 0
 @export var hp_cost_percent: float = 0.0
 @export var rank: int = 1
+@export var character_owner: Array[String] = []
 @export var is_melee: bool = true
 @export var merge_display: bool = true
 @export var targeting: TargetingDataScript
