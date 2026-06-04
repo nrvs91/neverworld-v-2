@@ -23,5 +23,6 @@ script = ExtResource("5_pxevm")
 [resource]
 script = ExtResource("4_gmsnc")
 mnemonic_name = "Strike"
+ap_generates = 0
 targeting = SubResource("Resource_targeting")
 effect_steps = Array[ExtResource("1_0v4da")]([SubResource("Resource_effect")])

@@ -30,5 +30,6 @@ needs_previous_hit = true
 [resource]
 script = ExtResource("6_wtefk")
 mnemonic_name = "Viper Strike"
+ap_generates = 1
 targeting = ExtResource("7_target")
 effect_steps = Array[ExtResource("1_n4wrn")]([SubResource("Resource_instant"), SubResource("Resource_grant")])

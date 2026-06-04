@@ -16,5 +16,6 @@ token = SubResource("Resource_stun")
 [resource]
 script = ExtResource("4_mnemonic")
 mnemonic_name = "Stun Strike"
+ap_cost = 1
 targeting = ExtResource("5_target")
 effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

@@ -16,6 +16,10 @@ token = SubResource("Resource_envenom")
 [resource]
 script = ExtResource("4_mnemonic")
 mnemonic_name = "Envenom"
+ap_cost = 3
+ap_reduction_conditions = {
+"POISON": 2
+}
 targeting = ExtResource("5_target")
 effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_instant")])
 requires_token_on_enemy = "POISON"
