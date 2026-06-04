@@ -4,10 +4,17 @@ class_name CombatCalculator
 const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effect_Base.gd")
 
 ## Raw damage formula from GDD:
-##   damage = Power × Atk / (Def + 10) × Random(0.85, 1.0)
-static func calc_damage(power: int, atk: int, def_val: int) -> int:
+##   damage = (AtkStat × Scaling) / (Def + 10) × Random(0.85, 1.0)
+## stat_scalings is Array[StatScaling] — sums (stat_value × scaling) across all entries.
+static func calc_damage(stat_scalings: Array, stats: StatsComponent, def_val: int) -> int:
+	var total_atk: float = 0.0
+	for entry in stat_scalings:
+		var stat_key: CharacterStats.Stat = _stat_from_string(entry.stat)
+		var stat_val: int = stats.stat(stat_key)
+		total_atk += stat_val * entry.scaling
+
 	var variance: float = randf_range(0.85, 1.0)
-	return max(1, int(power * atk / (def_val + 10.0) * variance))
+	return max(1, int(total_atk / (def_val + 10.0) * variance))
 
 ## Crit roll. Returns true if the attack crits.
 ## Crit = automatic hit + 2× damage. Must be rolled BEFORE the hit roll.
@@ -37,7 +44,7 @@ static func is_physical(dt: ResistanceType.DamageType) -> bool:
 ## Rolls crit first, then hit (skipped for magic or true_strike), then resolves
 ## stats, resist, and the source's active damage multiplier tokens.
 static func resolve_hit(
-		power: int,
+		stat_scalings: Array,
 		damage_type: ResistanceType.DamageType,
 		crit_chance: int,
 		chance_tier: SkillEffectBase.ChanceTier,
@@ -54,9 +61,8 @@ static func resolve_hit(
 		if not hit_roll(hit, dodge, chance_tier):
 			return {hit = false, damage = 0, is_crit = false, multiplier = 1.0}
 
-	var atk_stat := CharacterStats.Stat.AtkPhys if phys else CharacterStats.Stat.AtkMag
 	var def_stat := CharacterStats.Stat.DefPhys if phys else CharacterStats.Stat.DefMag
-	var raw := calc_damage(power, source.stats.stat(atk_stat), target.stats.stat(def_stat))
+	var raw := calc_damage(stat_scalings, source.stats, target.stats.stat(def_stat))
 
 	if is_crit:
 		raw *= 2
@@ -76,3 +82,13 @@ static func _tier_multiplier(tier: SkillEffectBase.ChanceTier) -> float:
 		SkillEffectBase.ChanceTier.MEDIUM:  return 0.50
 		SkillEffectBase.ChanceTier.LOW:     return 0.25
 	return 1.0
+
+static func _stat_from_string(stat_name: String) -> CharacterStats.Stat:
+	match stat_name:
+		"Phys.Atk": return CharacterStats.Stat.AtkPhys
+		"Magic.Atk": return CharacterStats.Stat.AtkMag
+		"MaxHP": return CharacterStats.Stat.MaxHP
+		"PULSE": return CharacterStats.Stat.Pulse
+		_:
+			Log.warn("unknown stat in StatScaling", stat_name, "defaulting to Phys.Atk")
+			return CharacterStats.Stat.AtkPhys
