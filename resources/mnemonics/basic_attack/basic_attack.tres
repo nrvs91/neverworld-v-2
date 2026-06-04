@@ -1,14 +1,20 @@
-[gd_resource type="Resource" script_class="MnemonicResource" format=3]
+[gd_resource type="Resource" script_class="MnemonicResource" format=3 uid="uid://t6tu3r7k0r70"]
 
 [ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_base"]
 [ext_resource type="Script" uid="uid://drcvu0qn608jt" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
 [ext_resource type="Script" uid="uid://bqwo4712edpli" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="3_damage"]
 [ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="4_mnemonic"]
 [ext_resource type="Resource" path="res://resources/mnemonics/targeting_single_enemy.tres" id="5_target"]
+[ext_resource type="Script" path="res://scripts/combat/stats/StatScaling.gd" id="6_ss"]
+
+[sub_resource type="Resource" id="Resource_scaling"]
+script = ExtResource("6_ss")
+stat = "Phys.Atk"
+scaling = 1.0
 
 [sub_resource type="Resource" id="Resource_dmg"]
 script = ExtResource("3_damage")
-power = 10
+stat_scalings = Array[ExtResource("6_ss")]([SubResource("Resource_scaling")])
 
 [sub_resource type="Resource" id="Resource_effect"]
 script = ExtResource("2_instant")
@@ -18,6 +24,5 @@ token = SubResource("Resource_dmg")
 script = ExtResource("4_mnemonic")
 mnemonic_name = "Attack"
 ap_generates = 1
-ap_cost = 0
 targeting = ExtResource("5_target")
 effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_effect")])
