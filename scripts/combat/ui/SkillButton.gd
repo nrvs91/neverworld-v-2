@@ -16,12 +16,22 @@ func _ready() -> void:
 	if _background and _background.material:
 		_background.material = _background.material.duplicate()
 
-## Skills always cost exactly two resources: AP + either HP or MP.
+## AP display: generators show "+N AP", consumers show "N AP", neutral show nothing.
+## SkillButton shows base cost only — conditional discounts from tokens are NOT calculated here.
 ## vitals is needed to calculate the real HP cost and to check affordability.
 func setup(m: MnemonicRes, vitals: VitalsComponent, precondition_met: bool = true) -> void:
 	mnemonic = m
 	_name_label.text = m.mnemonic_name
-	_cost_ap.text = str(m.ap_cost) + "AP"
+
+	# AP display: generators show "+X", consumers show "X", neutral shows nothing
+	if m.ap_generates > 0:
+		_cost_ap.text = "+" + str(m.ap_generates) + " AP"
+		_cost_ap.visible = true
+	elif m.ap_cost > 0:
+		_cost_ap.text = str(m.ap_cost) + " AP"
+		_cost_ap.visible = true
+	else:
+		_cost_ap.visible = false
 
 	# Resolve the second cost — HP takes priority if both are somehow non-zero
 	var hp_cost: int = max(1, int(vitals.max_hp * m.hp_cost_percent)) if m.hp_cost_percent > 0.0 else 0
@@ -35,9 +45,11 @@ func setup(m: MnemonicRes, vitals: VitalsComponent, precondition_met: bool = tru
 		_cost_resource.visible = false
 
 	# Grey out if the actor can't afford either cost
-	var can_afford: bool = vitals.cur_ap >= m.ap_cost \
-		and (hp_cost == 0 or vitals.cur_hp > hp_cost) \
-		and (m.mp_cost == 0 or vitals.cur_mp >= m.mp_cost)
+	# Generators (ap_cost == 0) are always affordable on the AP axis.
+	var can_afford_ap: bool = vitals.cur_ap >= m.ap_cost
+	var can_afford_hp: bool = hp_cost == 0 or vitals.cur_hp > hp_cost
+	var can_afford_mp: bool = m.mp_cost == 0 or vitals.cur_mp >= m.mp_cost
+	var can_afford: bool = can_afford_ap and can_afford_hp and can_afford_mp
 	modulate.a = 1.0 if (can_afford and precondition_met) else 0.4
 
 func set_selected(selected: bool) -> void:
