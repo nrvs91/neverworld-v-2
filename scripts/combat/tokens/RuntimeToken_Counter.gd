@@ -1,7 +1,8 @@
 class_name RuntimeToken_Counter
 extends RuntimeToken
+const StatScalingRes = preload("res://scripts/combat/stats/StatScaling.gd")
 
-@export var power: int = 15
+@export var stat_scalings: Array[StatScaling] = []
 
 func _init() -> void:
 	trigger = Trigger.ON_DAMAGE_TAKEN
@@ -13,7 +14,7 @@ func check_trigger(context: ActionContext) -> bool:
 func fire(context: ActionContext) -> void:
 	var attacker: CombatCharacter = context.trigger_context.source
 	var result := CombatCalculator.resolve_hit(
-		power,
+		stat_scalings,
 		ResistanceType.DamageType.Slash,
 		5,
 		Skill_Effect_Base.ChanceTier.HIGH,
