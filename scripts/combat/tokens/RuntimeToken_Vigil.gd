@@ -9,10 +9,10 @@ func _init() -> void:
 
 func check_trigger(context: ActionContext) -> bool:
 	return context.any_hit \
-		and context.target.is_player_controlled == owner.is_player_controlled
+		and not context.targets.is_empty() and context.targets[0].is_player_controlled == owner.is_player_controlled
 
 func fire(context: ActionContext) -> void:
-	var target: CombatCharacter = context.trigger_context.target
+	var target: CombatCharacter = context.trigger_context.targets[0]
 	var atk: int = owner.stats.stat(CharacterStats.Stat.AtkMag)
 	var amount: int = CombatCalculator.calc_damage(power, atk, 0)
 

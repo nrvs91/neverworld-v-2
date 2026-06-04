@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cgkdn76vntysh" path="res://scenes/combat/components/vitals_component.tscn" id="2_rmej7"]
 [ext_resource type="PackedScene" uid="uid://c1h4pe14xscwd" path="res://scenes/combat/components/active_tokens.tscn" id="3_1vnrn"]
 [ext_resource type="PackedScene" uid="uid://cgjxj5ikutd7s" path="res://scenes/combat/components/stats_component.tscn" id="6_8x2pj"]
+[ext_resource type="PackedScene" uid="uid://di1wp3qcu2l0s" path="res://scenes/combat/components/character_visual_component.tscn" id="7_visual"]
 
 [node name="CombatCharacter" type="Node3D" unique_id=1740194572]
 script = ExtResource("1_m4757")
@@ -13,3 +14,5 @@ script = ExtResource("1_m4757")
 [node name="StatsComponent" parent="." unique_id=566977380 instance=ExtResource("6_8x2pj")]
 
 [node name="ActiveTokens" parent="." unique_id=2074358308 instance=ExtResource("3_1vnrn")]
+
+[node name="CharacterVisualComponent" parent="." unique_id=1357607415 instance=ExtResource("7_visual")]

@@ -8,7 +8,7 @@ func _init() -> void:
 	token_type = "COUNTER"
 
 func check_trigger(context: ActionContext) -> bool:
-	return context.target == owner and not context.step_results.is_empty()
+	return not context.targets.is_empty() and context.targets[0] == owner and not context.step_results.is_empty()
 
 func fire(context: ActionContext) -> void:
 	var attacker: CombatCharacter = context.trigger_context.source
@@ -23,10 +23,9 @@ func fire(context: ActionContext) -> void:
 
 	if not result.hit:
 		Log.info("RuntimeToken_Counter — missed", owner.character_name)
-		CombatEvents.combat_text_shown.emit(attacker, "MISS")
+		context.record_step(attacker, false, 0, false)
 		return
 
 	Log.info("RuntimeToken_Counter", "%s->%s %d (crit:%s)" % [
 		owner.character_name, attacker.character_name, result.damage, result.is_crit])
-	attacker.vitals.take_damage(result.damage)
-	CombatEvents.action_executed.emit(owner, attacker, result.damage)
+	context.record_step(attacker, true, result.damage, result.is_crit)

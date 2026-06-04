@@ -5,9 +5,10 @@ const MnemonicResource = preload("res://scripts/combat/skills/MnemonicResource.g
 
 var mnemonic: MnemonicResource
 var source: CombatCharacter
-var target: CombatCharacter
+var targets: Array[CombatCharacter]
 
 var step_results: Array = []
+var pending_damage: Array = []
 var tokens_applied: Array = []
 var total_damage: int = 0
 var any_hit: bool = false
@@ -27,10 +28,11 @@ var cancelled: bool = false
 
 ## Called by INSTANT tokens (RuntimeToken_Damage) after resolving.
 ## any_hit is ONLY set here — persistent token attachment never touches it.
-func record_step(hit: bool, damage: int, is_crit: bool) -> void:
-	step_results.append({hit = hit, damage = damage, is_crit = is_crit})
+func record_step(target: CombatCharacter, hit: bool, damage: int, is_crit: bool) -> void:
+	step_results.append({target = target, hit = hit, damage = damage, is_crit = is_crit})
 	if hit:
 		any_hit = true
 		total_damage += damage
+		pending_damage.append({target = target, damage = damage})
 	if is_crit:
 		any_crit = true

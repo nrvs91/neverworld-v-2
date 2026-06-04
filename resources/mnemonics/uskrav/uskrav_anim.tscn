@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://5qk2aocym68a"]
+
+[ext_resource type="PackedScene" uid="uid://bsph3uwgbf4tf" path="res://babiesfirstvfx.tscn" id="1_yqmm0"]
+[ext_resource type="Script" path="res://resources/mnemonics/uskrav/uskrav_anim.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fvnqu"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+material = SubResource("StandardMaterial3D_fvnqu")
+size = Vector2(0.25, 0.25)
+
+[sub_resource type="Gradient" id="Gradient_yqmm0"]
+offsets = PackedFloat32Array(0, 0.8, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.9592404, 0.73770535, 0.7194475, 1, 0.8549202, 0.0006953931, 0.8749313, 1)
+metadata/_snap_enabled = true
+
+[node name="UskravAnim" type="Node3D" unique_id=1513176756]
+script = ExtResource("1_script")
+
+[node name="HitVFX" type="CPUParticles3D" parent="." unique_id=1517322284]
+emitting = false
+amount = 12
+lifetime = 0.4
+explosiveness = 0.5
+randomness = 0.1
+mesh = SubResource("QuadMesh_1")
+color_ramp = SubResource("Gradient_yqmm0")
+
+[node name="charge_up" parent="." unique_id=763409884 instance=ExtResource("1_yqmm0")]
+
+[node name="VFXTimeline" type="AnimationPlayer" parent="." unique_id=1246992721]

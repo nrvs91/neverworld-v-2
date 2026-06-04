@@ -124,14 +124,8 @@ func _on_cursor_hover_changed(old_actor: CombatCharacter, new_actor: CombatChara
 		else:
 			enemy_bar.nudge_actor(new_actor, true)
 
-func _on_action_executed(_actor: CombatCharacter, target: CombatCharacter, damage: int) -> void:
-	# Fire-and-forget — spawns the damage number and moves on.
-	# When skill animations arrive, this becomes the ANIMATING state entry point:
-	# play actor's attack anim + VFX, await completion, then spawn the damage number,
-	# then emit presentation_finished to unblock CombatFSM. See Option A note in CombatFSM.
-	var dn := DamageNumberScene.instantiate() as DamageNumber
-	get_parent().add_child(dn)
-	dn.show_at(target.global_position + Vector3(0.0, 0.5, 0.0), damage)
+func _on_action_executed(_actor: CombatCharacter, _targets: Array[CombatCharacter], _damage: int, _mnemonic: MnemonicRes) -> void:
+	pass
 
 func _on_dot_ticked(token: RuntimeToken, context: ActionContext) -> void:
 	var dn := DamageNumberScene.instantiate() as DamageNumber

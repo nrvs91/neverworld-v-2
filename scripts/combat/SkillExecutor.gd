@@ -3,7 +3,7 @@ class_name SkillExecutor
 static func execute(context: ActionContext) -> void:
 	for effect in context.mnemonic.effect_steps:
 		if effect.needs_previous_hit and not context.any_hit:
-			context.record_step(false, 0, false)
+			context.record_step(null, false, 0, false)
 			continue
 
 		if effect is Skill_Effect_Instant:
@@ -19,21 +19,23 @@ static func _fire_instant(effect: Skill_Effect_Instant, context: ActionContext) 
 	if effect.token == null:
 		Log.error("SkillExecutor — Skill_Effect_Instant has no token", context.mnemonic.mnemonic_name)
 		return
-	var token := effect.token.duplicate(true) as RuntimeToken
-	token.source = context.source
-	token.owner = context.target
-	token.fire(context)
+	for target in context.targets:
+		var token := effect.token.duplicate(true) as RuntimeToken
+		token.source = context.source
+		token.owner = target
+		token.fire(context)
 
 static func _grant_tokens(effect: Skill_Effect_Grant, context: ActionContext) -> void:
 	if effect.token == null:
 		Log.error("SkillExecutor — Skill_Effect_Grant has no token", context.mnemonic.mnemonic_name)
 		return
-	for i in range(effect.amount):
-		var token := effect.token.duplicate(true) as RuntimeToken
-		token.source = context.source
-		token.owner = context.target
-		context.target.tokens.add_token(token)
-		context.tokens_applied.append(token)
+	for target in context.targets:
+		for i in range(effect.amount):
+			var token := effect.token.duplicate(true) as RuntimeToken
+			token.source = context.source
+			token.owner = target
+			target.tokens.add_token(token)
+			context.tokens_applied.append(token)
 
 static func _remove_tokens(effect: Skill_Effect_Remove, context: ActionContext) -> void:
 	Log.warn("SkillExecutor — Skill_Effect_Remove not yet wired", effect.token_type)

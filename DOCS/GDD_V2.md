@@ -41,12 +41,24 @@ A mnemonic is a **data resource** — a `.tres` file, not a script. It holds cos
 
 ```
 Mnemonic (SkillClass_Base)
-├── APCost, HPCostPercent, MPCost
+├── ap_generates (int — positive generates AP, zero is neutral)
+├── ap_generation_bonuses (Dictionary — token→bonus pairs, e.g. {"shield": 1})
+├── ap_cost (int — positive consumes AP, zero means no AP cost)
+├── ap_reduction_conditions (Dictionary — token→discount pairs, e.g. {"poison": 3})
+├── HPCostPercent, MPCost
 ├── IsMelee, TrueStrike
 └── EffectSteps[]
       ├── Skill_Effect_Damage   (step 1 — hit the target)
       └── Skill_Effect_DoT      (step 2 — apply poison if step 1 hit)
 ```
+
+A mnemonic that both generates AND costs AP (hybrid) uses both fields. A generator-only mnemonic sets `ap_cost = 0`. A consumer-only mnemonic sets `ap_generates = 0`. A neutral mnemonic sets both to zero.
+
+`ap_reduction_conditions` maps token type strings to per-token AP discounts. If a mnemonic has `{"poison": 2}` and the target has 3 POISON tokens, the effective AP cost is reduced by 6 (3 tokens × 2 discount each). Discounts are calculated at validation time and never reduce cost below 0.
+
+`ap_generation_bonuses` works identically in the opposite direction — maps token type strings to per-token AP generation bonuses. If a mnemonic has `{"shield": 1}` and destroys 2 SHIELD tokens on the target, it generates +2 bonus AP on top of its base `ap_generates` value. Bonuses are calculated at validation time, capped by AP cap (10).
+
+Token-level AP modifiers (ALACRITY granting +1 AP per turn, gear passives adding +1 to all AP generation) are separate — they are universal board-state modifiers that stack with the mnemonic's authored values.
 
 Each effect step is its own resource — a self-contained component that knows what it does, what stats it reads, and what token it creates. The execution pipeline iterates the list and resolves each step in order. The mnemonic is passive data. The effects are the behavior.
 
@@ -105,7 +117,7 @@ This is a per-skill authoring decision, not a per-effect one. A two-hit skill th
 
 ### Skill Ranks
 
-Skills have ranks. Higher rank means higher Power, better AP efficiency, occasionally new mechanics — not arbitrary resistance flags. A low-rank skill against a high-defense enemy does pathetic damage. The numbers tell the story. No "RESIST" labels needed.
+Skills have ranks. Higher rank means higher Power, better AP economy (more generation or lower cost), occasionally new mechanics — not arbitrary resistance flags. A low-rank skill against a high-defense enemy does pathetic damage. The numbers tell the story. No "RESIST" labels needed.
 
 This is the core pressure to engage with the RESONANCE system. Ignoring skill investment doesn't lock you out — it just makes you ineffective in a way that's immediately legible. Low Power can't compensate for a widening stat gap as the game progresses.
 
@@ -131,15 +143,16 @@ The graph is a planning tool as much as a status screen. You can inspect any mne
 
 **Depth is a design signal, not a quality signal.** A 1-node chain means the skill is complete at base. A 5-node branching chain means the designer wants the player to commit and choose. Neither is better — depth reflects the skill's role in the game.
 
-**Vertical ranks: same identity, better numbers.** The primary lever is Power. Other changes (cost shifts, secondary effects) are optional — only used when they reinforce something specific, not as a default.
+**Vertical ranks: same identity, better numbers.** The primary lever is Power. For generators, AP generation may increase (+1 → +2). For consumers, AP cost may decrease. Other changes (secondary effects) are optional — only used when they reinforce something specific, not as a default.
 
 **Branch points: identity mutations, not upgrades.** Both paths should feel genuinely different. Tools for making branches distinct:
 - **Power trade-off** — one branch takes a Power cut in exchange for a mechanic
-- **Cost personality** — AP or HP% changes that reinforce the branch's identity
+- **AP role shift** — a consumer branch vs. a generator branch — the skill's economic identity changes
+- **Cost personality** — AP generation/cost or HP% changes that reinforce the branch's identity
 - **Conditional mechanics** — the payoff requires setup (DoT on target, ally low HP, etc.)
 - **Reliability vs ceiling** — guaranteed hit/effect vs higher raw output with risk
 
-**Costs are tools, not progression rules.** AP and HP% costs don't automatically decrease as a skill ranks up. They change only when that change means something.
+**Costs are tools, not progression rules.** AP generation/cost and HP% costs don't automatically change as a skill ranks up. They change only when that change means something.
 
 #### Worked Example: Uskrav Chain
 
@@ -156,22 +169,22 @@ Uskrav
 
 | Node | Power | AP | HP% | Special |
 |------|-------|----|-----|---------|
-| Uskrav | 30 | 2 | 15% | — |
-| Uskrav II | 45 | 2 | 15% | — |
-| Uskrav III | 70 | 2 | 15% | — |
-| Sporlaus | 55 | 1 | 5% | True Strike (never misses) |
-| Tvingar | 55 | 2 | 25% | Guaranteed crit if target has DoT |
-| Tvingar II | 75 | 2 | 25% | Guaranteed crit if target has DoT |
+| Uskrav | 30 | +1 | 15% | — |
+| Uskrav II | 45 | +1 | 15% | — |
+| Uskrav III | 70 | +1 | 15% | — |
+| Sporlaus | 55 | +1 | 5% | True Strike (never misses) |
+| Tvingar | 55 | -2 | 25% | Guaranteed crit if target has DoT; costs 2 AP less per POISON on target |
+| Tvingar II | 75 | -2 | 25% | Guaranteed crit if target has DoT; costs 2 AP less per POISON on target |
 
-**Trunk (I→II→III):** same cost, increasing Power. Rewards RESONANCE investment with raw output.
+**Trunk (I→II→III):** AP generator. Same HP cost, same +1 AP generation, increasing Power. Rewards RESONANCE investment with raw damage output while keeping its engine role consistent.
 
-**Sporlaus:** power cut in exchange for reliability — 1 AP, 5% HP, never misses. Low-maintenance consistent pressure.
+**Sporlaus:** generator branch — reduced HP cost (5%), retains True Strike. Same AP generation as trunk but safer, cheaper. Low-maintenance consistent pressure — a better engine, not a different one.
 
-**Tvingar:** same power cut, higher HP cost (25%), guaranteed crit against DoT targets. Miss the setup and you've paid 25% HP for a weak hit. Land it and effective Power is 82.5 — above the trunk.
+**Tvingar:** **AP role shift** — becomes a consumer (-2 AP). Same power cut (55 vs 70), higher HP cost (25%), guaranteed crit against DoT targets. Hybrid: costs 2 AP less per POISON on the target. Miss the setup and you've paid HP + AP for a weak hit. Land it on a poisoned enemy and effective Power is 82.5 — above the trunk, potentially at 0 AP cost with enough POISON stacks.
 
-**Tvingar II:** recovers the power gap (75 vs trunk's 70) while keeping the condition and cost. Rewards full commitment to the branch.
+**Tvingar II:** recovers the power gap (75 vs trunk's 70) while keeping the hybrid condition and cost structure. Rewards full commitment to the branch.
 
-The branch decision is reliability vs ceiling. Sporlaus players don't build around DoT. Tvingar players commit to setup — and when it lands, they hit harder than anything else in the chain.
+The branch decision: generator consistency (Sporlaus) vs. conditional finisher (Tvingar). Sporlaus players keep Uskrav as their fuel pump — always generates, always reliable, always cheap. Tvingar players commit to setup — the skill's economic role **inverts** from generator to consumer, demanding board-state engagement for payoff.
 
 ---
 
@@ -188,8 +201,24 @@ There is no catalogue, no scribing, no discovery layer. A mnemonic you don't hav
 
 ## RESOURCE SYSTEM
 
-### AP — Action Economy (combat only)
-Per-character. Gained at the start of your own turn (+1, modifiable by gear/mnemonics). Carries over between turns — unspent AP accumulates and creates tempo pressure. Spent to play mnemonics. Resets between encounters.
+### AP — Player-Exclusive Action Engine (combat only)
+
+**AP is player-exclusive.** Only player characters have AP bars. Enemies do not use AP — their behavior is driven by patterns and cooldowns (see Enemy AI).
+
+**AP is action-generated, not time-generated.** Characters do not gain AP passively at turn start. AP is earned by using mnemonics that generate it.
+
+- **Generator mnemonics** — produce AP when used. Your bread-and-butter skills: deal damage, apply tokens, AND feed your engine.
+- **Consumer mnemonics** — cost AP to use. Finishers, powerful buffs, detonators, nukes. Bigger effect, higher cost.
+- **Neutral mnemonics** — neither generate nor cost AP. Standalone utility: buffs, debuffs, stances.
+- **Hybrid mnemonics** — have both an AP cost AND a conditional refund. "Costs 9 AP, but 3 cheaper per POISON on target."
+
+**AP cap: 10.** Universal, no exceptions. Generation past cap is lost — spend it or waste it.
+
+**AP resets every encounter.** Clean slate each fight. No carry-over, no pre-boss farming.
+
+**Starting AP:** characters begin each encounter at 0 AP. Some gear may grant starting AP (e.g., "Amulet of Readiness: +2 starting AP").
+
+**Basic attack (inherent action):** every character always has access to a basic attack. It costs no AP, generates +1 AP, and deals baseline physical damage (low Power, weapon damage type, no token interaction). It is intentionally weak — an AP floor, not a combat tool. Mnemonics and gear modify it: passives that add AP on crit, multi-hit properties, token application on hit. The basic attack is a modifiable platform, not a wasted turn.
 
 ### HP — Physical Cost + Survival
 Some mnemonics cost HP to run (physical techniques that damage the user). Also the primary survival resource — hit zero and the character goes down, their mnemonics go offline for the rest of the encounter. Persists across encounters. Restored at rest points and via healing mnemonics.
@@ -245,7 +274,7 @@ Combat is driven by **two FSMs running in parallel** — one for logic, one for 
 | State | Responsibility |
 |---|---|
 | `CombatStart` | Call `EnterBattle` on all actors, emit `CombatStarted` |
-| `TurnStart` | Tick CT for all non-downed actors, find highest-priority ready actor. Active actor gains AP (+1, modified by tokens/gear). Active actor's `OnTurnStart` tokens tick: DoT damage, HoT healing, duration countdown, expired tokens removed. Emit `TurnStarted`. |
+| `TurnStart` | Tick CT for all non-downed actors, find highest-priority ready actor. Active actor's `OnTurnStart` tokens tick: DoT damage, HoT healing, duration countdown, expired tokens removed. Token-based AP modifiers (e.g., ALACRITY) resolve here. Emit `TurnStarted`. |
 | `ActionSelect` | Emit `please_select_action`. Await `action_selected(skill, target)` signal. The FSM is actor-agnostic — `PlayerInputComponent` fires the signal for player actors, `AIBehaviorComponent` fires it for enemies. The FSM does not branch on actor type. |
 | `ActionExecution` | Delegate to `ActionPipeline` — calls `pipeline.run()` and awaits `pipeline_complete`. The FSM does nothing else in this state. ActionPipeline owns the full execution cycle: announce, PRE-pass, primary skill execution, POST-pass, downed detection. |
 | `TurnEnd` | Consume CT, emit `TurnEnded`, check win/loss condition |
@@ -420,40 +449,62 @@ Resistance states are **authored directly on enemies** via `ResistanceProfile`. 
 
 **Token interactions** — tokens can grant RESISTANT or WEAK to any non-IMMUNE type. Opposing states cancel to neutral (WEAK + RESISTANT token = none). IMMUNE cannot be touched by tokens.
 
-**DoT behaviour** — DoTs (BURN, POISON, BLEED) always land if the skill hits, regardless of resistance state. The resistance multiplier applies to tick damage only. A BURN on a RESISTANT-to-Fire enemy ticks at 0.5×. A Fire-IMMUNE enemy takes 0× tick damage but the token is still applied — it ticks for zero.
+**DoT behaviour** — DoTs (BURN, POISON, BLEED) always land if the skill hits, regardless of resistance state. IMMUNE is the exception.
 
 **DoT reapplication** — Reapplying a DoT that is already active on a target extends the existing token by adding the new charges to the current remaining charges, capped at 9. No second stack is created. Charges represent duration only — tick damage is flat per the formula above regardless of how many charges remain. (9 is the cap: single digit, UI-friendly, and unreachable in normal play without deliberate setup.)
 
-The distinction matters: fire-IMMUNE means zero fire damage, but FREEZE (Stone-type) still lands and functions normally.
+The distinction matters: fire-IMMUNE means zero fire damage, but FREEZE still lands and functions normally.
 
 ### AP Economy
 
-- All actors start combat with 3 AP.
-- Each actor gains +1 AP at the start of their turn.
-- AP carries over between turns (unspent AP accumulates — tempo pressure).
-- AP cap: 10, all actors. Not a per-character stat.
-- AP resets between encounters.
-- Enemies pay AP costs too. Every enemy has a 1–2 AP fallback skill so AP drain can't cause a permanent stall.
+AP is a **player-only, action-generated resource.** There is no passive AP income. The economy is entirely driven by what the player chooses to do each turn.
 
-| AP Cost | Skill Class |
-|---------|-------------|
-| 1–2 | Basic attacks, weak skills, items |
-| 3–4 | Core bread-and-butter skills |
-| 5–6 | Strong skills |
-| 7–9 | Powerful fight-changers |
-| 10–12 | Ultimate abilities — boss charge-up attacks live here |
+**AP generation rules:**
+- Using some mnemonics produces AP, some are neutral, and some consume AP to either modify their effects or need AP to be used.
+- The basic attack (inherent action) always generates +1 AP.
+- Tokens (ALACRITY, etc.) can grant additional AP per turn or per action.
+- Gear can grant flat starting AP at combat start or +1 to all generation.
+
+**AP consumption rules:**
+- Using a consumer mnemonic costs AP equal to its `ap_cost` value, minus any active `ap_reduction_conditions`.
+- AP cannot go negative. A skill the player can't afford is greyed out.
+- There is no refund on miss or cancel — the cost is paid on execution.
+
+**Economy rhythm:**
+Every fight begins at 0 AP and the player builds their engine through action. Generators feed the engine while dealing damage or setting up tokens. Consumers cash out the built AP for high-impact effects — finishers, burst damage, party heals, conditional detonators. Neutral skills provide utility without affecting the economy. Hybrid skills reward setup by reducing their own cost based on board state.
+
+The decision each turn is: **am I building, spending, or neutral?** The answer changes as the fight progresses. Early turns are engine-building. Mid-fight is deciding when to cash out. Late fight is cashing out under pressure with depleted HP/MP.
+The "Roles" below are just to illustrate a trend, there is no such destinction in game. Purely illustratory:
+
+| Role | AP Effect | Skill Class |
+|------|-----------|-------------|
+| Generator | +1 to +2 AP | Bread-and-butter attacks, setup skills, token applicators |
+| Neutral | 0 AP | Stances, buffs, debuffs, utility |
+| Consumer | -2 to -4 AP | Strong attacks, detonators, burst skills |
+| Finisher | -5 to -9 AP | Fight-changing nukes, party-wide effects |
+| Hybrid | costs AP, refunds on condition | Conditional payoff skills |
 
 ### Skill Costs
 
-Physical skills (weapon/physical mnemonics) cost **HP%** + AP.
-Magical skills (elemental mnemonics) cost **flat MP** + AP.
+Physical skills (weapon/physical mnemonics) cost **HP%** + AP (if consumer) or generate AP (if generator).
+Magical skills (elemental mnemonics) cost **flat MP** + AP (if consumer) or generate AP (if generator).
+AP generation and consumption are independent of the HP%/MP tier — a heavy physical skill can be a generator, and a minor skill can be a consumer. The AP role reflects the skill's function in the economy, not its raw power level.
 
-| Tier | HP% Cost | MP Cost |
-|------|----------|---------|
-| Minor/Weak | 5% | 4–8 |
-| Light/Solid | 10% | 12–20 |
-| Heavy | 15% | 25–35 |
-| Severe | 20% | 40+ |
+### Basic Attack (Inherent Action)
+
+Every character has access to a basic attack at all times. It does not consume a mnemonic slot and is always available.
+
+| Property | Value |
+|----------|-------|
+| AP | Generates +1 AP |
+| Power | Low (flat, no scaling) |
+| Damage type | Character's weapon type |
+| Crit | Yes |
+| Token interaction | None by default |
+
+The basic attack is intentionally weak — it is an AP floor, not a combat tool. It exists so the player is never fully locked out: if all equipped mnemonics are currently unaffordable, the basic attack can always be used to build AP.
+
+**Mnemonic and gear passives can modify the basic attack.** A passive mnemonic might add "+1 AP when basic attack crits." A weapon might change the damage type or add multi-hit. A gear item might add poison-on-hit. Building around a modified basic attack is a valid loadout strategy.
 
 ### Death
 
@@ -464,8 +515,6 @@ Magical skills (elemental mnemonics) cost **flat MP** + AP.
 ---
 
 ## COMBAT — RIPPLE FRAMEWORK
-
-The core combat hook: **ripple manipulation.** Stack them, trigger them, strip them, combo them. Combat is reading and reacting to visible board state.
 
 ### Six Ripple Types
 
@@ -499,7 +548,7 @@ A token has four properties:
 | BURN (3 turns) | ON_TURN_START | 3 | One instance ticked and consumed at start of owner's turn |
 | EMPOWER (3 turns) | ON_TURN_END | 3 | Passive multiplier (×1.5) read during damage calc; one instance expires at end of owner's TurnEnd. Cast turn is free — 3 tokens = 3 boosted attacks |
 | WEAKEN (3 turns) | ON_TURN_END | 3 | Passive multiplier (×0.75); ticks at end of *target's* turn |
-| STUN | — | 1 | Consumed by CombatFSM at TurnStart; AP gain and action are skipped |
+| STUN | — | 1 | Consumed by CombatFSM at TurnStart; action is skipped |
 | COUNTER | ON_DAMAGE_TAKEN | N | POST-pass reaction — retaliates against attacker after taking damage |
 | VIGIL | ON_ALLY_HIT | N | POST-pass reaction — heals a damaged ally after primary resolves |
 | ENVENOM | INSTANT | 1 | Consumes all POISON on target; damage = count × power_per_token |
@@ -560,6 +609,7 @@ Buffs and debuffs expire at **TurnEnd** of the actor carrying them. DoTs and CC 
 **Special buffs (future):**
 - **MOMENTUM** — +25% Phys.Atk per stack (physical only). Stacks consumed on next physical hit. Granted per enemy hit.
 - **KEEN** — guarantees crit on the next physical hit. Consumed on use.
+- **ALACRITY** — grants +1 AP at start of bearer's turn. Duration-based (e.g., 3 ALACRITY = 3 turns of bonus AP income).
 
 **UseHitCount pattern:** Stackable buffs like MOMENTUM use a `UseHitCount` flag on the buff effect. When set, token count equals the number of targets actually hit by that skill cast — not a fixed authored number. CrimsonRhythm hitting 3 enemies grants 3 MOMENTUM stacks. Missing all enemies grants 0. This is the standard pattern for skills that reward hitting multiple targets.
 
@@ -593,11 +643,26 @@ Base growth ensures characters remain viable regardless of allocation. Choice al
 
 ### Enemy AI
 
+Enemies do **not** use AP. Their behavior is driven by patterns and cooldowns — they select skills based on turn count, HP thresholds, or weighted random tables. The player's AP economy and the enemy's action economy are completely decoupled.
+
 Enemies use the same skill resolution pipeline as the player. The AI layer only decides which skill and which target.
 
 **Two decision strategies:**
 - **Scripted (Gambit-style):** ordered priority list of condition → action rules. Evaluated top-to-bottom; first match wins. Used for standard encounters.
 - **Utility Scoring:** every (skill, target) pair scored against current board state. Highest score wins with a small random band. Reserved for bosses and elites.
+
+**Pattern types:**
+
+| Pattern | Description |
+|---------|-------------|
+| Cooldown | Skill is available every N turns. "Fire Breath: use whenever available, 3-turn cooldown." |
+| HP Threshold | Skill triggers when HP crosses a boundary. "Enrage: at 30% HP, use and refresh every 4 turns." |
+| Sequence | Fixed rotation. "Turn 1: Howl, Turn 2: Bite, Turn 3: Bite, repeat." |
+| Weighted Random | Skill has a weight; higher weight = more likely. Simple random without condition tracking. |
+
+**Enemy readability:**
+- Trash enemies: patterns are invisible. The player learns through observation — a VarnWolf that uses Howl every 3rd turn is a discovery, not a tutorial.
+- Bosses and elites: may include a telegraph line before their big move ("The VarnWolf bares its fangs..."). Flavour text only — no mechanical indicator, no UI overlay. Oldschool feel.
 
 **Behavior Profiles** (for utility scoring):
 

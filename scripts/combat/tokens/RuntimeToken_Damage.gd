@@ -23,17 +23,14 @@ func fire(context: ActionContext) -> void:
 
 	if not result.hit:
 		Log.info("RuntimeToken_Damage — missed", "%s->%s" % [source.character_name, owner.character_name])
-		CombatEvents.combat_text_shown.emit(owner, "MISS")
-		context.record_step(false, 0, false)
+		context.record_step(owner, false, 0, false)
 		return
 
 	var mult_str := "" if result.multiplier == 1.0 else " mult:%.2f" % result.multiplier
 	Log.info("RuntimeToken_Damage", "%s->%s %d (crit:%s%s)" % [
 		source.character_name, owner.character_name, result.damage, result.is_crit, mult_str])
 
-	owner.vitals.take_damage(result.damage)
-	CombatEvents.action_executed.emit(source, owner, result.damage)
-	context.record_step(true, result.damage, result.is_crit)
+	context.record_step(owner, true, result.damage, result.is_crit)
 
 static func _get_weapon_damage_type() -> ResistanceType.DamageType:
 	# TODO: read from attacker's equipped weapon once gear system exists.

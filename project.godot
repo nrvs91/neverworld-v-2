@@ -44,6 +44,12 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 
 player=""
 
+[importer_defaults]
+
+texture={
+&"compress/channel_pack": 1
+}
+
 [input]
 
 interact={

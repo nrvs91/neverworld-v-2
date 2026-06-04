@@ -6,6 +6,7 @@ const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 @onready var vitals: VitalsComponent = $VitalsComponent
 @onready var stats: StatsComponent = $StatsComponent
 @onready var tokens: ActiveTokens = $ActiveTokens
+@onready var visual: CharacterVisualComponent = $CharacterVisualComponent
 
 var character_name: String = ""
 var is_player_controlled: bool = false
@@ -18,6 +19,7 @@ func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	var computed := StatCalculator.compute_player(data, save_data)
 	vitals.setup(computed[CharacterStats.Stat.MaxHP], computed[CharacterStats.Stat.MaxMP])
 	stats.setup(computed)
+	visual.setup(vitals, data.character_sprite)
 	character_name = data.character_name
 	mnemonics = data.mnemonics
 	resistance_profile = ResistanceProfile.new()
@@ -28,6 +30,7 @@ func initialize_enemy(data: EnemyData) -> void:
 	var computed := StatCalculator.compute_enemy(data)
 	vitals.setup(computed[CharacterStats.Stat.MaxHP], computed[CharacterStats.Stat.MaxMP])
 	stats.setup(computed)
+	visual.setup(vitals, data.character_sprite)
 	character_name = data.character_name
 	resistance_profile = data.resistance_profile if data.resistance_profile != null else ResistanceProfile.new()
 	if data.basic_attack:

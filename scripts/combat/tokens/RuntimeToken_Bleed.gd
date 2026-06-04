@@ -18,6 +18,5 @@ func tick(context: ActionContext) -> void:
 
 	var damage: int = max(1, int(owner.vitals.max_hp * 0.1 * resist_mult))
 	Log.info("RuntimeToken_Bleed tick", owner.character_name, damage)
-	owner.vitals.take_damage(damage)
-	context.record_step(true, damage, false)
+	context.record_step(owner, true, damage, false)
 	CombatEvents.dot_ticked.emit(self, context)

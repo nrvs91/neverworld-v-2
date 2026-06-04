@@ -18,7 +18,9 @@ signal combat_started
 signal turn_started(actor: CombatCharacter)
 signal please_select_action(actor: CombatCharacter)
 signal action_selected(mnemonic: MnemonicRes, target: CombatCharacter)
-signal action_executed(actor: CombatCharacter, target: CombatCharacter, damage: int)
+signal action_animation_complete
+signal action_hit_frame
+signal action_executed(actor: CombatCharacter, targets: Array[CombatCharacter], damage: int, mnemonic: MnemonicRes)
 signal action_resolved(context: ActionContext)
 signal combat_text_shown(target: CombatCharacter, text: String)
 signal actor_downed(actor: CombatCharacter)

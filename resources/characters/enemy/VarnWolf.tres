@@ -1,32 +1,8 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://h4na7psrt44e"]
 
-[ext_resource type="Script" uid="uid://cctdg0o2mn235" path="res://scripts/combat/skills/effects/Skill_Effect_Base.gd" id="1_3ydwg"]
 [ext_resource type="Script" uid="uid://db0mir7kfmgdv" path="res://scripts/characters/EnemyData.gd" id="1_a075a"]
+[ext_resource type="Resource" uid="uid://cbkgtwihvevg2" path="res://resources/mnemonics/uskrav/uskrav_tergo_lupi.tres" id="1_anrad"]
 [ext_resource type="Texture2D" uid="uid://mbeq4mtsdwrt" path="res://assets/characters/sprites/enemy/wolf.png" id="1_mngm6"]
-[ext_resource type="Script" uid="uid://bqwo4712edpli" path="res://scripts/combat/tokens/RuntimeToken_Damage.gd" id="2b_damage"]
-[ext_resource type="Script" uid="uid://drcvu0qn608jt" path="res://scripts/combat/skills/effects/Skill_Effect_Instant.gd" id="2_instant"]
-[ext_resource type="Script" uid="uid://b237vbpqp01dw" path="res://scripts/combat/skills/MnemonicResource.gd" id="3_qjb6p"]
-[ext_resource type="Script" uid="uid://c0nmnx3d2582y" path="res://scripts/combat/skills/TargetingData.gd" id="4_pyasp"]
-
-[sub_resource type="Resource" id="Resource_dmg"]
-script = ExtResource("2b_damage")
-power = 15
-damage_type = 2
-crit_chance = 3
-inherit_from_weapon = false
-
-[sub_resource type="Resource" id="Resource_jvskl"]
-script = ExtResource("2_instant")
-token = SubResource("Resource_dmg")
-
-[sub_resource type="Resource" id="Resource_pxmql"]
-script = ExtResource("4_pyasp")
-
-[sub_resource type="Resource" id="Resource_xnm7l"]
-script = ExtResource("3_qjb6p")
-mnemonic_name = "Strike"
-targeting = SubResource("Resource_pxmql")
-effect_steps = Array[ExtResource("1_3ydwg")]([SubResource("Resource_jvskl")])
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_anrad"]
 atlas = ExtResource("1_mngm6")
@@ -76,6 +52,62 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}],
+"loop": false,
+"name": &"Combat_Casting",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}],
+"loop": false,
+"name": &"Combat_Dash",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}],
+"loop": false,
+"name": &"Combat_Hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qjb6p")
+}],
+"loop": true,
+"name": &"Combat_Idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}],
+"loop": false,
+"name": &"Combat_Melee1",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}],
+"loop": false,
+"name": &"Combat_Recover",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_anrad")
+}],
+"loop": false,
+"name": &"Combat_WindUp",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_qjb6p")
 }],
 "loop": true,
@@ -86,7 +118,7 @@ animations = [{
 [resource]
 script = ExtResource("1_a075a")
 xp_value = 45
-basic_attack = SubResource("Resource_xnm7l")
+basic_attack = ExtResource("1_anrad")
 MaxHP = 90
 MaxMP = 0
 MaxAP = 8

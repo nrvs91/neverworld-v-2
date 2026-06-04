@@ -82,7 +82,7 @@ func _enter_action_execution() -> void:
 		_transition(State.TURN_END)
 		return
 
-	_action_pipeline.run(_pending_mnemonic, _active_actor, _pending_target, _actors)
+	_action_pipeline.run(_pending_mnemonic, _active_actor, [_pending_target], _actors)
 	await _action_pipeline.pipeline_complete
 	_transition(State.TURN_END)
 
@@ -90,8 +90,6 @@ func _enter_turn_end() -> void:
 	_active_actor.tokens.tick_turn_end()
 	TurnTracker.consume_ct(_active_actor)
 	CombatEvents.turn_ended.emit(_active_actor)
-	# PLACEHOLDER: replace with await on animation_finished once real attack anims exist
-	await get_tree().create_timer(0.8).timeout
 	if _check_combat_end():
 		return
 	_transition(State.TURN_START)

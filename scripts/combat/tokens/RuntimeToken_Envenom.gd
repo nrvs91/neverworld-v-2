@@ -17,7 +17,7 @@ func fire(context: ActionContext) -> void:
 	var count := owner.tokens.consume_all(consume_type)
 	if count == 0:
 		Log.warn("RuntimeToken_Envenom — no tokens", owner.character_name)
-		context.record_step(false, 0, false)
+		context.record_step(owner, false, 0, false)
 		return
 
 	var result := CombatCalculator.resolve_hit(
@@ -25,8 +25,7 @@ func fire(context: ActionContext) -> void:
 
 	if not result.hit:
 		Log.info("RuntimeToken_Envenom — missed", source.character_name, owner.character_name)
-		CombatEvents.combat_text_shown.emit(owner, "MISS")
-		context.record_step(false, 0, false)
+		context.record_step(owner, false, 0, false)
 		return
 
 	var mult_str := "" if result.multiplier == 1.0 else " mult:%.2f" % result.multiplier
@@ -34,6 +33,4 @@ func fire(context: ActionContext) -> void:
 		source.character_name, owner.character_name,
 		count, power_per_token, result.damage, result.is_crit, mult_str])
 
-	owner.vitals.take_damage(result.damage)
-	CombatEvents.action_executed.emit(source, owner, result.damage)
-	context.record_step(true, result.damage, result.is_crit)
+	context.record_step(owner, true, result.damage, result.is_crit)
