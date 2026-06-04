@@ -22,7 +22,9 @@ func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	stats.setup(computed)
 	visual.setup(vitals, data.character_sprite)
 	character_name = data.character_name
-	mnemonics = [BasicAttack.duplicate() as MnemonicRes] + data.mnemonics
+	var base_attack: MnemonicRes = BasicAttack.duplicate() as MnemonicRes
+	mnemonics = [base_attack]
+	mnemonics.append_array(data.mnemonics)
 	resistance_profile = ResistanceProfile.new()
 	Log.info("character ready", data.character_name)
 
@@ -34,10 +36,11 @@ func initialize_enemy(data: EnemyData) -> void:
 	visual.setup(vitals, data.character_sprite)
 	character_name = data.character_name
 	resistance_profile = data.resistance_profile if data.resistance_profile != null else ResistanceProfile.new()
+	var base_attack: MnemonicRes = BasicAttack.duplicate() as MnemonicRes
 	if data.basic_attack:
-		mnemonics = [BasicAttack.duplicate() as MnemonicRes, data.basic_attack]
+		mnemonics = [base_attack, data.basic_attack]
 	else:
-		mnemonics = [BasicAttack.duplicate() as MnemonicRes]
+		mnemonics = [base_attack]
 	ai_behavior = AIBehaviorComponent.new()
 	ai_behavior.name = "AIBehaviorComponent"
 	add_child(ai_behavior)
