@@ -1,7 +1,8 @@
 class_name RuntimeToken_Vigil
 extends RuntimeToken
+const StatScalingRes = preload("res://scripts/combat/stats/StatScaling.gd")
 
-@export var power: int = 15
+@export var stat_scalings: Array[StatScaling] = []
 
 func _init() -> void:
 	trigger = Trigger.ON_ALLY_HIT
@@ -13,8 +14,7 @@ func check_trigger(context: ActionContext) -> bool:
 
 func fire(context: ActionContext) -> void:
 	var target: CombatCharacter = context.trigger_context.targets[0]
-	var atk: int = owner.stats.stat(CharacterStats.Stat.AtkMag)
-	var amount: int = CombatCalculator.calc_damage(power, atk, 0)
+	var amount: int = CombatCalculator.calc_damage(stat_scalings, owner.stats, 0)
 
 	Log.info("RuntimeToken_Vigil", "%s heals %s %d" % [owner.character_name, target.character_name, amount])
 	target.vitals.heal(amount)
