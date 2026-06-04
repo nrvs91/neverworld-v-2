@@ -136,3 +136,6 @@ func consume_all(type: String) -> int:
 func flush() -> void:
 	_tokens.clear()
 	Log.info("ActiveTokens flushed")
+
+func get_tokens() -> Array[RuntimeToken]:
+	return _tokens.duplicate(false)

@@ -34,8 +34,15 @@ func run(mnemonic: MnemonicRes, attacker: CombatCharacter, targets: Array[Combat
 		pipeline_complete.emit()
 		return
 
-	attacker.vitals.spend_ap(mnemonic.ap_cost)
+	var effective_cost: int = _effective_ap_cost(mnemonic, context.token_snapshot)
+	attacker.vitals.spend_ap(effective_cost)
 	attacker.vitals.spend_mp(mnemonic.mp_cost)
+
+	var total_generation: int = _total_ap_generation(mnemonic, context.token_snapshot)
+	if total_generation > 0:
+		attacker.vitals.gain_ap(total_generation)
+
+	Log.info("ActionPipeline — AP cost:", effective_cost, "generated:", total_generation, "total:", attacker.vitals.cur_ap)
 
 	SkillExecutor.execute(context)
 	CombatEvents.action_executed.emit(context.source, context.targets, context.total_damage, context.mnemonic)
@@ -83,11 +90,6 @@ func _run_reaction_pass(tokens: Array, context: ActionContext, announce: bool) -
 			Log.info("ActionPipeline — downed (reaction)", reaction_ctx.targets[0].character_name)
 			CombatEvents.actor_downed.emit(reaction_ctx.targets[0])
 
-## Validation rules, in order:
-## 1. Source downed → cancelled (no resource cost)
-## 2. Source stunned/silenced/frozen → cancelled (no resource cost)
-## 3. Action negated by PRE reaction → negated (resource cost IS spent)
-## 4. Insufficient AP/MP after pre-reactions → cancelled (no resource cost)
 func _can_execute(context: ActionContext) -> bool:
 	var attacker: CombatCharacter = context.source
 
@@ -98,12 +100,45 @@ func _can_execute(context: ActionContext) -> bool:
 	if context.negated:
 		return false
 
-	if attacker.vitals.cur_ap < context.mnemonic.ap_cost \
+	if not context.mnemonic.ap_reduction_conditions.is_empty() or not context.mnemonic.ap_generation_bonuses.is_empty():
+		context.token_snapshot = _snapshot_target_tokens(context.targets)
+
+	var effective_cost: int = _effective_ap_cost(context.mnemonic, context.token_snapshot)
+
+	if attacker.vitals.cur_ap < effective_cost \
 			or attacker.vitals.cur_mp < context.mnemonic.mp_cost:
 		context.cancelled = true
 		return false
 
 	return true
+
+func _effective_ap_cost(mnemonic: MnemonicRes, token_snapshot: Dictionary) -> int:
+	if mnemonic.ap_cost <= 0:
+		return 0
+	var discount: int = 0
+	if not mnemonic.ap_reduction_conditions.is_empty():
+		for token_type in mnemonic.ap_reduction_conditions:
+			var per_token_discount: int = mnemonic.ap_reduction_conditions[token_type]
+			var count: int = token_snapshot.get(token_type, 0)
+			discount += per_token_discount * count
+	return max(0, mnemonic.ap_cost - discount)
+
+func _total_ap_generation(mnemonic: MnemonicRes, token_snapshot: Dictionary) -> int:
+	var total: int = mnemonic.ap_generates
+	if not mnemonic.ap_generation_bonuses.is_empty():
+		for token_type in mnemonic.ap_generation_bonuses:
+			var per_token_bonus: int = mnemonic.ap_generation_bonuses[token_type]
+			var count: int = token_snapshot.get(token_type, 0)
+			total += per_token_bonus * count
+	return total
+
+func _snapshot_target_tokens(targets: Array[CombatCharacter]) -> Dictionary:
+	var counts: Dictionary = {}
+	for t: CombatCharacter in targets:
+		for token in t.tokens.get_tokens():
+			var tt: String = token.token_type
+			counts[tt] = counts.get(tt, 0) + 1
+	return counts
 
 func _apply_pending_damage(context: ActionContext) -> void:
 	for entry in context.pending_damage:

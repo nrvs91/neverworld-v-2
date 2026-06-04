@@ -26,6 +26,8 @@ var negated: bool = false
 # Used for UI feedback — "cancelled" is distinct from "negated" (no resource cost).
 var cancelled: bool = false
 
+var token_snapshot: Dictionary = {}
+
 ## Called by INSTANT tokens (RuntimeToken_Damage) after resolving.
 ## any_hit is ONLY set here — persistent token attachment never touches it.
 func record_step(target: CombatCharacter, hit: bool, damage: int, is_crit: bool) -> void:
