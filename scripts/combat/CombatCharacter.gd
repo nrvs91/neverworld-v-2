@@ -24,7 +24,19 @@ func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 	character_name = data.character_name
 	var base_attack: MnemonicRes = BasicAttack.duplicate() as MnemonicRes
 	mnemonics = [base_attack]
-	mnemonics.append_array(data.mnemonics)
+
+	var char_id: String = data.character_name.to_lower()
+	for mnemonic in data.mnemonics:
+		if mnemonic.character_owner.is_empty():
+			mnemonics.append(mnemonic)
+			continue
+		var owner_lowered: Array[String] = []
+		for owner in mnemonic.character_owner:
+			owner_lowered.append(owner.to_lower())
+		if char_id in owner_lowered:
+			mnemonics.append(mnemonic)
+		else:
+			Log.info("mnemonic owner mismatch", "%s not owned by %s" % [mnemonic.mnemonic_name, char_id])
 	resistance_profile = ResistanceProfile.new()
 	Log.info("character ready", data.character_name)
 
