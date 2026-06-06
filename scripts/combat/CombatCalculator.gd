@@ -6,12 +6,17 @@ const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effec
 ## Base damage formula:
 ##   BaseDamage = Σ(stat_i × scaling_i) × (100 / (100 + Def))
 ## stat_scalings is Array[StatScaling] — sums (stat_value × scaling) across all entries.
-## Variance, crit, and token multipliers are applied in resolve_hit.
 static func calc_damage(stat_scalings: Array, stats: StatsComponent, def_val: int) -> int:
 	var total_atk: float = 0.0
 	for entry in stat_scalings:
 		total_atk += stats.stat(entry.stat) * entry.scaling
 	return roundi(total_atk * (100.0 / (100.0 + def_val)))
+
+## Flat damage formula:
+##   BaseDamage = flat_base × (100 / (100 + Def))
+## Used by enemy skills; skips stat scaling entirely.
+static func calc_flat_damage(base: int, def_val: int) -> int:
+	return roundi(base * (100.0 / (100.0 + def_val)))
 
 ## Crit roll. Returns true if the attack crits.
 ## Crit = automatic hit + 2× damage. Must be rolled BEFORE the hit roll.
@@ -39,9 +44,11 @@ static func is_physical(dt: ResistanceType.DamageType) -> bool:
 
 ## Full hit-crit-damage pipeline. Returns {hit, damage, is_crit, multiplier}.
 ## Rolls crit first, then hit (skipped for magic or true_strike), then resolves
-## stats, resist, and the source's active damage multiplier tokens.
+## base damage (from stat scaling or flat value), defense, resist, and tokens.
+## base_damage > 0 skips stat scaling — used by enemy skills.
 static func resolve_hit(
 		stat_scalings: Array,
+		base_damage: int,
 		damage_type: ResistanceType.DamageType,
 		crit_chance: int,
 		chance_tier: SkillEffectBase.ChanceTier,
@@ -59,7 +66,11 @@ static func resolve_hit(
 			return {hit = false, damage = 0, is_crit = false, multiplier = 1.0}
 
 	var def_stat := CharacterStats.Stat.DefPhys if phys else CharacterStats.Stat.DefMag
-	var base := calc_damage(stat_scalings, source.stats, target.stats.stat(def_stat))
+	var base: int
+	if base_damage > 0:
+		base = calc_flat_damage(base_damage, target.stats.stat(def_stat))
+	else:
+		base = calc_damage(stat_scalings, source.stats, target.stats.stat(def_stat))
 
 	var resist := ResistanceType.State.NONE
 	if target.resistance_profile != null:

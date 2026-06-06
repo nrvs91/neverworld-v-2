@@ -10,7 +10,7 @@
 [sub_resource type="Resource" id="Resource_scaling"]
 script = ExtResource("6_ss")
 stat = 6
-scaling = 1.5
+scaling = 0.75
 
 [sub_resource type="Resource" id="Resource_dmg"]
 script = ExtResource("3_damage")

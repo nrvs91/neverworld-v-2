@@ -678,6 +678,31 @@ Enemies use the same skill resolution pipeline as the player. The AI layer only 
 | Guardian | Protect allies, sustain |
 | Berserker | Maximum raw damage, ignores ailments |
 
+### Enemy Skill Authoring
+
+Enemy skills are authored independently from player mnemonics. They do not use AP, MP, HP costs, ranks, or `usable_by`. Enemy skills define targeting, a flat base damage (or heal/buff potency), a damage type, and effect tokens. The same combat calculator resolves enemy and player damage; the only difference is the source of the pre-mitigation base number.
+
+| Field | Description |
+|-------|-------------|
+| `display_name` | Name shown in logs and telegraphs. |
+| `targeting` | Same `TargetingData` used by player mnemonics. |
+| `base_damage` | Flat pre-mitigation number. If `0`, falls back to stat scaling (player path only). |
+| `damage_type` | `Slash`, `Pierce`, `Blunt`, `Fire`, `Water`, etc. Used for defense stat selection and resistance checks. |
+| `crit_chance` | Same as player tokens. |
+| `chance_tier` | Same `ChanceTier` enum; drives hit roll against target `Dodge`. |
+| `true_strike` | Bypasses hit roll entirely if `true`. |
+| `effect_steps` | Array of tokens (`RuntimeToken_Damage`, `RuntimeToken_Poison`, etc.) fired on resolution. |
+
+**No offensive stats on enemies.** Enemies carry `DefPhys`, `DefMag`, `Hit`, `Dodge`, `Speed`, MaxHP, and CurHP. They do **not** carry `AtkPhys`, `AtkMag`, MaxMP, or CurMP. Enemy offense is authored flat; enemy defense is stat-driven, same as players.
+
+**Token effects are end-point only.** Temporary buffs and debuffs (e.g., `EMPOWER`, `WEAKEN`) modify final damage multipliers, not stats. This ensures both sides benefit equally from combat tokens regardless of how their base damage is sourced.
+
+**AI condition and cooldown** are stored on the enemy skill itself:
+- `cooldown_turns`: minimum turns between uses.
+- `hp_threshold`: only usable when caster HP is below this percentage.
+- `turn_sequence`: fixed rotation slot (e.g., use on turn 3, 6, 9...).
+- `weight`: for weighted-random selection.
+
 ### Enemy Information Reveal
 
 Enemy data is not fully visible on first encounter. Information persists permanently in save data per enemy type.

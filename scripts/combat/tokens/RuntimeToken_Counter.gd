@@ -15,6 +15,7 @@ func fire(reaction_context: ActionContext) -> void:
 	var attacker: CombatCharacter = reaction_context.trigger_context.source
 	var result := CombatCalculator.resolve_hit(
 		stat_scalings,
+		0,
 		ResistanceType.DamageType.Slash,
 		5,
 		Skill_Effect_Base.ChanceTier.HIGH,

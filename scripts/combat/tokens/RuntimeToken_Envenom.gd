@@ -28,7 +28,7 @@ func fire(context: ActionContext) -> void:
 	temp_scalings.append(temp)
 
 	var result := CombatCalculator.resolve_hit(
-		temp_scalings, damage_type, crit_chance, chance_tier, source, owner)
+		temp_scalings, 0, damage_type, crit_chance, chance_tier, source, owner)
 
 	if not result.hit:
 		Log.info("RuntimeToken_Envenom — missed", source.character_name, owner.character_name)
