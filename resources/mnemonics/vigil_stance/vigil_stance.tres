@@ -24,6 +24,6 @@ amount = 2
 [resource]
 script = ExtResource("4_mnemonic")
 mnemonic_name = "Vigil Stance"
-character_owner = Array[String](["vargi"])
+usable_by = Array[String](["vargi"])
 targeting = ExtResource("5_self")
 effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

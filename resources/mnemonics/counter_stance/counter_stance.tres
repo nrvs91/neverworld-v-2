@@ -31,6 +31,6 @@ metadata/_custom_type_script = "uid://c0nmnx3d2582y"
 [resource]
 script = ExtResource("4_mnemonic")
 mnemonic_name = "Counter Stance"
-character_owner = Array[String](["vargi"])
+usable_by = Array[String](["vargi"])
 targeting = SubResource("Resource_2k065")
 effect_steps = Array[ExtResource("1_base")]([SubResource("Resource_grant")])

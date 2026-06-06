@@ -27,16 +27,16 @@ func initialize_player(data: PlayerData, save_data: CharacterSaveData) -> void:
 
 	var char_id: String = data.character_name.to_lower()
 	for mnemonic in data.mnemonics:
-		if mnemonic.character_owner.is_empty():
+		if mnemonic.usable_by.is_empty():
 			mnemonics.append(mnemonic)
 			continue
-		var owner_lowered: Array[String] = []
-		for owner in mnemonic.character_owner:
-			owner_lowered.append(owner.to_lower())
-		if char_id in owner_lowered:
+		var usable_by_lowered: Array[String] = []
+		for user in mnemonic.usable_by:
+			usable_by_lowered.append(user.to_lower())
+		if char_id in usable_by_lowered:
 			mnemonics.append(mnemonic)
 		else:
-			Log.info("mnemonic owner mismatch", "%s not owned by %s" % [mnemonic.mnemonic_name, char_id])
+			Log.info("mnemonic not usable by", "%s not usable by %s" % [mnemonic.mnemonic_name, char_id])
 	resistance_profile = ResistanceProfile.new()
 	Log.info("character ready", data.character_name)
 
