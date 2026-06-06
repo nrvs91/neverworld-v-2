@@ -38,7 +38,7 @@ The architecture should reflect the effect, not the other way around. Reactions 
 - **Engine:** Godot 4.6
 - **Language:** GDScript (only — no C#)
 - **Game:** NEVERWORLD — turn-based JRPG, Baltic/Slavic post-singularity setting
-- **Design source of truth:** `DOCS/GDD_V2.md` — read it before touching gameplay systems
+- **Design source of truth:** `DOCS/GDD_V3.md` — read it before touching gameplay systems, every divergence (which are possible and welcome if they're improvements!) -> to be talked through.
 - **No automated tests.** Gameplay tested manually by running the main scene.
 - **Rendering:** 640×360 SubViewport, pixel-art style (`nearest` filtering), orthographic camera (isometric), `size=3.0`
 - **MCP** Rember, you've got a powerful GODOT MCP tool at your disposal, use it!
@@ -53,7 +53,7 @@ Or open in the Godot editor and press F5.
 
 ## GDD Is the Source of Truth
 
-Before implementing any gameplay system, combat mechanic, skill behaviour, or progression feature — read the relevant section of `DOCS/GDD_V2.md`.
+Before implementing any gameplay system, combat mechanic, skill behaviour, or progression feature — read the relevant section of `DOCS/GDD_V3.md`.
 
 **If the GDD doesn't cover it, stop.** Do not make assumptions. Do not fill gaps with reasonable guesses. Flag the gap and wait for the GDD to be updated. Code that gets written before design matures has to be rewritten. That's waste.
 
