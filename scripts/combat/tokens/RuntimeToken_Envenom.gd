@@ -23,7 +23,7 @@ func fire(context: ActionContext) -> void:
 
 	var temp_scalings: Array[StatScaling] = []
 	var temp: StatScaling = StatScaling.new()
-	temp.stat = "Phys.Atk" if CombatCalculator.is_physical(damage_type) else "Magic.Atk"
+	temp.stat = CharacterStats.Stat.AtkPhys if CombatCalculator.is_physical(damage_type) else CharacterStats.Stat.AtkMag
 	temp.scaling = count * scaling_per_token
 	temp_scalings.append(temp)
 

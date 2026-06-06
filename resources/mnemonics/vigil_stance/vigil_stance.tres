@@ -9,7 +9,7 @@
 
 [sub_resource type="Resource" id="Resource_vigil_scaling"]
 script = ExtResource("6_ss")
-stat = "Magic.Atk"
+stat = 7
 scaling = 0.75
 
 [sub_resource type="Resource" id="Resource_vigil"]

@@ -10,9 +10,7 @@ const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effec
 static func calc_damage(stat_scalings: Array, stats: StatsComponent, def_val: int) -> int:
 	var total_atk: float = 0.0
 	for entry in stat_scalings:
-		var stat_key: CharacterStats.Stat = _stat_from_string(entry.stat)
-		var stat_val: int = stats.stat(stat_key)
-		total_atk += stat_val * entry.scaling
+		total_atk += stats.stat(entry.stat) * entry.scaling
 	return roundi(total_atk * (100.0 / (100.0 + def_val)))
 
 ## Crit roll. Returns true if the attack crits.
@@ -86,12 +84,3 @@ static func _tier_multiplier(tier: SkillEffectBase.ChanceTier) -> float:
 		SkillEffectBase.ChanceTier.LOW:     return 0.25
 	return 1.0
 
-static func _stat_from_string(stat_name: String) -> CharacterStats.Stat:
-	match stat_name:
-		"Phys.Atk": return CharacterStats.Stat.AtkPhys
-		"Magic.Atk": return CharacterStats.Stat.AtkMag
-		"MaxHP": return CharacterStats.Stat.MaxHP
-		"PULSE": return CharacterStats.Stat.Pulse
-		_:
-			Log.warn("unknown stat in StatScaling", stat_name, "defaulting to Phys.Atk")
-			return CharacterStats.Stat.AtkPhys

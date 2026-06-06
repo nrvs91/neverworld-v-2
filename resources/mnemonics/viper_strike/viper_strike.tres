@@ -11,7 +11,7 @@
 
 [sub_resource type="Resource" id="Resource_scaling"]
 script = ExtResource("8_ss")
-stat = "Phys.Atk"
+stat = 6
 scaling = 1.25
 
 [sub_resource type="Resource" id="Resource_dmg"]
