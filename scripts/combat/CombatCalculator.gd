@@ -3,18 +3,17 @@ class_name CombatCalculator
 
 const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effect_Base.gd")
 
-## Raw damage formula from GDD:
-##   damage = (AtkStat × Scaling) / (Def + 10) × Random(0.85, 1.0)
+## Base damage formula:
+##   BaseDamage = Σ(stat_i × scaling_i) × (100 / (100 + Def))
 ## stat_scalings is Array[StatScaling] — sums (stat_value × scaling) across all entries.
+## Variance, crit, and token multipliers are applied in resolve_hit.
 static func calc_damage(stat_scalings: Array, stats: StatsComponent, def_val: int) -> int:
 	var total_atk: float = 0.0
 	for entry in stat_scalings:
 		var stat_key: CharacterStats.Stat = _stat_from_string(entry.stat)
 		var stat_val: int = stats.stat(stat_key)
 		total_atk += stat_val * entry.scaling
-
-	var variance: float = randf_range(0.85, 1.0)
-	return max(1, int(total_atk / (def_val + 10.0) * variance))
+	return roundi(total_atk * (100.0 / (100.0 + def_val)))
 
 ## Crit roll. Returns true if the attack crits.
 ## Crit = automatic hit + 2× damage. Must be rolled BEFORE the hit roll.
@@ -62,18 +61,22 @@ static func resolve_hit(
 			return {hit = false, damage = 0, is_crit = false, multiplier = 1.0}
 
 	var def_stat := CharacterStats.Stat.DefPhys if phys else CharacterStats.Stat.DefMag
-	var raw := calc_damage(stat_scalings, source.stats, target.stats.stat(def_stat))
-
-	if is_crit:
-		raw *= 2
+	var base := calc_damage(stat_scalings, source.stats, target.stats.stat(def_stat))
 
 	var resist := ResistanceType.State.NONE
 	if target.resistance_profile != null:
 		resist = target.resistance_profile.get_state(damage_type)
 
-	var mult := source.tokens.get_damage_multiplier()
-	var final: int = max(0, int(raw * resist_multiplier(resist) * mult))
-	return {hit = true, damage = final, is_crit = is_crit, multiplier = mult}
+	var token_mult := source.tokens.get_damage_multiplier()
+	var total_mult: float = 1.0
+	if is_crit:
+		total_mult *= 2.0
+	total_mult *= resist_multiplier(resist)
+	total_mult *= token_mult
+	total_mult *= randf_range(0.85, 1.0)
+
+	var final: int = max(1, roundi(base * total_mult))
+	return {hit = true, damage = final, is_crit = is_crit, multiplier = total_mult}
 
 static func _tier_multiplier(tier: SkillEffectBase.ChanceTier) -> float:
 	match tier:
