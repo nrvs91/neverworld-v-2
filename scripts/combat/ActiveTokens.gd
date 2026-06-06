@@ -46,7 +46,7 @@ func get_display_text() -> String:
 
 ## Returns ONE token per type whose trigger matches and whose check_trigger passes.
 ## Only one fires per trigger event — multiple instances of same type queue for future events.
-func collect_triggers(context: ActionContext, trigger: RuntimeToken.Trigger) -> Array[RuntimeToken]:
+func collect_triggers(primary_context: ActionContext, trigger: RuntimeToken.Trigger) -> Array[RuntimeToken]:
 	var result: Array[RuntimeToken] = []
 	var seen_types: Array[String] = []
 	for token in _tokens:
@@ -54,7 +54,7 @@ func collect_triggers(context: ActionContext, trigger: RuntimeToken.Trigger) -> 
 			continue
 		if token.token_type in seen_types:
 			continue
-		if token.check_trigger(context):
+		if token.check_trigger(primary_context):
 			result.append(token)
 			seen_types.append(token.token_type)
 	return result

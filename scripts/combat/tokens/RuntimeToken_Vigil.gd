@@ -8,14 +8,21 @@ func _init() -> void:
 	trigger = Trigger.ON_ALLY_HIT
 	token_type = "VIGIL"
 
-func check_trigger(context: ActionContext) -> bool:
-	return context.any_hit \
-		and not context.targets.is_empty() and context.targets[0].is_player_controlled == owner.is_player_controlled
+func check_trigger(primary_context: ActionContext) -> bool:
+	if not primary_context.any_hit:
+		return false
+	for target: CombatCharacter in primary_context.targets:
+		if target.is_player_controlled == owner.is_player_controlled:
+			return true
+	return false
 
-func fire(context: ActionContext) -> void:
-	var target: CombatCharacter = context.trigger_context.targets[0]
+func fire(reaction_context: ActionContext) -> void:
+	var primary := reaction_context.trigger_context
 	var amount: int = CombatCalculator.calc_damage(stat_scalings, owner.stats, 0)
 
-	Log.info("RuntimeToken_Vigil", "%s heals %s %d" % [owner.character_name, target.character_name, amount])
-	target.vitals.heal(amount)
-	CombatEvents.combat_text_shown.emit(target, "HEAL +%d" % amount)
+	for target: CombatCharacter in primary.targets:
+		if target.is_player_controlled != owner.is_player_controlled:
+			continue
+		Log.info("RuntimeToken_Vigil", "%s heals %s %d" % [owner.character_name, target.character_name, amount])
+		target.vitals.heal(amount)
+		CombatEvents.combat_text_shown.emit(target, "HEAL +%d" % amount)

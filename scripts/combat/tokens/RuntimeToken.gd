@@ -17,14 +17,18 @@ var owner: CombatCharacter = null
 var opposes: String = ""
 var skip_first_tick: bool = false
 
-func fire(_context: ActionContext) -> void:
+## Called with the PRIMARY action context (full — source, targets, any_hit, etc.)
+func check_trigger(primary_context: ActionContext) -> bool:
+	return false
+
+## Called with a REACTION context. For reaction tokens this is a mostly-empty shell
+## with only `trigger_context` (the primary context) populated. Use `reaction_context.trigger_context`
+## to read the event that caused this reaction.
+func fire(reaction_context: ActionContext) -> void:
 	pass
 
 func tick(_context: ActionContext) -> void:
 	pass
-
-func check_trigger(_context: ActionContext) -> bool:
-	return false
 
 func get_damage_multiplier() -> float:
 	return 1.0

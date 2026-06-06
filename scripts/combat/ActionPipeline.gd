@@ -82,13 +82,15 @@ func _run_reaction_pass(tokens: Array, context: ActionContext, announce: bool) -
 			await get_tree().create_timer(0.5).timeout
 		var reaction_ctx := ActionContext.new()
 		reaction_ctx.trigger_context = context
+		reaction_ctx.source = token.owner
 		token.fire(reaction_ctx)
 		_apply_pending_damage(reaction_ctx)
 		_show_step_results(reaction_ctx)
 		token.owner.tokens.remove_token(token)
-		if not reaction_ctx.targets.is_empty() and reaction_ctx.targets[0].vitals.is_downed():
-			Log.info("ActionPipeline — downed (reaction)", reaction_ctx.targets[0].character_name)
-			CombatEvents.actor_downed.emit(reaction_ctx.targets[0])
+		for result in reaction_ctx.step_results:
+			if result.target != null and result.target.vitals.is_downed():
+				Log.info("ActionPipeline — downed (reaction)", result.target.character_name)
+				CombatEvents.actor_downed.emit(result.target)
 
 func _can_execute(context: ActionContext) -> bool:
 	var attacker: CombatCharacter = context.source
