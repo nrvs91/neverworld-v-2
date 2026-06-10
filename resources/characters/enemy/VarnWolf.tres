@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://h4na7psrt44e"]
 
 [ext_resource type="Script" uid="uid://db0mir7kfmgdv" path="res://scripts/characters/EnemyData.gd" id="1_a075a"]
-[ext_resource type="Resource" uid="uid://cbkgtwihvevg2" path="res://resources/mnemonics/uskrav/uskrav_tergo_lupi.tres" id="1_anrad"]
 [ext_resource type="Texture2D" uid="uid://mbeq4mtsdwrt" path="res://assets/characters/sprites/enemy/wolf.png" id="1_mngm6"]
+[ext_resource type="Script" uid="uid://cldyupd5vripl" path="res://scripts/combat/skills/EnemySkill.gd" id="3_anrad"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_anrad"]
 atlas = ExtResource("1_mngm6")
@@ -118,18 +118,16 @@ animations = [{
 [resource]
 script = ExtResource("1_a075a")
 xp_value = 45
-basic_attack = ExtResource("1_anrad")
-MaxHP = 90
-MaxMP = 0
-MaxAP = 8
-AtkPhys = 10
-AtkMag = 2
+base_attack_damage = 12
+base_attack_type = 1
+base_attack_crit_chance = 5
+MaxHP = 65
 Hit = 8
 DefPhys = 4
-DefMag = 8
-Dodge = 8
+DefMag = 4
+Dodge = 6
 Pulse = 8
 character_name = "VarnWolf"
-character_ID = "enemy_wolf"
+character_id = "enemy_wolf"
 character_sprite = SubResource("SpriteFrames_pyasp")
 metadata/_custom_type_script = "uid://db0mir7kfmgdv"

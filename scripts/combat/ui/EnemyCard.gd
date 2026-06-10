@@ -4,9 +4,8 @@ extends Control
 const NUDGE_AMOUNT: float = 12.0
 const NUDGE_DURATION: float = 0.12
 
-@onready var hp_bar: TextureProgressBar = $VBox/TopBar/HPBar
-@onready var mp_bar: TextureProgressBar = $VBox/TopBar/MPBar
-@onready var ap_bar: TextureProgressBar = $VBox/APBar
+@onready var enemy_name: Label = $VBox/VBoxContainer/Enemy_Name
+@onready var hp_bar: TextureProgressBar = $VBox/VBoxContainer/HPBar
 @onready var _token_label: Label = $VBox/TokenContainer/TokenLabel
 
 var _actor: CombatCharacter = null
@@ -14,9 +13,6 @@ var _actor: CombatCharacter = null
 func setup(actor: CombatCharacter) -> void:
 	_actor = actor
 	hp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxHP)
-	mp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxMP)
-	ap_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxAP)
-	ap_bar.visible = false
 	actor.vitals.vitals_changed.connect(refresh_vitals)
 	actor.tokens.token_added.connect(_refresh_token_display)
 	actor.tokens.token_removed.connect(_refresh_token_display)
@@ -26,7 +22,6 @@ func refresh_vitals() -> void:
 	if _actor == null:
 		return
 	hp_bar.value = _actor.vitals.cur_hp
-	mp_bar.value = _actor.vitals.cur_mp
 
 func _refresh_token_display(_token = null) -> void:
 	_token_label.text = _actor.tokens.get_display_text()

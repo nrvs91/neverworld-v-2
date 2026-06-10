@@ -2,7 +2,7 @@
 
 > This document is the design source of truth for NEVERWORLD V2.
 > This is a living document. Stubs and TODOs are intentional — fill them as design crystallizes.
-> **Last updated:** 2026-06-05 — Skill system overhaul: vertical-only progression, gear-based slots, per-mnemonic character ownership, float Power values.
+> **Last updated:** 2026-06-07 — Enemy skill split: flat base damage for enemies, stat scaling for players. Power replaced by StatScaling. Player basic attack runtime-generated.
 
 ---
 
@@ -38,7 +38,7 @@ The `character_owner` field lists eligible characters. There is no "equip anythi
 
 ### Skill Construction
 
-A mnemonic is a **data resource** — a `.tres` file, not a script. It holds cost metadata, ownership data, a power multiplier, and an ordered list of **effect steps.** There is no skill logic in the mnemonic itself. Logic lives in the effect components.
+A mnemonic is a **data resource** — a `.tres` file, not a script. It holds cost metadata, ownership data, stat scaling configuration, and an ordered list of **effect steps.** There is no skill logic in the mnemonic itself. Logic lives in the effect components.
 
 ```
 Mnemonic (SkillClass_Base)
@@ -49,10 +49,10 @@ Mnemonic (SkillClass_Base)
 ├── ap_reduction_conditions (Dictionary — token→discount pairs, e.g. {"poison": 3})
 ├── HPCostPercent, MPCost
 ├── IsMelee, TrueStrike
-├── Power (float — multiplier on AtkStat, see Damage Formula)
 └── EffectSteps[]
-      ├── Skill_Effect_Damage   (step 1 — hit the target)
-      └── Skill_Effect_DoT      (step 2 — apply poison if step 1 hit)
+      ├── Skill_Effect_Instant   (step 1 — fire DAMAGE token)
+      ├── Skill_Effect_Grant     (step 2 — apply POISON token on hit)
+      └── Skill_Effect_Grant     (step 3 — apply ALACRITY token on hit)
 ```
 
 A mnemonic that both generates AND costs AP (hybrid) uses both fields. A generator-only mnemonic sets `ap_cost = 0`. A consumer-only mnemonic sets `ap_generates = 0`. A neutral mnemonic sets both to zero.
@@ -81,33 +81,32 @@ Items and mnemonics share the same execution pipeline and effect classes. The di
 
 #### Damage Formula
 
-Each `Skill_Effect_Damage` step has a hand-authored float **Power** value. Damage resolves as:
+Damage is resolved by `CombatCalculator`, a pure utility with no state. The formula has two input paths:
 
+**Player path — stat scaling:**
 ```
-damage = (AtkStat × Power) / (DefStat + 10) × Random(0.85, 1.0)
+BaseDamage = Σ(stat_i × scaling_i) × (100 / (100 + Def))
 ```
+- `stat_scalings` — Array of `StatScaling` resources, each pairing a `CharacterStats.Stat` with a float multiplier.
+- `scaling` — authored per effect. 1.0 = 100% of that stat. A basic attack uses `[AtkPhys × 1.0]`. A heavy skill might use `[AtkPhys × 1.5]` or `[AtkPhys × 0.8, PULSE × 0.4]`.
+- `Def` — defender's relevant defense stat (Phys.Def or Mag.Def).
+- Result is rounded to int, minimum 1.
 
-- **Power** — authored per effect as a float. 1.0 = 100% of AtkStat (basic attack baseline). 2.5 = 250% of AtkStat. 0.5 = 50% of AtkStat. The number directly communicates "× basic attack damage."
-- **AtkStat** — attacker's relevant stat: Phys.Atk for physical, Magic.Atk for magical.
-- **DefStat** — defender's relevant stat: Phys.Def or Magic.Def.
-- **+10 offset** — softens defense scaling at low values, prevents division by near-zero.
-- **Random(0.85–1.0)** — variance roll. Same spread as Pokémon.
-- Result rounded to int; minimum 1.
+**Enemy path — flat base:**
+```
+BaseDamage = base_damage × (100 / (100 + Def))
+```
+- `base_damage` — authored directly on the enemy skill or `EnemyData` (for basic attacks). No stat lookup.
+- Same defense reduction, resist, crit, variance, and token multipliers apply.
 
-No level multiplier — AtkStat already reflects level progression through dual-axis stat growth. A separate level term would double-amplify it.
-
-**Power ceiling:** TBD. The range is expected to land somewhere between 0.5 (light setup skills) and 4.0+ (heavy AP spenders), with the true ceiling determined through playtesting against the AP economy.
-
-**Multi-stat scaling:** The current formula uses a single AtkStat. Some mnemonics may need to scale off multiple stats — e.g., a skill that uses both Phys.Atk and PULSE. The formula will be extended to support this when such skills are authored. The extension is expected to be a weighted sum or multiplicative blend of the relevant stats, replacing the single AtkStat term.
-
-The base damage then feeds the full combat pipeline: immune check → resist multiplier → buff/debuff multipliers → elemental vulnerability → crit → floor 1.
+Both paths then feed the same pipeline: hit roll (physical only) → crit roll → defense → resist → token multipliers → variance (0.85–1.0) → floor 1.
 
 #### Conditional Chaining
 
 A mnemonic's effect list is an ordered sequence. Each step can read what the previous step did via a shared **resolution context** — a scratch pad tracking: did the last step hit, was it a crit, how many targets were hit. This enables conditional effects:
 
-> **Poison Jab** = `[Skill_Effect_Damage, Skill_Effect_DoT(RequiresPreviousHit=true)]`
-> The DoT only applies if the damage landed. Miss the hit, no poison.
+> **Poison Jab** = `[Skill_Effect_Instant(DAMAGE), Skill_Effect_Grant(POISON, RequiresPreviousHit=true)]`
+> The poison only applies if the damage landed. Miss the hit, no poison.
 
 The resolution context is ephemeral — created at skill execution, discarded when the last step finishes. It is not token state.
 
@@ -145,9 +144,9 @@ Each character's mnemonic pool is authored to give them a coherent toolkit. Skug
 
 ### Skill Ranks
 
-Skills have ranks. Higher rank means higher Power, better AP economy (more generation or lower cost), occasionally a small mechanical refinement — not arbitrary resistance flags. A low-rank skill against a high-defense enemy does pathetic damage. The numbers tell the story. No "RESIST" labels needed.
+Skills have ranks. Higher rank means higher scaling values, better AP economy (more generation or lower cost), occasionally a small mechanical refinement — not arbitrary resistance flags. A low-rank skill against a high-defense enemy does pathetic damage. The numbers tell the story. No "RESIST" labels needed.
 
-This is the core pressure to engage with the RESONANCE system. Ignoring skill investment doesn't lock you out — it just makes you ineffective in a way that's immediately legible. Low Power can't compensate for a widening stat gap as the game progresses.
+This is the core pressure to engage with the RESONANCE system. Ignoring skill investment doesn't lock you out — it just makes you ineffective in a way that's immediately legible. Low scaling can't compensate for a widening stat gap as the game progresses.
 
 Progression is vertical, not branching. Rank II is the same skill as Rank I — same identity, same role, better numbers. No permanent reforge decisions, no locked-off paths. What you see in the rank chain is what you get.
 
@@ -163,7 +162,7 @@ There is no respec because there is nothing to respec. The only decision is whet
 
 #### Mnemonic Graph
 
-Every mnemonic displays its full rank chain from the moment it enters your possession. **No obfuscation.** The player can inspect any mnemonic in the party's collection — equipped or sitting in inventory — and see every rank, every Power value, every cost, every special. Locked nodes display their upgrade cost. Unlocked nodes display what you've already committed. The entire chain is visible upfront.
+Every mnemonic displays its full rank chain from the moment it enters your possession. **No obfuscation.** The player can inspect any mnemonic in the party's collection — equipped or sitting in inventory — and see every rank, every scaling value, every cost, every special. Locked nodes display their upgrade cost. Unlocked nodes display what you've already committed. The entire chain is visible upfront.
 
 The graph is a planning tool as much as a status screen. You invest RESONANCE with full knowledge of what you're buying. No surprises, no hidden branches, no gotchas.
 
@@ -171,7 +170,7 @@ The graph is a planning tool as much as a status screen. You invest RESONANCE wi
 
 **Three ranks is the default.** Base → II → III. Some mnemonics may have fewer (complete at base — the skill is finished the moment you acquire it). Some may have more (rare, only when the skill's role genuinely justifies deeper investment). Depth reflects the skill's importance in the game's toolkit, not its quality.
 
-**Vertical ranks: same identity, better numbers.** The primary lever is Power. Rank II might add a small mechanical refinement — a nudge that rewards familiarity without changing the skill's role. Rank III is mastery: a slight twist that says "you committed to this." But the skill is still the skill. A generator stays a generator. A consumer stays a consumer.
+**Vertical ranks: same identity, better numbers.** The primary lever is scaling magnitude. Rank II might add a small mechanical refinement — a nudge that rewards familiarity without changing the skill's role. Rank III is mastery: a slight twist that says "you committed to this." But the skill is still the skill. A generator stays a generator. A consumer stays a consumer.
 
 **Costs are tools, not progression rules.** AP generation/cost and HP% costs don't automatically change as a skill ranks up. They change only when that change means something. If the cost stays flat across all three ranks, that is a design decision, not a missed opportunity.
 
@@ -179,15 +178,15 @@ The graph is a planning tool as much as a status screen. You invest RESONANCE wi
 
 Skugge's starting dagger skill. A straightforward three-rank chain — most mnemonics will look like this.
 
-| Node | Power | AP | HP% | Special |
-|------|-------|----|-----|---------|
-| Uskrav | 1.5 | +1 | 15% | — |
-| Uskrav II | 2.0 | +1 | 15% | — |
-| Uskrav III | 2.5 | +1 | 15% | +1 bonus AP on crit |
+| Node | Scaling | AP | HP% | Special |
+|------|---------|----|-----|---------|
+| Uskrav | 0.75× AtkPhys | +1 | 15% | — |
+| Uskrav II | 1.0× AtkPhys | +1 | 15% | — |
+| Uskrav III | 1.25× AtkPhys | +1 | 15% | +1 bonus AP on crit |
 
-**Trunk (I→II→III):** AP generator. Same HP cost (15%), same +1 AP generation, increasing Power (1.5 → 2.0 → 2.5). Rank III adds the refinement: +1 bonus AP on critical hit. This rewards mastery — the player who builds around Uskrav's crit profile gets more fuel — without changing the skill's identity. It's still a fast, cheap generator. It just gets greedier if you're good with it.
+**Trunk (I→II→III):** AP generator. Same HP cost (15%), same +1 AP generation, increasing scaling (0.75 → 1.0 → 1.25). Rank III adds the refinement: +1 bonus AP on critical hit. This rewards mastery — the player who builds around Uskrav's crit profile gets more fuel — without changing the skill's identity. It's still a fast, cheap generator. It just gets greedier if you're good with it.
 
-The progression is legible at a glance. Every rank is a better version of the same tool. The RESONANCE investment is paying for Power growth and, at the capstone, a mechanical edge that makes the skill feel complete. No branch anxiety, no permanent lockouts, no "what if I'd gone the other way." Just a dagger skill that gets sharper the more you commit to it.
+The progression is legible at a glance. Every rank is a better version of the same tool. The RESONANCE investment is paying for scaling growth and, at the capstone, a mechanical edge that makes the skill feel complete. No branch anxiety, no permanent lockouts, no "what if I'd gone the other way." Just a dagger skill that gets sharper the more you commit to it.
 
 ---
 
@@ -222,7 +221,7 @@ There is no catalogue, no scribing, no discovery layer. A mnemonic you don't hav
 
 **Starting AP:** characters begin each encounter at 0 AP. Some gear may grant starting AP (e.g., "Amulet of Readiness: +2 starting AP").
 
-**Basic attack (inherent action):** every character always has access to a basic attack. It costs no AP, generates +1 AP, and deals baseline physical damage (Power 1.0, weapon damage type, no token interaction). It is intentionally plain — an AP floor, not a combat tool. Mnemonics and gear modify it: passives that add AP on crit, multi-hit properties, token application on hit. The basic attack is a modifiable platform, not a wasted turn.
+**Basic attack (inherent action):** player characters always have access to a basic attack. It costs no AP, generates +1 AP, and deals physical damage scaling off `AtkPhys × 1.0` (weapon damage type, no token interaction). It is generated at runtime by `CombatCharacter` — not a separate resource file. It is intentionally plain — an AP floor, not a combat tool. Mnemonics and gear modify it: passives that add AP on crit, multi-hit properties, token application on hit. The basic attack is a modifiable platform, not a wasted turn.
 
 ### HP — Physical Cost + Survival
 Some mnemonics cost HP to run (physical techniques that damage the user). Also the primary survival resource — hit zero and the character goes down, their mnemonics go offline for the rest of the encounter. Persists across encounters. Restored at rest points and via healing mnemonics.
@@ -495,12 +494,12 @@ AP generation and consumption are independent of the HP%/MP tier — a heavy phy
 
 ### Basic Attack (Inherent Action)
 
-Every character has access to a basic attack at all times. It does not consume a mnemonic slot and is always available.
+Player characters always have access to a basic attack. It does not consume a mnemonic slot and is always available. Enemy basic attacks are authored inline on `EnemyData` (see Enemy Skill Authoring).
 
 | Property | Value |
 |----------|-------|
 | AP | Generates +1 AP |
-| Power | 1.0 (100% of AtkStat — the baseline) |
+| Scaling | `AtkPhys × 1.0` (100% of AtkPhys — the baseline) |
 | Damage type | Character's weapon type |
 | Crit | Yes |
 | Token interaction | None by default |
@@ -680,28 +679,26 @@ Enemies use the same skill resolution pipeline as the player. The AI layer only 
 
 ### Enemy Skill Authoring
 
-Enemy skills are authored independently from player mnemonics. They do not use AP, MP, HP costs, ranks, or `usable_by`. Enemy skills define targeting, a flat base damage (or heal/buff potency), a damage type, and effect tokens. The same combat calculator resolves enemy and player damage; the only difference is the source of the pre-mitigation base number.
+Enemy skills are authored independently from player mnemonics. They do not use AP, MP, HP costs, ranks, or `usable_by`.
 
-| Field | Description |
+**Basic attacks** are authored inline on `EnemyData` — every enemy has a default "Attack" that requires no separate resource file. Designers set `base_attack_damage`, `base_attack_type`, `base_attack_crit_chance`, and `base_attack_chance_tier` directly on the enemy sheet. `CombatCharacter` constructs the basic `EnemySkill` at runtime.
+
+**Special abilities** (e.g., "Fire Breath", "Howl") are authored as `EnemySkill` resources and assigned to the enemy's `skills` array.
+
+| `EnemySkill` Field | Description |
 |-------|-------------|
-| `display_name` | Name shown in logs and telegraphs. |
+| `display_name` | Name shown in logs. |
 | `targeting` | Same `TargetingData` used by player mnemonics. |
-| `base_damage` | Flat pre-mitigation number. If `0`, falls back to stat scaling (player path only). |
-| `damage_type` | `Slash`, `Pierce`, `Blunt`, `Fire`, `Water`, etc. Used for defense stat selection and resistance checks. |
-| `crit_chance` | Same as player tokens. |
-| `chance_tier` | Same `ChanceTier` enum; drives hit roll against target `Dodge`. |
-| `true_strike` | Bypasses hit roll entirely if `true`. |
-| `effect_steps` | Array of tokens (`RuntimeToken_Damage`, `RuntimeToken_Poison`, etc.) fired on resolution. |
-
-**No offensive stats on enemies.** Enemies carry `DefPhys`, `DefMag`, `Hit`, `Dodge`, `Speed`, MaxHP, and CurHP. They do **not** carry `AtkPhys`, `AtkMag`, MaxMP, or CurMP. Enemy offense is authored flat; enemy defense is stat-driven, same as players.
-
-**Token effects are end-point only.** Temporary buffs and debuffs (e.g., `EMPOWER`, `WEAKEN`) modify final damage multipliers, not stats. This ensures both sides benefit equally from combat tokens regardless of how their base damage is sourced.
+| `effect_steps` | Array of tokens (`RuntimeToken_Damage`, `RuntimeToken_Poison`, etc.) fired on resolution. Damage configuration lives on the tokens themselves. |
 
 **AI condition and cooldown** are stored on the enemy skill itself:
 - `cooldown_turns`: minimum turns between uses.
 - `hp_threshold`: only usable when caster HP is below this percentage.
-- `turn_sequence`: fixed rotation slot (e.g., use on turn 3, 6, 9...).
 - `weight`: for weighted-random selection.
+
+**No offensive stats on enemies.** Enemies carry `DefPhys`, `DefMag`, `Hit`, `Dodge`, `Speed`, MaxHP, and CurHP. They do **not** carry `AtkPhys`, `AtkMag`, MaxMP, or CurMP. Enemy offense is authored flat; enemy defense is stat-driven, same as players.
+
+**Token effects are end-point only.** Temporary buffs and debuffs (e.g., `EMPOWER`, `WEAKEN`) modify final damage multipliers, not stats. This ensures both sides benefit equally from combat tokens regardless of how their base damage is sourced.
 
 ### Enemy Information Reveal
 

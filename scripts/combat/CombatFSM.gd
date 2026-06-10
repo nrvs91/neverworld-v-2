@@ -1,7 +1,7 @@
 class_name CombatFSM
 extends Node
 
-const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+
 
 enum State {
 	NONE,
@@ -17,7 +17,7 @@ var _state: State = State.NONE
 var _actors: Array = []
 var _active_actor: CombatCharacter = null
 var _pending_target: CombatCharacter = null
-var _pending_mnemonic: MnemonicRes = null
+var _pending_mnemonic: Resource = null
 var _action_pipeline: ActionPipeline = null
 
 func start(actors: Array, pipeline: ActionPipeline) -> void:
@@ -62,10 +62,10 @@ func _enter_action_select() -> void:
 	# FSM is actor-agnostic. PlayerInputComponent fires action_selected for players,
 	# AIBehaviorComponent fires it for enemies. We just wait.
 	# Godot 4: awaiting a multi-param signal yields Array [param0, param1].
-	# action_selected(mnemonic: MnemonicRes, target: CombatCharacter) → result[0], result[1].
+	# action_selected(mnemonic: Resource, target: CombatCharacter) → result[0], result[1].
 	# WAIT or no-target emits (null, null) — null check below catches it.
 	var result: Array = await CombatEvents.action_selected
-	_pending_mnemonic = result[0] as MnemonicRes
+	_pending_mnemonic = result[0]
 	_pending_target = result[1] as CombatCharacter
 	if _pending_target == null:
 		Log.info("ActionSelect — WAIT selected")

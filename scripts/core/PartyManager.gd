@@ -2,7 +2,7 @@ extends Node
 
 var save_data: GlobalSaveData = null
 
-# Registry of all known PlayerData resources, keyed by character_ID.
+# Registry of all known PlayerData resources, keyed by character_id.
 # TODO: replace with folder scan once more PlayerData .tres files exist.
 var _registry: Dictionary = {}
 

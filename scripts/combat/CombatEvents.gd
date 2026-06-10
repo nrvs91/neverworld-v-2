@@ -1,6 +1,5 @@
 extends Node
 
-const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
 const RuntimeToken = preload("res://scripts/combat/tokens/RuntimeToken.gd")
 const ActionContext = preload("res://scripts/combat/ActionContext.gd")
 
@@ -17,10 +16,10 @@ signal scripted_encounter_triggered(composition: CombatConfig, environment: Pack
 signal combat_started
 signal turn_started(actor: CombatCharacter)
 signal please_select_action(actor: CombatCharacter)
-signal action_selected(mnemonic: MnemonicRes, target: CombatCharacter)
+signal action_selected(mnemonic: Resource, target: CombatCharacter)
 signal action_animation_complete
 signal action_hit_frame
-signal action_executed(actor: CombatCharacter, targets: Array[CombatCharacter], damage: int, mnemonic: MnemonicRes)
+signal action_executed(actor: CombatCharacter, targets: Array[CombatCharacter], damage: int, mnemonic: Resource)
 signal action_resolved(context: ActionContext)
 signal combat_text_shown(target: CombatCharacter, text: String)
 signal actor_downed(actor: CombatCharacter)

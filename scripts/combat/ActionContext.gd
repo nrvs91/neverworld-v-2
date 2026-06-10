@@ -1,9 +1,7 @@
 class_name ActionContext
 extends RefCounted
 
-const MnemonicResource = preload("res://scripts/combat/skills/MnemonicResource.gd")
-
-var mnemonic: MnemonicResource
+var mnemonic: Resource
 var source: CombatCharacter
 var targets: Array[CombatCharacter]
 

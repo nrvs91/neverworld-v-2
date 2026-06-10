@@ -74,21 +74,20 @@ metadata/_custom_type_script = "uid://ctf4nx0yni78o"
 
 [resource]
 script = ExtResource("1_n73al")
+MaxMP = 15
+AtkPhys = 12
+AtkMag = 10
 character_portrait = ExtResource("1_h48qx")
 growth_table = SubResource("Resource_4ppee")
 allowed_gear = Array[int]([2, 8, 128, 4096, 8192, 16384, 32768, 65536, 131072])
 mnemonics = Array[ExtResource("5_omsjp")]([ExtResource("9_4ppee"), ExtResource("12_empower"), ExtResource("15_envenom"), ExtResource("9_w04d5")])
 MaxHP = 26
-MaxMP = 12
-MaxAP = 10
-AtkPhys = 12
-AtkMag = 10
 Hit = 8
 DefPhys = 4
 DefMag = 2
 Dodge = 14
 Pulse = 14
 character_name = "Skugge"
-character_ID = "player_skugge"
+character_id = "player_skugge"
 character_sprite = ExtResource("2_weqmv")
 metadata/_custom_type_script = "uid://32dk04tuy26a"

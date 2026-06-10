@@ -20,10 +20,20 @@ func _ready() -> void:
 	ExplorationEvents.zone_exit_requested.connect(_on_zone_exit_requested)
 	CombatEvents.encounter_triggered.connect(_on_encounter_triggered)
 	CombatEvents.combat_ended.connect(_on_combat_ended)
-	if Globals.dev_mode == true:
+	if Globals.dev_mode and Globals.test_level:
+		_load_test_level()
+	elif Globals.dev_mode:
 		start_new_game()
 	else:
 		_show_main_menu()
+
+func _load_test_level() -> void:
+	Log.info("loading test level: ", Globals.test_level.resource_path)
+	_clear_current_scene()
+	var instance: Node = Globals.test_level.instantiate()
+	current_scene.add_child(instance)
+	state = Enums.GameState.EXPLORATION
+	Log.info("test level loaded")
 
 func _show_main_menu() -> void:
 	state =  Enums.GameState.MAINMENU

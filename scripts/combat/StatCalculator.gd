@@ -8,7 +8,6 @@ static func compute_player(player_data: PlayerData, save_data: CharacterSaveData
 	var stats: Dictionary = {
 		CharacterStats.Stat.MaxHP: player_data.MaxHP,
 		CharacterStats.Stat.MaxMP: player_data.MaxMP,
-		CharacterStats.Stat.MaxAP: player_data.MaxAP,
 		CharacterStats.Stat.AtkPhys: player_data.AtkPhys,
 		CharacterStats.Stat.AtkMag: player_data.AtkMag,
 		CharacterStats.Stat.Hit: player_data.Hit,
@@ -37,10 +36,6 @@ static func compute_player(player_data: PlayerData, save_data: CharacterSaveData
 static func compute_enemy(enemy_data: EnemyData) -> Dictionary:
 	return {
 		CharacterStats.Stat.MaxHP: enemy_data.MaxHP,
-		CharacterStats.Stat.MaxMP: enemy_data.MaxMP,
-		CharacterStats.Stat.MaxAP: enemy_data.MaxAP,
-		CharacterStats.Stat.AtkPhys: enemy_data.AtkPhys,
-		CharacterStats.Stat.AtkMag: enemy_data.AtkMag,
 		CharacterStats.Stat.Hit: enemy_data.Hit,
 		CharacterStats.Stat.DefPhys: enemy_data.DefPhys,
 		CharacterStats.Stat.DefMag: enemy_data.DefMag,

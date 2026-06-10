@@ -2,7 +2,6 @@ class_name CombatCalculator
 ## Pure utility. Takes values in, returns values out. No state, no Node base.
 
 const SkillEffectBase = preload("res://scripts/combat/skills/effects/Skill_Effect_Base.gd")
-
 ## Base damage formula:
 ##   BaseDamage = Σ(stat_i × scaling_i) × (100 / (100 + Def))
 ## stat_scalings is Array[StatScaling] — sums (stat_value × scaling) across all entries.
@@ -87,6 +86,39 @@ static func resolve_hit(
 	var final: int = max(1, roundi(base * total_mult))
 	return {hit = true, damage = final, is_crit = is_crit, multiplier = total_mult}
 
+static func effective_ap_cost(mnemonic: Resource, token_snapshot: Dictionary) -> int:
+	var maybe_ap_cost = mnemonic.get("ap_cost")
+	if maybe_ap_cost == null or maybe_ap_cost <= 0:
+		return 0
+	var ap_cost: int = maybe_ap_cost
+	var discount: int = 0
+	var maybe_conditions = mnemonic.get("ap_reduction_conditions")
+	if maybe_conditions != null and not maybe_conditions.is_empty():
+		for token_type in maybe_conditions:
+			var per_token_discount: int = maybe_conditions[token_type]
+			var count: int = token_snapshot.get(token_type, 0)
+			discount += per_token_discount * count
+	return max(0, ap_cost - discount)
+
+static func total_ap_generation(mnemonic: Resource, token_snapshot: Dictionary) -> int:
+	var maybe_generates = mnemonic.get("ap_generates")
+	var total: int = maybe_generates if maybe_generates != null else 0
+	var maybe_bonuses = mnemonic.get("ap_generation_bonuses")
+	if maybe_bonuses != null and not maybe_bonuses.is_empty():
+		for token_type in maybe_bonuses:
+			var per_token_bonus: int = maybe_bonuses[token_type]
+			var count: int = token_snapshot.get(token_type, 0)
+			total += per_token_bonus * count
+	return total
+
+static func snapshot_target_tokens(targets: Array[CombatCharacter]) -> Dictionary:
+	var counts: Dictionary = {}
+	for t: CombatCharacter in targets:
+		for token in t.tokens.get_tokens():
+			var tt: String = token.token_type
+			counts[tt] = counts.get(tt, 0) + 1
+	return counts
+
 static func _tier_multiplier(tier: SkillEffectBase.ChanceTier) -> float:
 	match tier:
 		SkillEffectBase.ChanceTier.CERTAIN: return 1.0
@@ -94,4 +126,3 @@ static func _tier_multiplier(tier: SkillEffectBase.ChanceTier) -> float:
 		SkillEffectBase.ChanceTier.MEDIUM:  return 0.50
 		SkillEffectBase.ChanceTier.LOW:     return 0.25
 	return 1.0
-

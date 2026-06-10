@@ -6,6 +6,6 @@ extends Resource
 @export var party_slots: Array[String] = ["","",""]
 
 # every character met - active party member or bench
-# keyed by character_ID, a character is added via PartyManager.recruit()
+# keyed by character_id, a character is added via PartyManager.recruit()
 # their save data persists here forever after
 @export var roster: Dictionary [String, CharacterSaveData] = {}

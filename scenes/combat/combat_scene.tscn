@@ -117,7 +117,7 @@ grow_vertical = 2
 
 [node name="ActionPipeline" parent="." unique_id=111111111 instance=ExtResource("12_apline")]
 
-[node name="ActionAnimator" parent="." instance=ExtResource("13_animator")]
+[node name="ActionAnimator" parent="." unique_id=1799795925 instance=ExtResource("13_animator")]
 
 [node name="CombatFSM" type="Node" parent="." unique_id=999999999]
 script = ExtResource("6_abc12")
@@ -137,7 +137,6 @@ gizmo_extents = 0.74
 [node name="EnemyPartyAnchor" type="Marker3D" parent="Anchors" unique_id=356219754]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1884155, 0, 0)
 gizmo_extents = 0.74
-
 
 [editable path="PlayerSpawner"]
 [editable path="EnemySpawner"]

@@ -124,7 +124,7 @@ func _on_cursor_hover_changed(old_actor: CombatCharacter, new_actor: CombatChara
 		else:
 			enemy_bar.nudge_actor(new_actor, true)
 
-func _on_action_executed(_actor: CombatCharacter, _targets: Array[CombatCharacter], _damage: int, _mnemonic: MnemonicRes) -> void:
+func _on_action_executed(_actor: CombatCharacter, _targets: Array[CombatCharacter], _damage: int, _mnemonic: Resource) -> void:
 	pass
 
 func _on_dot_ticked(token: RuntimeToken, context: ActionContext) -> void:

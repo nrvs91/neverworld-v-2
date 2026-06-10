@@ -1,5 +1,15 @@
 class_name SkillExecutor
 
+const MnemonicRes = preload("res://scripts/combat/skills/MnemonicResource.gd")
+const EnemySkillRes = preload("res://scripts/combat/skills/EnemySkill.gd")
+
+static func _skill_name(mnemonic: Resource) -> String:
+	if mnemonic is MnemonicRes:
+		return mnemonic.mnemonic_name
+	if mnemonic is EnemySkillRes:
+		return mnemonic.display_name
+	return ""
+
 static func execute(context: ActionContext) -> void:
 	for effect in context.mnemonic.effect_steps:
 		if effect.needs_previous_hit and not context.any_hit:
@@ -17,7 +27,7 @@ static func execute(context: ActionContext) -> void:
 
 static func _fire_instant(effect: Skill_Effect_Instant, context: ActionContext) -> void:
 	if effect.token == null:
-		Log.error("SkillExecutor — Skill_Effect_Instant has no token", context.mnemonic.mnemonic_name)
+		Log.error("SkillExecutor — Skill_Effect_Instant has no token", _skill_name(context.mnemonic))
 		return
 	for target in context.targets:
 		var token := effect.token.duplicate(true) as RuntimeToken
@@ -27,7 +37,7 @@ static func _fire_instant(effect: Skill_Effect_Instant, context: ActionContext) 
 
 static func _grant_tokens(effect: Skill_Effect_Grant, context: ActionContext) -> void:
 	if effect.token == null:
-		Log.error("SkillExecutor — Skill_Effect_Grant has no token", context.mnemonic.mnemonic_name)
+		Log.error("SkillExecutor — Skill_Effect_Grant has no token", _skill_name(context.mnemonic))
 		return
 	for target in context.targets:
 		for i in range(effect.amount):

@@ -19,7 +19,7 @@ func setup(actor: CombatCharacter) -> void:
 	_actor = actor
 	hp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxHP)
 	mp_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxMP)
-	ap_bar.max_value = actor.stats.stat(CharacterStats.Stat.MaxAP)
+	ap_bar.max_value = VitalsComponent.AP_CAP
 	actor.vitals.vitals_changed.connect(refresh_vitals)
 	actor.tokens.token_added.connect(_refresh_token_display)
 	actor.tokens.token_removed.connect(_refresh_token_display)

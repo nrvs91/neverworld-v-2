@@ -70,21 +70,20 @@ metadata/_custom_type_script = "uid://ctf4nx0yni78o"
 
 [resource]
 script = ExtResource("1_apk7k")
+MaxMP = 12
+AtkPhys = 12
+AtkMag = 4
 character_portrait = ExtResource("1_5x8ce")
 growth_table = SubResource("Resource_g8yax")
 allowed_gear = Array[int]([4, 128, 256, 1024, 4096, 8192, 16384, 32768, 65536, 131072])
 mnemonics = Array[ExtResource("5_2vvjg")]([ExtResource("6_bsq40")])
 MaxHP = 30
-MaxMP = 6
-MaxAP = 10
-AtkPhys = 16
-AtkMag = 8
 Hit = 10
 DefPhys = 8
 DefMag = 4
 Dodge = 8
 Pulse = 10
 character_name = "Vargi"
-character_ID = "vargi"
+character_id = "vargi"
 character_sprite = ExtResource("2_2vvjg")
 metadata/_custom_type_script = "uid://32dk04tuy26a"

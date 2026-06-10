@@ -30,9 +30,9 @@ func _decide() -> void:
 		Log.info("AIBehaviorComponent — no valid target", owner_actor.character_name)
 		CombatEvents.action_selected.emit(null, null)
 		return
-	var mnemonic = owner_actor.mnemonics[0] if not owner_actor.mnemonics.is_empty() else null
+	var skill = owner_actor.enemy_skills[0] if not owner_actor.enemy_skills.is_empty() else null
 	Log.info("AIBehaviorComponent — acting", owner_actor.character_name)
-	CombatEvents.action_selected.emit(mnemonic, target)
+	CombatEvents.action_selected.emit(skill, target)
 
 func _first_living_opponent(actor: CombatCharacterClass) -> CombatCharacterClass:
 	for a in _all_actors:
