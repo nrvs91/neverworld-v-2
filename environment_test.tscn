@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://c7ydtmn0lnjcn"]
+
+[ext_resource type="Shader" uid="uid://ducmtktagp0c6" path="res://toon_shader.gdshader" id="1_6ssfh"]
+[ext_resource type="Shader" uid="uid://cjoxkjciyxp2w" path="res://scripts/shaders/pixelart_stylizer.gdshader" id="1_p7088"]
+
+[sub_resource type="Environment" id="Environment_5jqff"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fyv7y"]
+render_priority = 0
+shader = ExtResource("1_6ssfh")
+shader_parameter/albedo = Color(0.10049999, 0.67, 0.45169178, 1)
+shader_parameter/clamp_diffuse_to_max = false
+shader_parameter/cuts = 3
+shader_parameter/wrap = 0.0
+shader_parameter/steepness = 1.0
+shader_parameter/use_attenuation = true
+shader_parameter/use_specular = false
+shader_parameter/specular_strength = 1.0
+shader_parameter/specular_shininess = 16.0
+shader_parameter/use_rim = true
+shader_parameter/rim_width = 8.0
+shader_parameter/rim_color = Color(1, 1, 1, 1)
+shader_parameter/use_ramp = false
+shader_parameter/use_borders = false
+shader_parameter/border_width = 0.01
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_5jqff"]
+material = SubResource("ShaderMaterial_fyv7y")
+size = Vector2(10, 10)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6ssfh"]
+render_priority = 0
+shader = ExtResource("1_p7088")
+shader_parameter/shadows_enabled = true
+shader_parameter/highlights_enabled = true
+shader_parameter/shadow_strength = 0.4
+shader_parameter/highlight_strength = 0.1
+shader_parameter/highlight_color = Color(1, 1, 1, 1)
+shader_parameter/shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l8p6p"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_6ssfh")
+shader = ExtResource("1_6ssfh")
+shader_parameter/albedo = Color(1, 0.39999998, 0.39999998, 1)
+shader_parameter/clamp_diffuse_to_max = false
+shader_parameter/cuts = 3
+shader_parameter/wrap = 0.0
+shader_parameter/steepness = 1.0
+shader_parameter/use_attenuation = true
+shader_parameter/use_specular = false
+shader_parameter/specular_strength = 1.0
+shader_parameter/specular_shininess = 16.0
+shader_parameter/use_rim = true
+shader_parameter/rim_width = 8.0
+shader_parameter/rim_color = Color(1, 1, 1, 1)
+shader_parameter/use_ramp = false
+shader_parameter/use_borders = false
+shader_parameter/border_width = 0.01
+
+[sub_resource type="BoxMesh" id="BoxMesh_5jqff"]
+
+[node name="Node3D" type="Node3D" unique_id=1923291223]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1456641028]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=457715065]
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(320, 180)
+render_target_update_mode = 4
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="SubViewportContainer/SubViewport" unique_id=107866663]
+environment = SubResource("Environment_5jqff")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport" unique_id=146215684]
+transform = Transform3D(1, 0, 0, 0, 0.49999997, 0.86602545, 0, -0.86602545, 0.49999997, 0, 2.4647098, 0)
+shadow_enabled = true
+
+[node name="CameraRig" type="Node3D" parent="SubViewportContainer/SubViewport" unique_id=15920565]
+transform = Transform3D(0.70710677, 0.35355338, -0.6123724, 0, 0.8660254, 0.5, 0.70710677, -0.35355338, 0.6123724, -3, 3, 1)
+
+[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport/CameraRig" unique_id=1276640624]
+projection = 1
+current = true
+size = 6.77
+near = 0.001
+
+[node name="Floor" type="MeshInstance3D" parent="SubViewportContainer/SubViewport" unique_id=2073502257]
+mesh = SubResource("PlaneMesh_5jqff")
+
+[node name="Cube" type="MeshInstance3D" parent="SubViewportContainer/SubViewport" unique_id=673499761]
+transform = Transform3D(0.69121045, 0, -0.72265357, 0, 1, 0, 0.72265357, 0, 0.69121045, -2.3574452, 0.81171525, 1.3825476)
+material_override = SubResource("ShaderMaterial_l8p6p")
+mesh = SubResource("BoxMesh_5jqff")
